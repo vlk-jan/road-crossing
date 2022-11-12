@@ -1,0 +1,41 @@
+<root>
+    <TreeNodesModel>
+        <Action ID="ComputeHeading">
+            <input_port name="curr_gps_pos" default="Null">current robot gps position</input_port>
+            <output_port name="heading">what azimuth should we achieve with robot to be perpendicular to the road we need to cross</output_port>
+            <input_port name="road_head" default="Null">heading of the road we need to cross</input_port>
+        </Action>
+        <Condition ID="CrossRoad">
+            <input_port name="curr_gps_positon">robot gps position</input_port>
+        </Condition>
+        <Action ID="GetAzimuth">
+            <output_port name="cur_azimuth">current azimuth of robot</output_port>
+        </Action>
+        <Action ID="GetDirection">
+            <input_port name="curr_azimuth" default="Null">current azimuth of robot</input_port>
+            <output_port name="direction">in which direction should we rotate to achieve heading</output_port>
+            <input_port name="heading" default="Null">where should robot point</input_port>
+        </Action>
+        <Action ID="GetPosition">
+            <output_port name="curr_gps_pos">current gps position of robot</output_port>
+        </Action>
+        <Action ID="RoadCross_heading">
+            <input_port name="curr_gps_pos" default="Null">current robot gps position</input_port>
+            <output_port name="road_head">heading of a road we need to cross, we take in account the robot position relative to the road</output_port>
+        </Action>
+        <Condition ID="RobotParallel">
+            <input_port name="curr_azimuth" default="Null">current robots azimuth</input_port>
+            <input_port name="heading" default="Null">azimuth robot should have to be parallel to road we need to cross</input_port>
+        </Condition>
+        <Action ID="RotateRobot">
+            <input_port name="direction" default="1">1 = clockwise, -1 = counter clockwise</input_port>
+        </Action>
+        <SubTree ID="get_heading">
+            <input_port name="__shared_blackboard" default="true">If false (default), the Subtree has an isolated blackboard and needs port remapping</input_port>
+        </SubTree>
+        <SubTree ID="get_parallel_to_road">
+            <input_port name="__shared_blackboard" default="true">If false (default), the Subtree has an isolated blackboard and needs port remapping</input_port>
+        </SubTree>
+    </TreeNodesModel>
+</root>
+
