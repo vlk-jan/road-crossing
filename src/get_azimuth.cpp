@@ -3,18 +3,19 @@
 
 #include "ros/ros.h"
 #include "compass_msgs/Azimuth.h"
-#include "parallel_nodes.hh"
+#include "road_crossing/get_azimuth.h"
 
 int main(int argc, char **argv)
 {
     ros::init(argc, argv, "GetAzimuth");
     ros::NodeHandle n;
-    ros::Subscriber sub = n.subscribe("compass/true/enu/rad", 1000, ReadAzimuth);
+    ros::Subscriber sub = n.subscribe("compass/true/enu/rad", 1000, get_azimuth_callback);
     ros::spin();
 }
 
-void ReadAzimuth(const compass_msgs::Azimuth::ConstPtr& msg)
+void get_azimuth_callback(const compass_msgs::Azimuth::ConstPtr& msg)
 {
     double azimuth = msg->azimuth;
-    ROS_INFO("Current azimuth: [%d]", azimuth);
+    ROS_INFO("Current azimuth: [%f]", azimuth);
 }
+
