@@ -5,14 +5,13 @@
 
 #include "ros/ros.h"
 #include "compass_msgs/Azimuth.h"
-#include "road_crossing/get_azimuth.h"
 #include "road_crossing/road_cross_tree.h"
 
 int main(int argc, char **argv)
 {
     Road_cross_tree BT_tree("test_tree.xml");
 
-    BT_tree.tree.tickRoot();
+    BT_tree.run_tree();
 
     return EXIT_SUCCESS;
 }

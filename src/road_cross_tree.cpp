@@ -6,24 +6,21 @@
 #include "road_crossing/get_azimuth.h"
 #include "road_crossing/road_cross_tree.h"
 
-class Cross_road_tree
+Road_cross_tree::Road_cross_tree(char *filename)
 {
-    public:
-        Cross_road_tree(char *filename)
-        {
-            this->tree = this->factory.createTreeFromFile(filename);
-        }
+    this->factory.registerNodeType<get_required_azimuth>("get_required_azimuth");
+    this->factory.registerNodeType<get_current_azimuth>("get_current_azimuth");
+    this->factory.registerNodeType<equal_azimuths>("equal_azimuths");
 
-        BT::Tree tree;
+    this->tree = this->factory.createTreeFromFile(filename);
+}
 
-        void set_azimuth(double azimuth)
-        {
-            this->azimuth = azimuth;
-            ROS_INFO("Updated azimuth for tree to value: [%f]", this->azimuth);
-        }
+Road_cross_tree::~Road_cross_tree()
+{}
 
-    private:
-        double azimuth;
-        BT::BehaviorTreeFactory factory;
+int Road_cross_tree::run_tree()
+{
+    this->tree.tickRoot();
+    return EXIT_SUCCESS;
+}
 
-};

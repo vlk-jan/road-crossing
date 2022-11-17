@@ -1,0 +1,34 @@
+<?xml version="1.0"?>
+<root main_tree_to_execute="BehaviorTree">
+    <!-- ////////// -->
+    <BehaviorTree ID="BehaviorTree">
+        <Sequence>
+            <Action ID="get_required_azimuth" req_azimuth=""/>
+            <Fallback>
+                <Sequence>
+                    <Action ID="get_current_azimuth" cur_azimuth=""/>
+                    <Condition ID="equal_azimuths" cur_azimuth="" req_azimuth=""/>
+                </Sequence>
+                <Action ID="rotate_robot" cur_azimuth="" req_azimuth=""/>
+            </Fallback>
+        </Sequence>
+    </BehaviorTree>
+    <!-- ////////// -->
+    <TreeNodesModel>
+        <Condition ID="equal_azimuths">
+            <input_port name="cur_azimuth"/>
+            <input_port name="req_azimuth"/>
+        </Condition>
+        <Action ID="get_current_azimuth">
+            <output_port name="cur_azimuth">current azimuth of robot</output_port>
+        </Action>
+        <Action ID="get_required_azimuth">
+            <output_port name="req_azimuth">azimuth we want to achive</output_port>
+        </Action>
+        <Action ID="rotate_robot">
+            <input_port name="cur_azimuth"/>
+            <input_port name="req_azimuth"/>
+        </Action>
+    </TreeNodesModel>
+    <!-- ////////// -->
+</root>
