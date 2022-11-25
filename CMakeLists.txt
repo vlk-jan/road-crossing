@@ -4,11 +4,12 @@ project(road_crossing)
 find_package(catkin REQUIRED COMPONENTS
   roscpp
   compass_msgs
+  geometry_msgs
   behaviortree_cpp_v3
   message_generation
 )
 
-generate_messages(DEPENDENCIES compass_msgs)
+generate_messages(DEPENDENCIES compass_msgs geometry_msgs)
 
 catkin_package()
 
@@ -23,13 +24,17 @@ add_library(azimuth_lib ${catkin_LIBRARIES} ${SOURCES})
 target_link_libraries(azimuth_lib ${catkin_LIBRARIES})
 
 set(SOURCES src/road_cross_tree.cpp include/road_crossing/road_cross_tree.h)
-add_library(road_cross_tree ${SOURCES} ${catkin_LIBRARIES})
-target_link_libraries(road_cross_tree ${catkin_LIBRARIES} azimuth_lib)
+add_library(road_cross_tree_lib ${SOURCES} ${catkin_LIBRARIES})
+target_link_libraries(road_cross_tree_lib ${catkin_LIBRARIES} azimuth_lib)
+
+set(SOURCES src/movement.cpp include/road_crossing/movement.h)
+add_library(movement_lib ${SOURCES} ${catkin_LIBRARIES})
+target_link_libraries(movement_lib ${catkin_LIBRARIES})
 
 add_executable(get_azimuth src/get_azimuth.cpp)
 target_link_libraries(get_azimuth ${catkin_LIBRARIES})
 add_dependencies(get_azimuth road_crossing_generate_messages_cpp)
 
 add_executable(run_tree src/main.cpp)
-target_link_libraries(run_tree ${catkin_LIBRARIES} road_cross_tree azimuth_lib)
+target_link_libraries(run_tree ${catkin_LIBRARIES} road_cross_tree_lib azimuth_lib movement_lib)
 add_dependencies(run_tree get_azimuth)
