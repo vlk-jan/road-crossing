@@ -11,9 +11,64 @@ int main(int argc, char **argv)
 {
     ros::init(argc, argv, "GetAzimuth");
     ros::NodeHandle n;
-    // TODO: dynamicaly change subscribed topic to match published one
-    ros::Subscriber sub = n.subscribe("compass/mag/ned/rad", 1000, get_azimuth_callback);
+    std::string topic_prefix = "compass/";
+    std::string topic = topic_prefix;
+    std::string topic_suffix = get_topic();
+    if (topic_suffix == ""){
+        ROS_ERROR("No topic found");
+        //return EXIT_FAILURE;
+    } else
+        ros::Subscriber sub = n.subscribe(topic, 1000, get_azimuth_callback);
     ros::spin();
+}
+
+std::string get_topic()
+{
+    std::string param = "publish_";
+    std::string reference_str[] = {"utm", "true", "mag"};
+    std::string orientation_str[] = {"ned", "enu"};
+    std::string data_type_str[] = {"rad", "deg", "quat", "imu", "pose"};
+
+    bool published = false;
+
+    for (int i=0; i<reference_str->length(); ++i){
+        for (int j=0; j<orientation_str->length(); ++j){
+            for (int k=0; k<data_type_str->length(); ++k){
+                param += reference_str[i] + "_azimuth_" + orientation_str[j] + "_" + data_type_str[k];
+                ros::param::get(param, published);
+                if (published){
+                    return (reference_str[i] + "/" +  orientation_str[i] + "/" + data_type_str[k]);
+                }
+            }
+        }
+    }
+    return "";
+}
+
+void get_topic(compass_indices *indices)
+{
+    std::string param = "publish_";
+    std::string reference_str[] = {"utm", "true", "mag"};
+    std::string orientation_str[] = {"ned", "enu"};
+    std::string data_type_str[] = {"rad", "deg", "quat", "imu", "pose"};
+
+    bool published = false;
+
+    for (int i=0; i<reference_str->length(); ++i){
+        for (int j=0; j<orientation_str->length(); ++j){
+            for (int k=0; k<data_type_str->length(); ++k){
+                param += reference_str[i] + "_azimuth_" + orientation_str[j] + "_" + data_type_str[k];
+                ros::param::get(param, published);
+                if (published){
+                    indices->reference_i = i;
+                    indices->orientation_i = j;
+                    indices->data_type_i = k;
+                    return;
+                }
+            }
+        }
+    }
+    return;
 }
 
 void get_azimuth_callback(const compass_msgs::Azimuth::ConstPtr& msg)

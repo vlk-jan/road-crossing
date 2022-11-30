@@ -9,7 +9,9 @@
 
 int main(int argc, char **argv)
 {
-    Road_cross_tree BT_tree("test_tree.xml");
+    std::string tree_file;
+    ros::param::get("tree_file", tree_file);
+    Road_cross_tree BT_tree(tree_file);
 
     BT_tree.run_tree();
 

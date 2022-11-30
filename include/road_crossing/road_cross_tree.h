@@ -11,7 +11,7 @@
 class Road_cross_tree
 {
     public:
-        Road_cross_tree(char *filename);
+        Road_cross_tree(std::string filename);
         virtual ~Road_cross_tree();
 
         BT::Tree tree;

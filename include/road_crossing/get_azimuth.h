@@ -7,7 +7,17 @@
 #include "ros/ros.h"
 #include "compass_msgs/Azimuth.h"
 
+struct compass_indices{
+    int reference_i;
+    int orientation_i;
+    int data_type_i;
+};
+
 int main(int argc, char **argv);
+
+std::string get_topic();
+
+void get_topic(compass_indices *indices);
 
 void get_azimuth_callback(const compass_msgs::Azimuth::ConstPtr& msg);
 

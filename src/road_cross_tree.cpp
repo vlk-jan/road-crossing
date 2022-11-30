@@ -7,7 +7,7 @@
 #include "road_crossing/road_cross_tree.h"
 #include "road_crossing/movement.h"
 
-Road_cross_tree::Road_cross_tree(char *filename)
+Road_cross_tree::Road_cross_tree(std::string filename)
 {
     this->factory.registerNodeType<get_required_azimuth>("get_required_azimuth");
     this->factory.registerNodeType<get_current_azimuth>("get_current_azimuth");
