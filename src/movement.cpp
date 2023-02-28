@@ -1,3 +1,11 @@
+/*
+* Name: movement.cpp
+* Author: Jan Vlk
+* Date: 25.11.2022
+* Description: This file contains functions for moving the robot.
+* Last modified: 28.2.2023
+*/
+
 #include <cmath>
 
 #include "behaviortree_cpp_v3/behavior_tree.h"
@@ -7,6 +15,7 @@
 #include "geometry_msgs/Twist.h"
 #include "road_crossing/movement.h"
 #include "road_crossing/get_azimuth.h"
+#include "road_crossing/misc.h"
 
 BT::NodeStatus rotate_robot::tick()
 {
@@ -21,24 +30,16 @@ BT::NodeStatus rotate_robot::tick()
     if (!nh)
         throw BT::RuntimeError("missing required input node_handle: ", nh.error());
 
-    compass_indices param_indices;
-    get_topic(&param_indices);
-    int direction_ned = 1 ? param_indices.orientation_i == 0 : -1; // index 0 means ned
-    // TODO calculations for each value type
-    double diff = cur_azimuth.value() - req_azimuth.value();
     const double speed_const = MAX_ROT_SPEED/M_PI;
     double speed;
 
-    // ensure that robot rotates maximal of half a circle
-    if (diff > M_PI)
-        diff -= 2*M_PI;
-    else if (diff < -M_PI)
-        diff += 2*M_PI;
+    // ensure that robot rotates maximum of half a circle
+    double diff = angleDifference(cur_azimuth.value(), req_azimuth.value());
 
     if (diff < 0){  // rotation to the right
-        speed = direction_ned * (diff*speed_const);
+        speed = diff*speed_const;
     } else {  // rotation to the left
-        speed = -1 * direction_ned * (diff*speed_const);
+        speed = -1 * diff*speed_const;
     }
 
     geometry_msgs::Twist msg = geometry_msgs::Twist();

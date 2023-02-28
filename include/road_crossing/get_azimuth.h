@@ -6,6 +6,7 @@
 
 #include "ros/ros.h"
 #include "compass_msgs/Azimuth.h"
+#include "sensor_msgs/Imu.h"
 
 struct compass_indices{
     int reference_i;
@@ -19,7 +20,13 @@ std::string get_topic();
 
 void get_topic(compass_indices *indices);
 
-void get_azimuth_callback(const compass_msgs::Azimuth::ConstPtr& msg);
+void callback_compass(const compass_msgs::Azimuth::ConstPtr& msg);
+
+void callback_quat(const geometry_msgs::QuaternionStamped::ConstPtr& msg);
+
+void callback_imu(const sensor_msgs::Imu::ConstPtr& msg);
+
+void callback_pose(const geometry_msgs::PoseStamped::ConstPtr& msg);
 
 class get_required_azimuth : public BT::SyncActionNode
 {
