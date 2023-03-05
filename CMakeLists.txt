@@ -29,26 +29,31 @@ catkin_install_python(PROGRAMS src/test_injector.py
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
 
-set(SOURCES src/get_azimuth.cpp include/road_crossing/get_azimuth.h)
-add_library(azimuth_lib ${catkin_LIBRARIES} ${SOURCES})
-target_link_libraries(azimuth_lib ${catkin_LIBRARIES})
-
 set(SOURCES src/misc.cpp include/road_crossing/misc.h)
 add_library(misc_lib ${catkin_LIBRARIES} ${SOURCES})
 target_link_libraries(misc_lib ${catkin_LIBRARIES})
+
+set(SOURCES src/get_azimuth.cpp include/road_crossing/get_azimuth.h)
+add_library(azimuth_lib ${catkin_LIBRARIES} ${SOURCES})
+target_link_libraries(azimuth_lib ${catkin_LIBRARIES} misc_lib)
 
 set(SOURCES src/road_cross_tree.cpp include/road_crossing/road_cross_tree.h)
 add_library(road_cross_tree_lib ${SOURCES} ${catkin_LIBRARIES})
 target_link_libraries(road_cross_tree_lib ${catkin_LIBRARIES} azimuth_lib)
 
 set(SOURCES src/movement.cpp include/road_crossing/movement.h)
-add_library(movement_lib ${SOURCES} ${catkin_LIBRARIES})
+add_library(movement_lib ${catkin_LIBRARIES} ${SOURCES})
 target_link_libraries(movement_lib ${catkin_LIBRARIES} misc_lib)
 
-add_executable(get_azimuth src/get_azimuth.cpp)
-target_link_libraries(get_azimuth ${catkin_LIBRARIES})
-add_dependencies(get_azimuth road_crossing_generate_messages_cpp)
+set(SOURCES src/get_gps.cpp include/road_crossing/get_gps.h)
+add_library(gps_lib ${catkin_LIBRARIES} ${SOURCES})
+target_link_libraries(gps_lib ${catkin_LIBRARIES})
 
 add_executable(run_tree src/main.cpp)
 target_link_libraries(run_tree ${catkin_LIBRARIES} road_cross_tree_lib azimuth_lib movement_lib)
-add_dependencies(run_tree get_azimuth)
+
+add_executable(vehicles src/vehicles.cpp)
+target_link_libraries(vehicles ${catkin_LIBRARIES})
+
+add_executable(test_file src/test.cpp)
+target_link_libraries(test_file ${catkin_LIBRARIES} misc_lib gps_lib azimuth_lib)

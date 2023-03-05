@@ -17,31 +17,9 @@
 #include "tf/transform_datatypes.h"
 #include "road_crossing/misc.h"
 
+
 double azimuth;
 compass_indices indices;
-
-int main(int argc, char **argv)
-{
-    ros::init(argc, argv, "GetAzimuth");
-    ros::NodeHandle n;
-    std::string topic_prefix = "compass/";
-    std::string topic = topic_prefix;
-    std::string topic_suffix = get_topic();
-    if (topic_suffix == ""){
-        ROS_ERROR("No topic found");
-        //return EXIT_FAILURE;
-    } else
-        topic += topic_suffix;
-        if (indices.data_type_i == 0 || indices.data_type_i == 1)
-            ros::Subscriber sub = n.subscribe(topic, 5, callback_compass);
-        else if (indices.data_type_i == 2)
-            ros::Subscriber sub = n.subscribe(topic, 5, callback_quat);
-        else if (indices.data_type_i == 3)
-            ros::Subscriber sub = n.subscribe(topic, 5, callback_imu);
-        else if (indices.data_type_i == 4)
-            ros::Subscriber sub = n.subscribe(topic, 5, callback_pose);
-    ros::spin();
-}
 
 std::string get_topic()
 {

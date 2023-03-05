@@ -7,14 +7,15 @@
 #include "ros/ros.h"
 #include "compass_msgs/Azimuth.h"
 #include "sensor_msgs/Imu.h"
+#include "geometry_msgs/QuaternionStamped.h"
+#include "geometry_msgs/PoseStamped.h"
+
 
 struct compass_indices{
     int reference_i;
     int orientation_i;
     int data_type_i;
 };
-
-int main(int argc, char **argv);
 
 std::string get_topic();
 
