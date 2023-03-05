@@ -10,17 +10,22 @@
     </BehaviorTree>
     <!-- ////////// -->
     <BehaviorTree ID="Init_values">
-        <Inverter>
-            <Sequence>
-                <ForceSuccess>
-                    <Action ID="GetPosition" curr_gps_pos=""/>
-                </ForceSuccess>
+        <SequenceStar>
+            <SequenceStar>
+                <Action ID="GetPosition" curr_gps_pos=""/>
                 <Condition ID="CrossRoad" curr_gps_positon=""/>
-                <ForceSuccess>
-                    <Action ID="RoadCross_heading" curr_gps_pos="Null" road_head=""/>
-                </ForceSuccess>
-            </Sequence>
-        </Inverter>
+            </SequenceStar>
+            <Fallback>
+                <Condition ID="place_suitable"/>
+                <Sequence>
+                    <Fallback>
+                        <Condition ID="better_place"/>
+                        <Action ID="find_better_place"/>
+                    </Fallback>
+                    <Action ID="move_to_place"/>
+                </Sequence>
+            </Fallback>
+        </SequenceStar>
     </BehaviorTree>
     <!-- ////////// -->
     <BehaviorTree ID="Road_crossing">
@@ -58,27 +63,26 @@
     </BehaviorTree>
     <!-- ////////// -->
     <BehaviorTree ID="get_heading">
-        <ForceSuccess>
+        <RetryUntilSuccessful num_attempts="10">
             <Sequence>
                 <Action ID="GetPosition" curr_gps_pos=""/>
                 <Action ID="RoadCross_heading" curr_gps_pos="Null" road_head=""/>
                 <Action ID="ComputeHeading" curr_gps_pos="Null" heading="" road_head="Null"/>
             </Sequence>
-        </ForceSuccess>
+        </RetryUntilSuccessful>
     </BehaviorTree>
     <!-- ////////// -->
     <BehaviorTree ID="get_parallel_to_road">
-        <Sequence>
-            <ForceSuccess>
-                <Action ID="GetAzimuth" cur_azimuth=""/>
-            </ForceSuccess>
-            <SubTree ID="get_heading" __shared_blackboard="true"/>
+        <SequenceStar>
+            <SequenceStar>
+                <RetryUntilSuccessful num_attempts="10">
+                    <Action ID="GetAzimuth" cur_azimuth=""/>
+                </RetryUntilSuccessful>
+                <SubTree ID="get_heading" __shared_blackboard="true"/>
+            </SequenceStar>
             <RetryUntilSuccessful num_attempts="10">
                 <Fallback>
-                    <Condition ID="RobotParallel" curr_azimuth="Null" heading="Null"/>
-                    <ForceFailure>
-                        <Action ID="GetDirection" curr_azimuth="Null" direction="" heading="Null"/>
-                    </ForceFailure>
+                    <Condition ID="robot_perpendicullar" curr_azimuth="Null" heading="Null"/>
                     <ForceFailure>
                         <Fallback>
                             <Action ID="RotateRobot" direction="1"/>
@@ -87,7 +91,7 @@
                     </ForceFailure>
                 </Fallback>
             </RetryUntilSuccessful>
-        </Sequence>
+        </SequenceStar>
     </BehaviorTree>
     <!-- ////////// -->
     <BehaviorTree ID="start_crossing">
@@ -134,10 +138,6 @@
         <SubTree ID="Road_crossing">
             <input_port default="true" name="__shared_blackboard">If false (default), the Subtree has an isolated blackboard and needs port remapping</input_port>
         </SubTree>
-        <Condition ID="RobotParallel">
-            <input_port default="Null" name="curr_azimuth">current robots azimuth</input_port>
-            <input_port default="Null" name="heading">azimuth robot should have to be parallel to road we need to cross</input_port>
-        </Condition>
         <Action ID="RotateRobot">
             <input_port default="1" name="direction">1 = clockwise, -1 = counter clockwise</input_port>
         </Action>
@@ -145,9 +145,11 @@
         <Action ID="TakeStepFromRoad">
             <input_port default="Null" name="curr_gps_pos">current gps position</input_port>
         </Action>
+        <Condition ID="better_place"/>
         <Action ID="calc_time_2_collision"/>
         <Condition ID="collision_on_movement_bwd"/>
         <Action ID="continue_movement"/>
+        <Action ID="find_better_place"/>
         <SubTree ID="get_heading">
             <input_port default="true" name="__shared_blackboard">If false (default), the Subtree has an isolated blackboard and needs port remapping</input_port>
         </SubTree>
@@ -155,7 +157,13 @@
             <input_port default="true" name="__shared_blackboard">If false (default), the Subtree has an isolated blackboard and needs port remapping</input_port>
         </SubTree>
         <Action ID="move_back"/>
+        <Action ID="move_to_place"/>
         <Condition ID="not_started"/>
+        <Condition ID="place_suitable"/>
+        <Condition ID="robot_perpendicullar">
+            <input_port default="Null" name="curr_azimuth">current robots azimuth</input_port>
+            <input_port default="Null" name="heading">azimuth robot should have to be parallel to road we need to cross</input_port>
+        </Condition>
         <SubTree ID="start_crossing">
             <input_port default="true" name="__shared_blackboard">If false (default), the Subtree has an isolated blackboard and needs port remapping</input_port>
         </SubTree>
