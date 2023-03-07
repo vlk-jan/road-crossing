@@ -8,12 +8,17 @@ find_package(catkin REQUIRED COMPONENTS
   geometry_msgs
   behaviortree_cpp_v3
   message_generation
+  GeographicLib
 )
 
 add_message_files(
   FILES
   injector_msgs.msg
+  place_data.msg
+  UTM_data.msg
 )
+
+catkin_python_setup()
 
 generate_messages(DEPENDENCIES compass_msgs geometry_msgs)
 
@@ -25,7 +30,7 @@ include_directories(include ${catkin_INCLUDE_DIRS})
 #  DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
 #)
 
-catkin_install_python(PROGRAMS src/test_injector.py
+catkin_install_python(PROGRAMS src/test_injector.py src/road_cost/road_cost.py
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
 
