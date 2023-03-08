@@ -3,7 +3,7 @@
 * Author: Jan Vlk
 * Date: 13.2.2023
 * Description: This file contains miscellaneous functions and classes, or functions and classes that do not have a specific place yet.
-* Last modified: 7.3.2023
+* Last modified: 8.3.2023
 */
 
 #include "behaviortree_cpp_v3/behavior_tree.h"
@@ -20,7 +20,7 @@
 
 
 double easting, northing;
-bool is_valid, suitable, new_place = false;
+bool is_valid = false, suitable, new_place = false;
 
 void callback_gps(const sensor_msgs::NavSatFix::ConstPtr& msg)
 {
@@ -68,6 +68,14 @@ void callback_cost(const road_crossing::place_data::ConstPtr& msg)
     is_valid = msg->is_valid;
     suitable = msg->suitable;
     ROS_INFO("Place valid, suitable: [%d], [%d]", is_valid, suitable);
+}
+
+BT::NodeStatus cross_road::tick()
+{
+    if (is_valid)
+        return BT::NodeStatus::SUCCESS;
+    else
+        return BT::NodeStatus::FAILURE;
 }
 
 BT::NodeStatus get_position::tick()

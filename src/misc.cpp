@@ -3,7 +3,7 @@
 * Author: Jan Vlk
 * Date: 13.2.2023
 * Description: This file contains miscellaneous functions and classes, or functions and classes that do not have a specific place yet.
-* Last modified: 28.2.2023
+* Last modified: 8.3.2023
 */
 
 #include "road_crossing/misc.h"
@@ -41,4 +41,16 @@ double ned2enu(double angle)
 double deg2rad(double angle)
 {
     return angle * M_PI / 180;
+}
+
+double comp_heading(double rob_heading, double road_heading)
+{
+    double heading1 = road_heading + M_PI/2;
+    double heading2 = road_heading - M_PI/2;
+    double diff1 = angleDifference(rob_heading, heading1);
+    double diff2 = angleDifference(rob_heading, heading2);
+    if (std::abs(diff1) < std::abs(diff2))
+        return heading1;
+    else
+        return heading2;
 }

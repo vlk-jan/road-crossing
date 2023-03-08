@@ -29,6 +29,7 @@ void callback_imu(const sensor_msgs::Imu::ConstPtr& msg);
 
 void callback_pose(const geometry_msgs::PoseStamped::ConstPtr& msg);
 
+/// @brief Testing only, not used in the final version
 class get_required_azimuth : public BT::SyncActionNode
 {
     public:
@@ -65,6 +66,35 @@ class equal_azimuths : public BT::ConditionNode
         {}
 
         virtual ~equal_azimuths(){}
+
+        BT::NodeStatus tick() override;
+
+        static BT::PortsList providedPorts();
+};
+
+
+class road_heading : public BT::SyncActionNode
+{
+    public:
+        road_heading(const std::string& name, const BT::NodeConfiguration& config):
+            BT::SyncActionNode(name, config)
+        {}
+
+        virtual ~road_heading(){}
+
+        BT::NodeStatus tick() override;
+
+        static BT::PortsList providedPorts();
+};
+
+class compute_heading : public BT::SyncActionNode
+{
+    public:
+        compute_heading(const std::string& name, const BT::NodeConfiguration& config):
+            BT::SyncActionNode(name, config)
+        {}
+
+        virtual ~compute_heading(){}
 
         BT::NodeStatus tick() override;
 

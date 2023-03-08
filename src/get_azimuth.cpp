@@ -3,7 +3,7 @@
 * Author: Jan Vlk
 * Date: 16.11.2022
 * Description: This file contains functions for operations dealing with compass and azimuth.
-* Last modified: 28.2.2023
+* Last modified: 8.3.2023
 */
 
 #include "behaviortree_cpp_v3/behavior_tree.h"
@@ -52,32 +52,6 @@ std::string get_topic()
     return "";
 }
 
-/*void get_topic(compass_indices *indices)
-{
-    std::string param = "publish_";
-    std::string reference_str[] = {"utm", "true", "mag"};
-    std::string orientation_str[] = {"ned", "enu"};
-    std::string data_type_str[] = {"rad", "deg", "quat", "imu", "pose"};
-
-    bool published = false;
-
-    for (int i=0; i<reference_str->length(); ++i){
-        for (int j=0; j<orientation_str->length(); ++j){
-            for (int k=0; k<data_type_str->length(); ++k){
-                param += reference_str[i] + "_azimuth_" + orientation_str[j] + "_" + data_type_str[k];
-                ros::param::get(param, published);
-                if (published){
-                    indices->reference_i = i;
-                    indices->orientation_i = j;
-                    indices->data_type_i = k;
-                    return;
-                }
-            }
-        }
-    }
-    return;
-}*/
-
 void callback_compass(const compass_msgs::Azimuth::ConstPtr& msg)
 {
     // TODO: Is there a better way than global variable?
@@ -122,7 +96,6 @@ void callback_pose(const geometry_msgs::PoseStamped::ConstPtr& msg)
 
 BT::NodeStatus get_required_azimuth::tick()
 {
-    // TODO: dynamic function, currently for testing purpose const value
     setOutput("req_azimuth", 3.f);
     return BT::NodeStatus::SUCCESS;
 }
@@ -161,4 +134,51 @@ BT::NodeStatus equal_azimuths::tick()
 BT::PortsList equal_azimuths::providedPorts()
 {
     return {BT::InputPort<double>("req_azimuth"), BT::InputPort<double>("cur_azimuth")};
+}
+
+BT::NodeStatus road_heading::tick()
+{
+    BT::Optional<double> easting1 = getInput<double>("easting1");
+    BT::Optional<double> northing1 = getInput<double>("northing1");
+    BT::Optional<double> easting2 = getInput<double>("easting2");
+    BT::Optional<double> northing2 = getInput<double>("northing2");
+
+    if (!easting1)
+        throw BT::RuntimeError("missing required input easting1: ", easting1.error());
+    if (!northing1)
+        throw BT::RuntimeError("missing required input northing1: ", northing1.error());
+    if (!easting2)
+        throw BT::RuntimeError("missing required input easting2: ", easting2.error());
+    if (!northing2)
+        throw BT::RuntimeError("missing required input northing2: ", northing2.error());
+
+    double heading = gpsPointsHeading(easting1.value(), northing1.value(), easting2.value(), northing2.value());
+    setOutput("road_heading", heading);
+    return BT::NodeStatus::SUCCESS;
+}
+
+BT::PortsList road_heading::providedPorts()
+{
+    return {BT::InputPort<double>("easting1"), BT::InputPort<double>("northing1"), BT::InputPort<double>("easting2"),
+            BT::InputPort<double>("northing2"), BT::OutputPort<double>("road_heading")};
+}
+
+BT::NodeStatus compute_heading::tick()
+{
+    BT::Optional<double> rob_heading = getInput<double>("cur_heading");
+    BT::Optional<double> road_heading = getInput<double>("road_heading");
+
+    if (!rob_heading)
+        throw BT::RuntimeError("missing required input cur_heading: ", rob_heading.error());
+    if (!road_heading)
+        throw BT::RuntimeError("missing required input road_heading: ", road_heading.error());
+    
+    double heading = comp_heading(rob_heading.value(), road_heading.value());
+    setOutput("req_azimuth", heading);
+    return BT::NodeStatus::SUCCESS;
+}
+
+BT::PortsList compute_heading::providedPorts()
+{
+    return {BT::InputPort<double>("cur_heading"), BT::InputPort<double>("road_heading"), BT::OutputPort<double>("req_azimuth")};
 }

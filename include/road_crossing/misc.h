@@ -9,4 +9,6 @@ double ned2enu(double angle);
 
 double deg2rad(double angle);
 
+double comp_heading(double rob_heading, double road_heading);
+
 #endif

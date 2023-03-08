@@ -6,6 +6,7 @@
 
 #include "ros/ros.h"
 #include "sensor_msgs/NavSatFix.h"
+#include "road_crossing/place_data.h"
 
 
 /**
@@ -24,6 +25,20 @@ void callback_gps(const sensor_msgs::NavSatFix::ConstPtr& msg);
  * @param y      northing of the utm coordinates.
 */
 void gps_to_utm(double lat, double lon, double &x, double &y);
+
+void callback_cost(const road_crossing::place_data::ConstPtr& msg);
+
+class cross_road : public BT::ConditionNode
+{
+    public:
+        cross_road(const std::string& name, const BT::NodeConfiguration& config) :
+            BT::ConditionNode(name, config)
+        {}
+
+        virtual ~cross_road(){}
+
+        BT::NodeStatus tick() override;
+};
 
 class get_position : public BT::SyncActionNode
 {
