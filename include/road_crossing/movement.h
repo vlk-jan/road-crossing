@@ -12,20 +12,32 @@
 #define MAX_ROT_SPEED 1
 #define MAX_LIN_SPEED 1.2
 
-class rotate_robot : public BT::SyncActionNode
+class MOV_nodes
 {
     public:
-        rotate_robot(const std::string& name, const BT::NodeConfiguration& config):
-            BT::SyncActionNode(name, config)
-        {}
+        MOV_nodes(){}
+        virtual ~MOV_nodes(){}
 
-        virtual ~rotate_robot(){}
+        void init_publishers(ros::NodeHandle& nh);
 
-        BT::NodeStatus tick() override;
+        class rotate_robot : public BT::SyncActionNode
+        {
+            public:
+                rotate_robot(const std::string& name, const BT::NodeConfiguration& config):
+                    BT::SyncActionNode(name, config)
+                {}
 
-        static BT::PortsList providedPorts();
+                virtual ~rotate_robot(){}
+
+                BT::NodeStatus tick() override;
+
+                static BT::PortsList providedPorts();
+        };
+
+    private:
+        static ros::Publisher pub_cmd;
 };
 
-// BT::NodeStatus rotate_robot(double cur_azimuth, double req_azimuth, bool ned, ros::NodeHandle nh);
+ros::Publisher MOV_nodes::pub_cmd;
 
 #endif

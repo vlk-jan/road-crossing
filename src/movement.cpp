@@ -3,7 +3,7 @@
 * Author: Jan Vlk
 * Date: 25.11.2022
 * Description: This file contains functions for moving the robot.
-* Last modified: 28.2.2023
+* Last modified: 19.3.2023
 */
 
 #include <cmath>
@@ -17,18 +17,21 @@
 #include "road_crossing/get_azimuth.h"
 #include "road_crossing/misc.h"
 
-BT::NodeStatus rotate_robot::tick()
+
+void MOV_nodes::init_publishers(ros::NodeHandle& nh)
+{
+    this->pub_cmd = nh.advertise<geometry_msgs::Twist>("cmd_vel", 5);
+}
+
+BT::NodeStatus MOV_nodes::rotate_robot::tick()
 {
     BT::Optional<double> req_azimuth = getInput<double>("req_azimuth");
     BT::Optional<double> cur_azimuth = getInput<double>("cur_azimuth");
-    BT::Optional<ros::NodeHandle> nh = getInput<ros::NodeHandle>("node_handle");
 
     if (!req_azimuth)
         throw BT::RuntimeError("missing required input req_azimuth: ", req_azimuth.error());
     if (!cur_azimuth)
         throw BT::RuntimeError("missing required input cur_azimuth: ", cur_azimuth.error());
-    if (!nh)
-        throw BT::RuntimeError("missing required input node_handle: ", nh.error());
 
     const double speed_const = MAX_ROT_SPEED/M_PI;
     double speed;
@@ -45,14 +48,13 @@ BT::NodeStatus rotate_robot::tick()
     geometry_msgs::Twist msg = geometry_msgs::Twist();
     msg.angular.z = speed;
 
-    ros::Publisher pub = nh.value().advertise<geometry_msgs::Twist>("cmd_vel", 5);
-    pub.publish(msg);
+    MOV_nodes::pub_cmd.publish(msg);
     ros::spin();
 
     return BT::NodeStatus::SUCCESS;
 }
 
-BT::PortsList rotate_robot::providedPorts()
+BT::PortsList MOV_nodes::rotate_robot::providedPorts()
 {
     return {BT::InputPort<double>("req_azimuth"), BT::InputPort<double>("cur_azimuth"),
             BT::InputPort<ros::NodeHandle>("node_handle")};

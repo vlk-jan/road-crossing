@@ -9,49 +9,64 @@
 #include "road_crossing/place_data.h"
 
 
-/**
- * @brief Subscriber for the gps data of the robot.
- * 
- * @param msg    read message from the gps topic.
-*/
-void callback_gps(const sensor_msgs::NavSatFix::ConstPtr& msg);
-
-/**
- * @brief Converts gps coordinates to utm coordinates.
- * 
- * @param lat    latitude of the gps coordinates.
- * @param lon    longitude of the gps coordinates.
- * @param x      easting of the utm coordinates.
- * @param y      northing of the utm coordinates.
-*/
-void gps_to_utm(double lat, double lon, double &x, double &y);
-
-void callback_cost(const road_crossing::place_data::ConstPtr& msg);
-
-class cross_road : public BT::ConditionNode
+class GPS_nodes
 {
     public:
-        cross_road(const std::string& name, const BT::NodeConfiguration& config) :
-            BT::ConditionNode(name, config)
-        {}
+        GPS_nodes(){}
+        virtual ~GPS_nodes(){}
 
-        virtual ~cross_road(){}
+        void init_publishers(ros::NodeHandle& nh);
 
-        BT::NodeStatus tick() override;
+        /**
+         * @brief Subscriber for the gps data of the robot.
+         * 
+         * @param msg    read message from the gps topic.
+        */
+        static void callback_gps(GPS_nodes* node, const sensor_msgs::NavSatFix::ConstPtr& msg);
+
+        static void callback_cost(GPS_nodes* node, const road_crossing::place_data::ConstPtr& msg);
+
+        void place_suitability();
+
+        class cross_road : public BT::ConditionNode
+        {
+            public:
+                cross_road(const std::string& name, const BT::NodeConfiguration& config) :
+                    BT::ConditionNode(name, config)
+                {}
+
+                virtual ~cross_road(){}
+
+                BT::NodeStatus tick() override;
+
+                static BT::PortsList providedPorts();
+        };
+
+        class get_position : public BT::SyncActionNode
+        {
+            public:
+                get_position(const std::string& name, const BT::NodeConfiguration& config) :
+                    BT::SyncActionNode(name, config)
+                {}
+
+                virtual ~get_position(){}
+
+                BT::NodeStatus tick() override;
+
+                static BT::PortsList providedPorts();
+        };
+    
+    private:
+        static ros::Publisher pubUTM;
+        static double easting, northing;
+        static bool is_valid, suitable, new_place;
 };
 
-class get_position : public BT::SyncActionNode
-{
-    public:
-        get_position(const std::string& name, const BT::NodeConfiguration& config) :
-            BT::SyncActionNode(name, config)
-        {}
-
-        virtual ~get_position(){}
-
-        BT::NodeStatus tick() override;
-
-        static BT::PortsList providedPorts();
-};
+ros::Publisher GPS_nodes::pubUTM;
+double GPS_nodes::easting = 0;
+double GPS_nodes::northing = 0;
+bool GPS_nodes::is_valid = false;
+bool GPS_nodes::suitable;
+bool GPS_nodes::new_place = false;
 
 #endif

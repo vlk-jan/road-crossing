@@ -15,8 +15,14 @@ int main(int argc, char *argv[])
     std::string compass = "compass/true/enu/rad/";
     std::string gps = "fix/";
 
-    ros::Subscriber sub_compass = nh.subscribe(compass, 5, callback_compass);
-    ros::Subscriber sub_gps = nh.subscribe(gps, 5, callback_gps);
+    AZI_nodes azi_nodes;
+    GPS_nodes gps_nodes;
+    
+    const boost::function<void(const compass_msgs::Azimuth::ConstPtr&)> cb_compass = boost::bind(&AZI_nodes::callback_compass, &azi_nodes, _1);
+    const boost::function<void(const sensor_msgs::NavSatFix::ConstPtr&)> cb_gps = boost::bind(&GPS_nodes::callback_gps, &gps_nodes, _1);
+
+    ros::Subscriber sub_compass = nh.subscribe(compass, 5, cb_compass);
+    ros::Subscriber sub_gps = nh.subscribe(gps, 5, cb_gps);
 
     ros::spin();
 }

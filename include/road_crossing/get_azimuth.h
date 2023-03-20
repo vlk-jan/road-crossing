@@ -17,88 +17,102 @@ struct compass_indices{
     int data_type_i;
 };
 
-std::string get_topic();
-
-void get_topic(compass_indices *indices);
-
-void callback_compass(const compass_msgs::Azimuth::ConstPtr& msg);
-
-void callback_quat(const geometry_msgs::QuaternionStamped::ConstPtr& msg);
-
-void callback_imu(const sensor_msgs::Imu::ConstPtr& msg);
-
-void callback_pose(const geometry_msgs::PoseStamped::ConstPtr& msg);
-
-/// @brief Testing only, not used in the final version
-class get_required_azimuth : public BT::SyncActionNode
+class AZI_nodes
 {
     public:
-        get_required_azimuth(const std::string& name, const BT::NodeConfiguration& config) :
-            BT::SyncActionNode(name, config)
-        {}
+        AZI_nodes(){}
+        virtual ~AZI_nodes(){}
 
-        virtual ~get_required_azimuth(){}
+        std::string get_topic();
 
-        BT::NodeStatus tick() override;
+        void get_topic(compass_indices *indices);
 
-        static BT::PortsList providedPorts();
+        static void callback_compass(AZI_nodes* node, const compass_msgs::Azimuth::ConstPtr& msg);
+
+        static void callback_quat(AZI_nodes* node, const geometry_msgs::QuaternionStamped::ConstPtr& msg);
+
+        static void callback_imu(AZI_nodes* node, const sensor_msgs::Imu::ConstPtr& msg);
+
+        static void callback_pose(AZI_nodes* node, const geometry_msgs::PoseStamped::ConstPtr& msg);
+
+        /// @brief Testing only, not used in the final version
+        class get_required_azimuth : public BT::SyncActionNode
+        {
+            public:
+                get_required_azimuth(const std::string& name, const BT::NodeConfiguration& config) :
+                    BT::SyncActionNode(name, config)
+                {}
+
+                virtual ~get_required_azimuth(){}
+
+                BT::NodeStatus tick() override;
+
+                static BT::PortsList providedPorts();
+        };
+
+        class get_current_azimuth : public BT::SyncActionNode
+        {
+            public:
+                get_current_azimuth(const std::string& name, const BT::NodeConfiguration& config):
+                    BT::SyncActionNode(name, config)
+                {}
+
+                virtual ~get_current_azimuth(){}
+
+                BT::NodeStatus tick() override;
+
+                static BT::PortsList providedPorts();
+        };
+
+        class equal_azimuths : public BT::ConditionNode
+        {
+            public:
+                equal_azimuths(const std::string& name, const BT::NodeConfiguration& config):
+                    BT::ConditionNode(name, config)
+                {}
+
+                virtual ~equal_azimuths(){}
+
+                BT::NodeStatus tick() override;
+
+                static BT::PortsList providedPorts();
+        };
+
+
+        class road_heading : public BT::SyncActionNode
+        {
+            public:
+                road_heading(const std::string& name, const BT::NodeConfiguration& config):
+                    BT::SyncActionNode(name, config)
+                {}
+
+                virtual ~road_heading(){}
+
+                BT::NodeStatus tick() override;
+
+                static BT::PortsList providedPorts();
+        };
+
+        class compute_heading : public BT::SyncActionNode
+        {
+            public:
+                compute_heading(const std::string& name, const BT::NodeConfiguration& config):
+                    BT::SyncActionNode(name, config)
+                {}
+
+                virtual ~compute_heading(){}
+
+                BT::NodeStatus tick() override;
+
+                static BT::PortsList providedPorts();
+        };
+
+    private:
+        static double azimuth;
+        static compass_indices indices;
 };
 
-class get_current_azimuth : public BT::SyncActionNode
-{
-    public:
-        get_current_azimuth(const std::string& name, const BT::NodeConfiguration& config):
-            BT::SyncActionNode(name, config)
-        {}
-
-        virtual ~get_current_azimuth(){}
-
-        BT::NodeStatus tick() override;
-
-        static BT::PortsList providedPorts();
-};
-
-class equal_azimuths : public BT::ConditionNode
-{
-    public:
-        equal_azimuths(const std::string& name, const BT::NodeConfiguration& config):
-            BT::ConditionNode(name, config)
-        {}
-
-        virtual ~equal_azimuths(){}
-
-        BT::NodeStatus tick() override;
-
-        static BT::PortsList providedPorts();
-};
-
-
-class road_heading : public BT::SyncActionNode
-{
-    public:
-        road_heading(const std::string& name, const BT::NodeConfiguration& config):
-            BT::SyncActionNode(name, config)
-        {}
-
-        virtual ~road_heading(){}
-
-        BT::NodeStatus tick() override;
-
-        static BT::PortsList providedPorts();
-};
-
-class compute_heading : public BT::SyncActionNode
-{
-    public:
-        compute_heading(const std::string& name, const BT::NodeConfiguration& config):
-            BT::SyncActionNode(name, config)
-        {}
-
-        virtual ~compute_heading(){}
-
-        BT::NodeStatus tick() override;
-
-        static BT::PortsList providedPorts();
-};
+double AZI_nodes::azimuth = 0;
+compass_indices AZI_nodes::indices;
 
 #endif

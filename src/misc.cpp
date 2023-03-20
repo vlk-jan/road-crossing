@@ -3,7 +3,7 @@
 * Author: Jan Vlk
 * Date: 13.2.2023
 * Description: This file contains miscellaneous functions and classes, or functions and classes that do not have a specific place yet.
-* Last modified: 8.3.2023
+* Last modified: 19.3.2023
 */
 
 #include "road_crossing/misc.h"
@@ -11,6 +11,8 @@
 #include <cmath>
 
 #include "ros/ros.h"
+
+#include <GeographicLib/UTMUPS.hpp>
 
 
 double gpsPointsHeading(double lat1, double lon1, double lat2, double lon2)
@@ -53,4 +55,11 @@ double comp_heading(double rob_heading, double road_heading)
         return heading1;
     else
         return heading2;
+}
+
+void gps_to_utm(double lat, double lon, double &x, double &y)
+{
+    int zone;
+    bool northp;
+    GeographicLib::UTMUPS::Forward(lat, lon, zone, northp, x, y);
 }
