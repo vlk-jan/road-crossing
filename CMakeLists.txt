@@ -55,7 +55,7 @@ add_library(gps_lib ${catkin_LIBRARIES} ${SOURCES})
 target_link_libraries(gps_lib ${catkin_LIBRARIES})
 
 add_executable(run_tree src/main.cpp)
-target_link_libraries(run_tree ${catkin_LIBRARIES} road_cross_tree_lib azimuth_lib movement_lib)
+target_link_libraries(run_tree ${catkin_LIBRARIES} road_cross_tree_lib azimuth_lib movement_lib gps_lib)
 
 add_executable(vehicles src/vehicles.cpp)
 target_link_libraries(vehicles ${catkin_LIBRARIES})

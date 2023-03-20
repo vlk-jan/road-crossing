@@ -62,17 +62,21 @@ def sub_callback(msg):
     easting = msg.easting
     northing = msg.northing
     context_score = msg.context_score
+    rospy.loginfo("easting: {}, northing: {}, context_score: {}".format(easting, northing, context_score))
 
 def score_road(road_segments, easting, northing):
     point = geometry.Point(easting, northing)
     min_dist = float('inf')
     cost = None
     for segment_level in range(len(road_segments)):
-        for segment in segment_level:
+        for segment in road_segments[segment_level]:
             dist = segment.distance(point)
-            if (dist < 5 and dist < min_dist):
+            if (dist < 10 and dist < min_dist):
                 min_dist = dist
-                cost = ROAD_CLASS_RANKS - segment_level
+                cost = ROAD_CROSSINGS_RANKS - segment_level
+            if (dist < min_dist):
+                min_dist = dist
+    rospy.loginfo("min_dist: {}, cost: {}".format(min_dist, cost))
     return cost
 
 if __name__ == "__main__":
@@ -88,6 +92,7 @@ if __name__ == "__main__":
 
     road_segments = road_cost(min_lat, min_long, max_lat, max_long)
 
+    rospy.init_node("road_cost", anonymous=True)
     sub = rospy.Subscriber("cur_place", UTM_data, sub_callback)
     pub = rospy.Publisher("place_cost", place_data, queue_size=10)
 
@@ -107,4 +112,7 @@ if __name__ == "__main__":
                 else:
                     msg.suitable = True
             pub.publish(msg)
-        rospy.spin()
+            easting = 0.0
+            northing = 0.0
+            context_score = 0
+        rospy.sleep(0.1)
