@@ -6,10 +6,13 @@ find_package(catkin REQUIRED COMPONENTS
   rospy
   compass_msgs
   geometry_msgs
+  std_msgs
   behaviortree_cpp_v3
   message_generation
-  GeographicLib
 )
+
+set(CMAKE_MODULE_PATH "${CMAKE_MODULE_PATH};/usr/share/cmake/geographiclib")
+find_package(GeographicLib REQUIRED)
 
 add_message_files(
   FILES
@@ -18,25 +21,33 @@ add_message_files(
   UTM_data.msg
 )
 
-catkin_python_setup()
+add_service_files(
+  FILES
+  get_road_segment.srv
+)
 
-generate_messages(DEPENDENCIES compass_msgs geometry_msgs)
+generate_messages(
+  DEPENDENCIES 
+  compass_msgs 
+  geometry_msgs
+  std_msgs
+)
 
 catkin_package()
 
-include_directories(include ${catkin_INCLUDE_DIRS})
+include_directories(
+  include
+  ${catkin_INCLUDE_DIRS}
+  ${GeographicLib_INCLUDE_DIRS}
+)
 
-#install(DIRECTORY include/${PROJECT_NAME}
-#  DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
-#)
-
-catkin_install_python(PROGRAMS src/test_injector.py src/road_cost/road_cost.py
+catkin_install_python(PROGRAMS src/test_injector.py src/road_cost/road_cost.py src/road_cost/get_segment_srv.py
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
 
 set(SOURCES src/misc.cpp include/road_crossing/misc.h)
 add_library(misc_lib ${catkin_LIBRARIES} ${SOURCES})
-target_link_libraries(misc_lib ${catkin_LIBRARIES})
+target_link_libraries(misc_lib ${catkin_LIBRARIES} ${GeographicLib_LIBRARIES})
 
 set(SOURCES src/get_azimuth.cpp include/road_crossing/get_azimuth.h)
 add_library(azimuth_lib ${catkin_LIBRARIES} ${SOURCES})

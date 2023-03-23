@@ -1,0 +1,7 @@
+float64 easting
+float64 northing
+---
+float64 easting_1
+float64 northing_1
+float64 easting_2
+float64 northing_2
