@@ -3,84 +3,170 @@
     <!-- ////////// -->
     <BehaviorTree ID="BehaviorTree">
         <Fallback>
-            <ForceFailure>
-                <Action ID="GetPosition" curr_gps_pos=""/>
-            </ForceFailure>
-            <Condition ID="CrossRoad" curr_gps_positon=""/>
-            <ForceFailure>
-                <Action ID="RoadCross_heading" curr_gps_pos="Null" road_head=""/>
-            </ForceFailure>
+            <SubTree ID="init_values" __shared_blackboard="true"/>
             <SubTree ID="get_parallel_to_road" __shared_blackboard="true"/>
+            <SubTree ID="road_crossing" __shared_blackboard="true"/>
         </Fallback>
     </BehaviorTree>
     <!-- ////////// -->
     <BehaviorTree ID="get_heading">
-        <Sequence>
-            <Action ID="GetPosition" curr_gps_pos=""/>
-            <Action ID="RoadCross_heading" curr_gps_pos="Null" road_head=""/>
-            <Action ID="ComputeHeading" curr_gps_pos="Null" heading="" road_head="Null"/>
-        </Sequence>
+        <RetryUntilSuccessful num_attempts="10">
+            <Sequence>
+                <Action ID="get_position" easting="{easting}" northing="{northing}"/>
+                <Action ID="road_heading" easting="{easting}" northing="{northing}" road_heading="{road_heading}"/>
+                <Action ID="compute_heading" req_azimuth="{heading}" road_heading="{road_heading}" rob_azimuth="{azimuth}"/>
+            </Sequence>
+        </RetryUntilSuccessful>
     </BehaviorTree>
     <!-- ////////// -->
     <BehaviorTree ID="get_parallel_to_road">
-        <Sequence>
-            <Action ID="GetAzimuth" cur_azimuth=""/>
-            <SubTree ID="get_heading" __shared_blackboard="true"/>
+        <SequenceStar>
+            <SequenceStar>
+                <RetryUntilSuccessful num_attempts="10">
+                    <Action ID="get_azimuth" cur_azimuth="{azimuth}"/>
+                </RetryUntilSuccessful>
+                <SubTree ID="get_heading" __shared_blackboard="true"/>
+            </SequenceStar>
             <RetryUntilSuccessful num_attempts="10">
                 <Fallback>
-                    <Condition ID="RobotParallel" curr_azimuth="Null" heading="Null"/>
-                    <Action ID="GetDirection" curr_azimuth="Null" direction="" heading="Null"/>
+                    <Action ID="get_azimuth" cur_azimuth="{azimuth}"/>
+                    <Condition ID="robot_perpendicullar" cur_azimuth="{azimuth}" req_azimuth="{heading}"/>
                     <ForceFailure>
                         <Fallback>
-                            <Action ID="RotateRobot" direction="1"/>
-                            <Action ID="TakeStepFromRoad" curr_gps_pos="Null"/>
+                            <Action ID="rotate_robot" direction="{direction}"/>
+                            <Action ID="step_from_road" easting="{easting}" northing="{northing}"/>
                         </Fallback>
                     </ForceFailure>
                 </Fallback>
             </RetryUntilSuccessful>
+        </SequenceStar>
+    </BehaviorTree>
+    <!-- ////////// -->
+    <BehaviorTree ID="init_values">
+        <SequenceStar>
+            <SequenceStar>
+                <Action ID="get_position" easting="{easting}" northing="{northing}"/>
+                <Condition ID="cross_road"/>
+            </SequenceStar>
+            <Fallback>
+                <Condition ID="place_suitable"/>
+                <Sequence>
+                    <Condition ID="better_place" better_easting="{better_easting}" better_northing="{better_northing}"/>
+                    <Action ID="move_to_place" better_easting="{better_easting}" better_northing="{better_northing}"/>
+                </Sequence>
+            </Fallback>
+        </SequenceStar>
+    </BehaviorTree>
+    <!-- ////////// -->
+    <BehaviorTree ID="road_crossing">
+        <Sequence>
+            <Action ID="get_cars"/>
+            <Fallback>
+                <Condition ID="cars_in_trajectory"/>
+                <SubTree ID="start_crossing" __shared_blackboard="true"/>
+                <Action ID="continue_movement"/>
+            </Fallback>
+            <SubTree ID="start_crossing" __shared_blackboard="true"/>
+            <Sequence>
+                <Action ID="calculate_collision"/>
+                <Fallback>
+                    <Sequence>
+                        <Condition ID="collision_imminent"/>
+                        <Fallback>
+                            <Sequence>
+                                <Condition ID="collision_fwd_move"/>
+                                <Fallback>
+                                    <Sequence>
+                                        <Condition ID="collision_bwd_move"/>
+                                        <Action ID="stop_movement"/>
+                                    </Sequence>
+                                    <Action ID="move_back"/>
+                                </Fallback>
+                            </Sequence>
+                            <Action ID="continue_movement"/>
+                        </Fallback>
+                    </Sequence>
+                    <Action ID="continue_movement"/>
+                </Fallback>
+            </Sequence>
         </Sequence>
     </BehaviorTree>
     <!-- ////////// -->
+    <BehaviorTree ID="start_crossing">
+        <Fallback>
+            <Inverter>
+                <Condition ID="not_started"/>
+            </Inverter>
+            <Action ID="start_movement"/>
+        </Fallback>
+    </BehaviorTree>
+    <!-- ////////// -->
     <TreeNodesModel>
-        <Action ID="ComputeHeading">
-            <input_port default="Null" name="curr_gps_pos">current robot gps position</input_port>
-            <output_port name="heading">what azimuth should we achieve with robot to be perpendicular to the road we need to cross</output_port>
-            <input_port default="Null" name="road_head">heading of the road we need to cross</input_port>
-        </Action>
-        <Condition ID="CrossRoad">
-            <input_port name="curr_gps_positon">robot gps position</input_port>
+        <Condition ID="better_place">
+            <output_port default="{better_easting}" name="better_easting"/>
+            <output_port default="{better_northing}" name="better_northing"/>
         </Condition>
-        <Action ID="GetAzimuth">
-            <output_port name="cur_azimuth">current azimuth of robot</output_port>
+        <Action ID="calculate_collision"/>
+        <Condition ID="cars_in_trajectory"/>
+        <Condition ID="collision_bwd_move"/>
+        <Condition ID="collision_fwd_move"/>
+        <Condition ID="collision_imminent"/>
+        <Action ID="compute_heading">
+            <output_port default="{heading}" name="req_azimuth">what azimuth should we achieve with robot to be perpendicular to the road we need to cross</output_port>
+            <input_port default="{road_heading}" name="road_heading">heading of the road we need to cross</input_port>
+            <input_port default="{azimuth}" name="rob_azimuth">current azimuth of the robot</input_port>
         </Action>
-        <Action ID="GetDirection">
-            <input_port default="Null" name="curr_azimuth">current azimuth of robot</input_port>
-            <output_port name="direction">in which direction should we rotate to achieve heading</output_port>
-            <input_port default="Null" name="heading">where should robot point</input_port>
+        <Action ID="continue_movement"/>
+        <Condition ID="cross_road"/>
+        <Action ID="find_better_place"/>
+        <Action ID="get_azimuth">
+            <output_port default="{azimuth}" name="cur_azimuth">current azimuth of robot</output_port>
         </Action>
-        <Action ID="GetPosition">
-            <output_port name="curr_gps_pos">current gps position of robot</output_port>
-        </Action>
-        <Action ID="RoadCross_heading">
-            <input_port default="Null" name="curr_gps_pos">current robot gps position</input_port>
-            <output_port name="road_head">heading of a road we need to cross, we take in account the robot position relative to the road</output_port>
-        </Action>
-        <Condition ID="RobotParallel">
-            <input_port default="Null" name="curr_azimuth">current robots azimuth</input_port>
-            <input_port default="Null" name="heading">azimuth robot should have to be parallel to road we need to cross</input_port>
-        </Condition>
-        <Action ID="RotateRobot">
-            <input_port default="1" name="direction">1 = clockwise, -1 = counter clockwise</input_port>
-        </Action>
-        <Action ID="TakeStepFromRoad">
-            <input_port default="Null" name="curr_gps_pos">current gps position</input_port>
-        </Action>
+        <Action ID="get_cars"/>
         <SubTree ID="get_heading">
             <input_port default="true" name="__shared_blackboard">If false (default), the Subtree has an isolated blackboard and needs port remapping</input_port>
         </SubTree>
         <SubTree ID="get_parallel_to_road">
             <input_port default="true" name="__shared_blackboard">If false (default), the Subtree has an isolated blackboard and needs port remapping</input_port>
         </SubTree>
+        <Action ID="get_position">
+            <output_port default="{easting}" name="easting">current easting of the robot</output_port>
+            <output_port default="{northing}" name="northing">current northing of the robot</output_port>
+        </Action>
+        <SubTree ID="init_values">
+            <input_port default="true" name="__shared_blackboard">If false (default), the Subtree has an isolated blackboard and needs port remapping</input_port>
+        </SubTree>
+        <Action ID="move_back"/>
+        <Action ID="move_to_place">
+            <input_port default="{better_easting}" name="better_easting"/>
+            <input_port default="{better_northing}" name="better_northing"/>
+        </Action>
+        <Condition ID="not_started"/>
+        <Condition ID="place_suitable"/>
+        <SubTree ID="road_crossing">
+            <input_port default="true" name="__shared_blackboard">If false (default), the Subtree has an isolated blackboard and needs port remapping</input_port>
+        </SubTree>
+        <Action ID="road_heading">
+            <input_port default="{easting}" name="easting">current easting of the robot</input_port>
+            <input_port default="{northing}" name="northing">current northing of the robot</input_port>
+            <output_port default="{road_heading}" name="road_heading">heading of a road we need to cross</output_port>
+        </Action>
+        <Condition ID="robot_perpendicullar">
+            <input_port default="{azimuth}" name="cur_azimuth">current azimuth of the robot</input_port>
+            <input_port default="{heading}" name="req_azimuth">azimuth robot should have to be parallel to road we need to cross</input_port>
+        </Condition>
+        <Action ID="rotate_robot">
+            <input_port default="{direction}" name="direction">1 = clockwise, -1 = counter clockwise</input_port>
+        </Action>
+        <SubTree ID="start_crossing">
+            <input_port default="true" name="__shared_blackboard">If false (default), the Subtree has an isolated blackboard and needs port remapping</input_port>
+        </SubTree>
+        <Action ID="start_movement"/>
+        <Action ID="step_from_road">
+            <input_port default="{easting}" name="easting">current easting of the robot</input_port>
+            <input_port default="{northing}" name="northing">current norhting of the robot</input_port>
+        </Action>
+        <Action ID="stop_movement"/>
     </TreeNodesModel>
     <!-- ////////// -->
 </root>

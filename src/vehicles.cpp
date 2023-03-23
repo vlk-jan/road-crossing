@@ -2,8 +2,8 @@
 * Name: vehicles.cpp
 * Author: Jan Vlk
 * Date: 2.3.2022
-* Description: This file contains functions for operations dealing with compass and azimuth.
-* Last modified: 5.3.2023
+* Description: This file contains functions for operations dealing with vehicle detection and collisions.
+* Last modified: 23.3.2023
 */
 
 #include "road_crossing/vehicles.h"
@@ -16,10 +16,11 @@
 
 #include "road_crossing/misc.h"
 
-bool vehicle_collision(vehicle_info vehicle, vehicle_info robot, collision_info &collision)
+bool VEH_nodes::vehicle_collision(vehicle_info vehicle, vehicle_info robot, collision_info &collision)
 {
     // Calculate the intersection point of the robot's and vehicle's paths
-    double beta = (robot.x_dot*(vehicle.pos_y-robot.pos_y) - robot.y_dot*(vehicle.pos_x-robot.pos_x))/(vehicle.x_dot*robot.y_dot - vehicle.y_dot*robot.x_dot);
+    double beta = (robot.x_dot*(vehicle.pos_y-robot.pos_y) - robot.y_dot*(vehicle.pos_x-robot.pos_x))/
+                  (vehicle.x_dot*robot.y_dot - vehicle.y_dot*robot.x_dot);
 
     double pos_x = vehicle.pos_x + beta*vehicle.x_dot;
     double pos_y = vehicle.pos_y + beta*vehicle.y_dot;
@@ -104,9 +105,11 @@ int main(int argc, char **argv)
 
     collision_info collision;
 
+    VEH_nodes veh_nodes;
+
     while (ros::ok())
     {
-        bool ret = vehicle_collision(vehicle, robot, collision);
+        bool ret = veh_nodes.vehicle_collision(vehicle, robot, collision);
         ROS_INFO("Collision info: %d, %f, %f", collision.car_id, collision.v_front, collision.v_back);
         if (ret)
             ROS_INFO("Collision with vehicle %d", collision.car_id);
