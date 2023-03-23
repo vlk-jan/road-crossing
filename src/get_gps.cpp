@@ -3,7 +3,7 @@
 * Author: Jan Vlk
 * Date: 13.2.2023
 * Description: This file contains miscellaneous functions and classes, or functions and classes that do not have a specific place yet.
-* Last modified: 19.3.2023
+* Last modified: 23.3.2023
 */
 
 #include "behaviortree_cpp_v3/behavior_tree.h"
@@ -57,7 +57,11 @@ void GPS_nodes::callback_cost(GPS_nodes* node, const road_crossing::place_data::
 {
     node->is_valid = msg->is_valid;
     node->suitable = msg->suitable;
+    node->better_easting = msg->better_easting;
+    node->better_northing = msg->better_northing;
     ROS_INFO("Place valid, suitable: [%d], [%d]", node->is_valid, node->suitable);
+    if (node->suitable)
+        ROS_INFO("Better place easting, northing: [%f], [%f]", node->better_easting, node->better_northing);
 }
 
 BT::NodeStatus GPS_nodes::cross_road::tick()
@@ -71,6 +75,34 @@ BT::NodeStatus GPS_nodes::cross_road::tick()
 BT::PortsList GPS_nodes::cross_road::providedPorts()
 {
     return {};
+}
+
+BT::NodeStatus GPS_nodes::place_suitable::tick()
+{
+    if (suitable)
+        return BT::NodeStatus::SUCCESS;
+    else
+        return BT::NodeStatus::FAILURE;
+}
+
+BT::PortsList GPS_nodes::place_suitable::providedPorts()
+{
+    return {};
+}
+
+BT::NodeStatus GPS_nodes::better_place::tick()
+{
+    if (better_easting != 0 && better_northing != 0){
+        setOutput("better_easting", better_easting);
+        setOutput("better_northing", better_northing);
+        return BT::NodeStatus::SUCCESS;
+    } else
+        return BT::NodeStatus::FAILURE;
+}
+
+BT::PortsList GPS_nodes::better_place::providedPorts()
+{
+    return {BT::OutputPort<double>("better_easting"), BT::OutputPort<double>("better_northing")};
 }
 
 BT::NodeStatus GPS_nodes::get_position::tick()

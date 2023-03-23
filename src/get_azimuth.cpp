@@ -3,7 +3,7 @@
 * Author: Jan Vlk
 * Date: 16.11.2022
 * Description: This file contains functions for operations dealing with compass and azimuth.
-* Last modified: 19.3.2023
+* Last modified: 23.3.2023
 */
 
 #include "behaviortree_cpp_v3/behavior_tree.h"
@@ -13,9 +13,11 @@
 #include "compass_msgs/Azimuth.h"
 #include "geometry_msgs/QuaternionStamped.h"
 #include "geometry_msgs/PoseStamped.h"
-#include "road_crossing/get_azimuth.h"
 #include "tf/transform_datatypes.h"
+
+#include "road_crossing/get_azimuth.h"
 #include "road_crossing/misc.h"
+#include "road_crossing/get_road_segment.h"
 
 
 std::string AZI_nodes::get_topic()
@@ -47,6 +49,13 @@ std::string AZI_nodes::get_topic()
         }
     }
     return "";
+}
+
+void AZI_nodes::init_service(ros::NodeHandle& nh)
+{
+    std::string service_name = "get_road_segment";
+    ros::service::waitForService(service_name);
+    client = nh.serviceClient<road_crossing::get_road_segment>(service_name);
 }
 
 void AZI_nodes::callback_compass(AZI_nodes* node, const compass_msgs::Azimuth::ConstPtr& msg)
@@ -135,34 +144,35 @@ BT::PortsList AZI_nodes::equal_azimuths::providedPorts()
 
 BT::NodeStatus AZI_nodes::road_heading::tick()
 {
-    BT::Optional<double> easting1 = getInput<double>("easting1");
-    BT::Optional<double> northing1 = getInput<double>("northing1");
-    BT::Optional<double> easting2 = getInput<double>("easting2");
-    BT::Optional<double> northing2 = getInput<double>("northing2");
+    BT::Optional<double> easting = getInput<double>("easting");
+    BT::Optional<double> northing = getInput<double>("northing");
 
-    if (!easting1)
-        throw BT::RuntimeError("missing required input easting1: ", easting1.error());
-    if (!northing1)
-        throw BT::RuntimeError("missing required input northing1: ", northing1.error());
-    if (!easting2)
-        throw BT::RuntimeError("missing required input easting2: ", easting2.error());
-    if (!northing2)
-        throw BT::RuntimeError("missing required input northing2: ", northing2.error());
+    if (!easting)
+        throw BT::RuntimeError("missing required input easting1: ", easting.error());
+    if (!northing)
+        throw BT::RuntimeError("missing required input northing1: ", northing.error());
 
-    double heading = gpsPointsHeading(easting1.value(), northing1.value(), easting2.value(), northing2.value());
-    setOutput("road_heading", heading);
-    return BT::NodeStatus::SUCCESS;
+    road_crossing::get_road_segment srv;
+    srv.request.easting = easting.value();
+    srv.request.northing = northing.value();
+
+    if (AZI_nodes::client.call(srv)){
+        double heading = gpsPointsHeading(srv.response.easting_1, srv.response.northing_1,
+                                          srv.response.easting_2, srv.response.northing_2);
+        setOutput("road_heading", heading);
+        return BT::NodeStatus::SUCCESS;
+    } else
+        return BT::NodeStatus::FAILURE;
 }
 
 BT::PortsList AZI_nodes::road_heading::providedPorts()
 {
-    return {BT::InputPort<double>("easting1"), BT::InputPort<double>("northing1"), BT::InputPort<double>("easting2"),
-            BT::InputPort<double>("northing2"), BT::OutputPort<double>("road_heading")};
+    return {BT::InputPort<double>("easting"), BT::InputPort<double>("northing"), BT::OutputPort<double>("road_heading")};
 }
 
 BT::NodeStatus AZI_nodes::compute_heading::tick()
 {
-    BT::Optional<double> rob_heading = getInput<double>("cur_heading");
+    BT::Optional<double> rob_heading = getInput<double>("rob_azimuth");
     BT::Optional<double> road_heading = getInput<double>("road_heading");
 
     if (!rob_heading)
@@ -177,5 +187,5 @@ BT::NodeStatus AZI_nodes::compute_heading::tick()
 
 BT::PortsList AZI_nodes::compute_heading::providedPorts()
 {
-    return {BT::InputPort<double>("cur_heading"), BT::InputPort<double>("road_heading"), BT::OutputPort<double>("req_azimuth")};
+    return {BT::InputPort<double>("rob_azimuth"), BT::InputPort<double>("road_heading"), BT::OutputPort<double>("req_azimuth")};
 }

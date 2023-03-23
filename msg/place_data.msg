@@ -11,5 +11,5 @@ bool is_valid
 bool suitable
 
 # if unsuitable, coords for better point
-float64 easting_better
-float64 northing_better
+float64 better_easting
+float64 better_northing

@@ -42,6 +42,34 @@ class GPS_nodes
                 static BT::PortsList providedPorts();
         };
 
+        class place_suitable : public BT::ConditionNode
+        {
+            public:
+                place_suitable(const std::string& name, const BT::NodeConfiguration& config) :
+                    BT::ConditionNode(name, config)
+                {}
+
+                virtual ~place_suitable(){}
+
+                BT::NodeStatus tick() override;
+
+                static BT::PortsList providedPorts();
+        };
+
+        class better_place : public BT::ConditionNode
+        {
+            public:
+                better_place(const std::string& name, const BT::NodeConfiguration& config) :
+                    BT::ConditionNode(name, config)
+                {}
+
+                virtual ~better_place(){}
+
+                BT::NodeStatus tick() override;
+
+                static BT::PortsList providedPorts();
+        };
+
         class get_position : public BT::SyncActionNode
         {
             public:
@@ -59,12 +87,15 @@ class GPS_nodes
     private:
         static ros::Publisher pubUTM;
         static double easting, northing;
+        static double better_easting, better_northing;
         static bool is_valid, suitable, new_place;
 };
 
 ros::Publisher GPS_nodes::pubUTM;
 double GPS_nodes::easting = 0;
 double GPS_nodes::northing = 0;
+double GPS_nodes::better_easting = 0;
+double GPS_nodes::better_northing = 0;
 bool GPS_nodes::is_valid = false;
 bool GPS_nodes::suitable;
 bool GPS_nodes::new_place = false;

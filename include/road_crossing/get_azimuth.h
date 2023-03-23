@@ -27,6 +27,8 @@ class AZI_nodes
 
         void get_topic(compass_indices *indices);
 
+        void init_service(ros::NodeHandle& nh);
+
         static void callback_compass(AZI_nodes* node, const compass_msgs::Azimuth::ConstPtr& msg);
 
         static void callback_quat(AZI_nodes* node, const geometry_msgs::QuaternionStamped::ConstPtr& msg);
@@ -110,9 +112,11 @@ class AZI_nodes
     private:
         static double azimuth;
         static compass_indices indices;
+        static ros::ServiceClient client;
 };
 
 double AZI_nodes::azimuth = 0;
 compass_indices AZI_nodes::indices;
+ros::ServiceClient AZI_nodes::client;
 
 #endif

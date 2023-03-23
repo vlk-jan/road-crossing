@@ -22,7 +22,7 @@
   <exec_depend>rospy</exec_depend>
   <exec_depend>behaviortree_cpp_v3</exec_depend>
   <exec_depend>std_msgs</exec_depend>
-  <exec_depend>message_generation</exec_depend>
+  <exec_depend>message_runtime</exec_depend>
   <exec_depend>compass_msgs</exec_depend>
 
 </package>
