@@ -15,7 +15,7 @@
 #include <GeographicLib/UTMUPS.hpp>
 
 
-double gpsPointsHeading(double lat1, double lon1, double lat2, double lon2)
+double gps_points_heading(double lat1, double lon1, double lat2, double lon2)
 {
     double dLon = lon2 - lon1;
     double y = sin(dLon) * cos(lat2);
@@ -26,21 +26,21 @@ double gpsPointsHeading(double lat1, double lon1, double lat2, double lon2)
     return brng;
 }
 
-double angleDifference(double angle1, double angle2)
+double angle_diff(double angle1, double angle2)
 {
     double diff = std::fmod(angle2 - angle1 + M_PI, 2*M_PI) - M_PI;
     return diff < -M_PI ? diff + 2*M_PI : diff;
 }
 
-double ned2enu(double angle)
+double ned_to_enu(double azimuth)
 {
-    if (angle > 0 && angle < M_PI/2)
-        return M_PI/2 - angle;
+    if (azimuth > 0 && azimuth < M_PI/2)
+        return M_PI/2 - azimuth;
     else
-        return M_PI*5/2 - angle;
+        return M_PI*5/2 - azimuth;
 }
 
-double deg2rad(double angle)
+double deg_to_rad(double angle)
 {
     return angle * M_PI / 180;
 }
@@ -49,8 +49,8 @@ double comp_heading(double rob_heading, double road_heading)
 {
     double heading1 = road_heading + M_PI/2;
     double heading2 = road_heading - M_PI/2;
-    double diff1 = angleDifference(rob_heading, heading1);
-    double diff2 = angleDifference(rob_heading, heading2);
+    double diff1 = angle_diff(rob_heading, heading1);
+    double diff2 = angle_diff(rob_heading, heading2);
     if (std::abs(diff1) < std::abs(diff2))
         return heading1;
     else

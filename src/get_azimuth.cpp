@@ -3,7 +3,7 @@
 * Author: Jan Vlk
 * Date: 16.11.2022
 * Description: This file contains functions for operations dealing with compass and azimuth.
-* Last modified: 23.3.2023
+* Last modified: 24.3.2023
 */
 
 #include "behaviortree_cpp_v3/behavior_tree.h"
@@ -39,9 +39,9 @@ std::string AZI_nodes::get_topic()
                 param += reference_str[i] + "_azimuth_" + orientation_str[j] + "_" + data_type_str[k];
                 ros::param::get(param, published);
                 if (published){
-                    indices.reference_i = i;
-                    indices.orientation_i = j;
-                    indices.data_type_i = k;
+                    this->indices.reference_i = i;
+                    this->indices.orientation_i = j;
+                    this->indices.data_type_i = k;
                     return (reference_str[i] + "/" +  orientation_str[j] + "/" + data_type_str[k]);
                 }
                 param = "~publish_";
@@ -63,14 +63,14 @@ void AZI_nodes::callback_compass(AZI_nodes* node, const compass_msgs::Azimuth::C
     // TODO: Is there a better way than global variable?
     if (indices.data_type_i == 0){
         if (indices.orientation_i == 0)
-           node->azimuth = ned2enu(msg->azimuth);
+           node->azimuth = ned_to_enu(msg->azimuth);
         else
             node->azimuth = msg->azimuth;
     } else{
         if (indices.orientation_i == 0)
-            node->azimuth = ned2enu(deg2rad(msg->azimuth));
+            node->azimuth = ned_to_enu(deg_to_rad(msg->azimuth));
         else
-            node->azimuth = deg2rad(msg->azimuth);
+            node->azimuth = deg_to_rad(msg->azimuth);
     }
     node->azimuth = msg->azimuth;
     ROS_INFO("Current azimuth: [%f]", node->azimuth);
@@ -79,7 +79,7 @@ void AZI_nodes::callback_compass(AZI_nodes* node, const compass_msgs::Azimuth::C
 void AZI_nodes::callback_quat(AZI_nodes* node, const geometry_msgs::QuaternionStamped::ConstPtr& msg)
 {
     if (indices.orientation_i == 0)
-        node->azimuth = ned2enu(tf::getYaw(msg->quaternion));
+        node->azimuth = ned_to_enu(tf::getYaw(msg->quaternion));
     else
         node->azimuth = tf::getYaw(msg->quaternion);
 }
@@ -87,7 +87,7 @@ void AZI_nodes::callback_quat(AZI_nodes* node, const geometry_msgs::QuaternionSt
 void AZI_nodes::callback_imu(AZI_nodes* node, const sensor_msgs::Imu::ConstPtr& msg)
 {
     if (indices.orientation_i == 0)
-        node->azimuth = ned2enu(tf::getYaw(msg->orientation));
+        node->azimuth = ned_to_enu(tf::getYaw(msg->orientation));
     else
         node->azimuth = tf::getYaw(msg->orientation);
 }
@@ -95,7 +95,7 @@ void AZI_nodes::callback_imu(AZI_nodes* node, const sensor_msgs::Imu::ConstPtr& 
 void AZI_nodes::callback_pose(AZI_nodes* node, const geometry_msgs::PoseStamped::ConstPtr& msg)
 {
     if (indices.orientation_i == 0)
-        node->azimuth = ned2enu(tf::getYaw(msg->pose.orientation));
+        node->azimuth = ned_to_enu(tf::getYaw(msg->pose.orientation));
     else
         node->azimuth = tf::getYaw(msg->pose.orientation);
 }
@@ -157,7 +157,7 @@ BT::NodeStatus AZI_nodes::road_heading::tick()
     srv.request.northing = northing.value();
 
     if (AZI_nodes::client.call(srv)){
-        double heading = gpsPointsHeading(srv.response.easting_1, srv.response.northing_1,
+        double heading = gps_points_heading(srv.response.easting_1, srv.response.northing_1,
                                           srv.response.easting_2, srv.response.northing_2);
         setOutput("road_heading", heading);
         return BT::NodeStatus::SUCCESS;

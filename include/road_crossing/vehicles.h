@@ -1,5 +1,5 @@
-#ifndef VEHICLES_H
-#define VEHICLES_H
+#ifndef VEHICLES
+#define VEHICLES
 
 #include "behaviortree_cpp_v3/behavior_tree.h"
 #include "behaviortree_cpp_v3/bt_factory.h"
@@ -33,16 +33,16 @@ class VEH_nodes
         /**
          * @brief Calculate the collision data and determine if with the current speeds the collision will occur.
          *
-         * @param vehicle    struct with data about the vehicle.
-         * @param robot    struct with data about the robot.
-         * @param collision    struct in which the output collision data will be stored.
+         * @param vehicle Struct with data about the vehicle.
+         * @param robot Struct with data about the robot.
+         * @param collision Struct in which the output collision data will be stored.
          */
         bool vehicle_collision(vehicle_info vehicle, vehicle_info robot, collision_info &collision);
 
         /**
          * @brief Callback function for the vehicle subscriber.
          *
-         * @param msg    message with the vehicle data.
+         * @param msg Message with the vehicle data.
          */
         void callback_vehicle(); // TODO: add message type
 

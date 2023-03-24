@@ -1,5 +1,5 @@
-#ifndef movement
-#define movement
+#ifndef MOVEMENT
+#define MOVEMENT
 
 #include <cmath>
 
@@ -18,6 +18,11 @@ class MOV_nodes
         MOV_nodes(){}
         virtual ~MOV_nodes(){}
 
+        /**
+         * @brief Init the publishers for functions in this class.
+         * 
+         * @param nh ROS NodeHandle.
+         */
         void init_publishers(ros::NodeHandle& nh);
 
         class rotate_robot : public BT::SyncActionNode

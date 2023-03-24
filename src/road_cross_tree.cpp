@@ -1,3 +1,11 @@
+/*
+* Name: road_cross_tree.cpp
+* Author: Jan Vlk
+* Date: 16.11.2022
+* Description: This file contains the class and functions for the BT itself.
+* Last modified: 24.3.2023
+*/
+
 #include "behaviortree_cpp_v3/behavior_tree.h"
 #include "behaviortree_cpp_v3/bt_factory.h"
 
@@ -22,9 +30,6 @@ Road_cross_tree::Road_cross_tree(std::string filename)
 
     this->tree = this->factory.createTreeFromFile(filename);
 }
-
-Road_cross_tree::~Road_cross_tree()
-{}
 
 int Road_cross_tree::run_tree()
 {

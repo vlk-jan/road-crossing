@@ -13,7 +13,11 @@
 int main(int argc, char **argv)
 {
     std::string tree_file;
-    ros::param::get("tree_file", tree_file);
+    if (!ros::param::get("tree_file", tree_file)){
+        ROS_ERROR("Missing tree file");
+        return EXIT_FAILURE;
+    }
+    
     Road_cross_tree BT_tree(tree_file);
 
     std::string compass = "compass/true/enu/rad/";

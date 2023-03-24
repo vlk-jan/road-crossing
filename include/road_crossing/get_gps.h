@@ -15,17 +15,34 @@ class GPS_nodes
         GPS_nodes(){}
         virtual ~GPS_nodes(){}
 
+        /**
+         * @brief Init the publishers for funcions in this class.
+         * 
+         * @param nh ROS NodeHandle.
+         */
         void init_publishers(ros::NodeHandle& nh);
 
         /**
          * @brief Subscriber for the gps data of the robot.
          * 
-         * @param msg    read message from the gps topic.
-        */
+         * @param node GPS_nodes object, necessary for static variables.
+         * @param msg Read message from the gps topic.
+         */
         static void callback_gps(GPS_nodes* node, const sensor_msgs::NavSatFix::ConstPtr& msg);
 
+        /**
+         * @brief Subscriber for the cost data, calculated by road cost.
+         * 
+         * @param node GPS_nodes object, necessary for static variables.
+         * @param msg Read message from the cost topic.
+         */
         static void callback_cost(GPS_nodes* node, const road_crossing::place_data::ConstPtr& msg);
 
+        /**
+         * @brief Request information from road cost node, if the current robot's position is suitable for road crossing.
+         * 
+         * TODO: rewrite as service
+         */
         void place_suitability();
 
         class cross_road : public BT::ConditionNode

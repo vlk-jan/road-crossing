@@ -1,5 +1,5 @@
-#ifndef get_azimuth
-#define get_azimuth
+#ifndef GET_AZIMUTH
+#define GET_AZIMUTH
 
 #include "behaviortree_cpp_v3/behavior_tree.h"
 #include "behaviortree_cpp_v3/bt_factory.h"
@@ -23,10 +23,18 @@ class AZI_nodes
         AZI_nodes(){}
         virtual ~AZI_nodes(){}
 
+        /**
+         * @brief Find topic the compass data are being published to.
+         */
         std::string get_topic();
 
-        void get_topic(compass_indices *indices);
+        //void get_topic(compass_indices& indices);
 
+        /**
+         * @brief Initialize service clients for functions in this class.
+         * 
+         * @param nh ROS NodeHandle.
+         */
         void init_service(ros::NodeHandle& nh);
 
         static void callback_compass(AZI_nodes* node, const compass_msgs::Azimuth::ConstPtr& msg);
