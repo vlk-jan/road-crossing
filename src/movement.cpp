@@ -37,7 +37,7 @@ BT::NodeStatus MOV_nodes::rotate_robot::tick()
     double speed;
 
     // ensure that robot rotates maximum of half a circle
-    double diff = angleDifference(cur_azimuth.value(), req_azimuth.value());
+    double diff = angle_diff(cur_azimuth.value(), req_azimuth.value());
 
     if (diff < 0){  // rotation to the right
         speed = diff*speed_const;

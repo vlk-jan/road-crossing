@@ -17,13 +17,12 @@ find_package(GeographicLib REQUIRED)
 add_message_files(
   FILES
   injector_msgs.msg
-  place_data.msg
-  UTM_data.msg
 )
 
 add_service_files(
   FILES
   get_road_segment.srv
+  get_suitability.srv
 )
 
 generate_messages(
@@ -41,8 +40,15 @@ include_directories(
   ${GeographicLib_INCLUDE_DIRS}
 )
 
-catkin_install_python(PROGRAMS src/test_injector.py src/road_cost/road_cost.py src/road_cost/get_segment_srv.py
-  DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+catkin_install_python(
+  PROGRAMS
+  src/test_injector.py
+  src/road_cost/road_cost.py
+  src/road_cost/get_segment_srv.py
+  src/road_cost/get_suitability_srv.py
+
+  DESTINATION
+  ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
 
 set(SOURCES src/misc.cpp include/road_crossing/misc.h)
