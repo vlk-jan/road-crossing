@@ -56,12 +56,6 @@ class RoadCost:
             ranked_segments_2[(ROAD_CROSSINGS_RANKS-1) if cost >= (ROAD_CROSSINGS_RANKS-1) else floor(cost)].append(segment[0])
         return ranked_segments_2
 
-    def sub_callback(self, msg):
-        self.easting = msg.easting
-        self.northing = msg.northing
-        self.context_score = msg.context_score
-        rospy.loginfo("easting: {}, northing: {}, context_score: {}".format(self.easting, self.northing, self.context_score))
-
     def score_road(self, easting, northing):
         point = geometry.Point(easting, northing)
         min_dist = float('inf')

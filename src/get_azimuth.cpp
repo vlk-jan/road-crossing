@@ -3,7 +3,7 @@
 * Author: Jan Vlk
 * Date: 16.11.2022
 * Description: This file contains functions for operations dealing with compass and azimuth.
-* Last modified: 24.3.2023
+* Last modified: 27.3.2023
 */
 
 #include "behaviortree_cpp_v3/behavior_tree.h"
@@ -55,12 +55,11 @@ void AZI_nodes::init_service(ros::NodeHandle& nh)
 {
     std::string service_name = "get_road_segment";
     ros::service::waitForService(service_name);
-    client = nh.serviceClient<road_crossing::get_road_segment>(service_name);
+    AZI_nodes::client = nh.serviceClient<road_crossing::get_road_segment>(service_name);
 }
 
 void AZI_nodes::callback_compass(AZI_nodes* node, const compass_msgs::Azimuth::ConstPtr& msg)
 {
-    // TODO: Is there a better way than global variable?
     if (indices.data_type_i == 0){
         if (indices.orientation_i == 0)
            node->azimuth = ned_to_enu(msg->azimuth);

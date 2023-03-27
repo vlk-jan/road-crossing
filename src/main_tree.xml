@@ -44,16 +44,22 @@
     <!-- ////////// -->
     <BehaviorTree ID="init_values">
         <SequenceStar>
+            <Condition ID="start_algorithm"/>
             <SequenceStar>
                 <Action ID="get_position" easting="{easting}" northing="{northing}"/>
                 <Condition ID="cross_road"/>
+                <SetBlackboard output_key="{new_place}" value="false"/>
             </SequenceStar>
             <Fallback>
                 <Condition ID="place_suitable"/>
-                <Sequence>
-                    <Condition ID="better_place" better_easting="{better_easting}" better_northing="{better_northing}"/>
-                    <Action ID="move_to_place" better_easting="{better_easting}" better_northing="{better_northing}"/>
-                </Sequence>
+                <Fallback>
+                    <Sequence>
+                        <Condition ID="better_place_found" found_place="{new_place}"/>
+                        <Action ID="move_to_place" better_easting="{better_easting}" better_northing="{better_northing}"/>
+                    </Sequence>
+                    <Action ID="get_better_place" better_easting="{better_easting}" better_northing="{better_northing}" foud_place="{new_place}"/>
+                    <AlwaysSuccess/>
+                </Fallback>
             </Fallback>
         </SequenceStar>
     </BehaviorTree>
@@ -102,9 +108,8 @@
     </BehaviorTree>
     <!-- ////////// -->
     <TreeNodesModel>
-        <Condition ID="better_place">
-            <output_port default="{better_easting}" name="better_easting"/>
-            <output_port default="{better_northing}" name="better_northing"/>
+        <Condition ID="better_place_found">
+            <input_port default="{new_place}" name="found_place"/>
         </Condition>
         <Action ID="calculate_collision"/>
         <Condition ID="cars_in_trajectory"/>
@@ -118,9 +123,13 @@
         </Action>
         <Action ID="continue_movement"/>
         <Condition ID="cross_road"/>
-        <Action ID="find_better_place"/>
         <Action ID="get_azimuth">
             <output_port default="{azimuth}" name="cur_azimuth">current azimuth of robot</output_port>
+        </Action>
+        <Action ID="get_better_place">
+            <output_port default="{better_easting}" name="better_easting"/>
+            <output_port default="{better_northing}" name="better_northing"/>
+            <output_port default="{new_place}" name="foud_place"/>
         </Action>
         <Action ID="get_cars"/>
         <SubTree ID="get_heading">
@@ -158,6 +167,7 @@
         <Action ID="rotate_robot">
             <input_port default="{direction}" name="direction">1 = clockwise, -1 = counter clockwise</input_port>
         </Action>
+        <Condition ID="start_algorithm"/>
         <SubTree ID="start_crossing">
             <input_port default="true" name="__shared_blackboard">If false (default), the Subtree has an isolated blackboard and needs port remapping</input_port>
         </SubTree>

@@ -39,6 +39,20 @@ class MOV_nodes
                 static BT::PortsList providedPorts();
         };
 
+        class move_to_place : public BT::SyncActionNode
+        {
+            public:
+                move_to_place(const std::string& name, const BT::NodeConfiguration& config):
+                    BT::SyncActionNode(name, config)
+                {}
+
+                virtual ~move_to_place(){}
+
+                BT::NodeStatus tick() override;
+
+                static BT::PortsList providedPorts();
+        };
+
     private:
         static ros::Publisher pub_cmd;
 };
