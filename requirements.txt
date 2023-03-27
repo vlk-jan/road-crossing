@@ -1,0 +1,5 @@
+numpy
+overpy
+shapely
+cython
+geodesy
