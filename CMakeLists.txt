@@ -23,6 +23,7 @@ add_service_files(
   FILES
   get_road_segment.srv
   get_suitability.srv
+  start_algorithm.srv
 )
 
 generate_messages(
@@ -73,6 +74,9 @@ target_link_libraries(gps_lib ${catkin_LIBRARIES})
 
 add_executable(run_tree src/main.cpp)
 target_link_libraries(run_tree ${catkin_LIBRARIES} road_cross_tree_lib azimuth_lib movement_lib gps_lib)
+
+add_executable(start_srv src/start_srv.cpp include/road_crossing/start_srv.h)
+target_link_libraries(start_srv ${catkin_LIBRARIES})
 
 add_executable(vehicles src/vehicles.cpp)
 target_link_libraries(vehicles ${catkin_LIBRARIES})

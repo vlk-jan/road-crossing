@@ -3,7 +3,7 @@
 * Author: Jan Vlk
 * Date: 13.2.2023
 * Description: This file contains miscellaneous functions and classes, or functions and classes that do not have a specific place yet.
-* Last modified: 23.3.2023
+* Last modified: 27.3.2023
 */
 
 #include "behaviortree_cpp_v3/behavior_tree.h"
@@ -11,16 +11,17 @@
 
 #include "ros/ros.h"
 #include "sensor_msgs/NavSatFix.h"
-#include "road_crossing/place_data.h"
-#include "road_crossing/UTM_data.h"
 
 #include "road_crossing/get_gps.h"
 #include "road_crossing/misc.h"
+#include "road_crossing/get_suitability.h"
 
 
-void GPS_nodes::init_publishers(ros::NodeHandle& nh)
+void GPS_nodes::init_service(ros::NodeHandle& nh)
 {
-    this->pubUTM = nh.advertise<road_crossing::UTM_data>("UTM_data", 1000);
+    std::string service_name = "get_suitability";
+    ros::service::waitForService(service_name);
+    GPS_nodes::place_suitability_client = nh.serviceClient<road_crossing::get_suitability>(service_name);
 }
 
 void GPS_nodes::callback_gps(GPS_nodes* node, const sensor_msgs::NavSatFix::ConstPtr& msg)
@@ -35,38 +36,25 @@ void GPS_nodes::callback_gps(GPS_nodes* node, const sensor_msgs::NavSatFix::Cons
     ROS_INFO("Current easting, northing: [%f], [%f]", node->easting, node->northing);
 }
 
-void GPS_nodes::place_suitability()
+int GPS_nodes::place_suitability()
 {
-    road_crossing::UTM_data msg;
+    road_crossing::get_suitability srv;
+    srv.request.easting = GPS_nodes::easting;
+    srv.request.northing = GPS_nodes::northing;
 
-    while (ros::ok()){
-        if (this->new_place){
-            msg.easting = this->easting;
-            msg.northing = this->northing;
-            msg.context_score = 0; //TODO: implement context score
-
-            this->pubUTM.publish(msg);
-            this->new_place = false;
-        }
-
-        ros::spinOnce();
+    if (GPS_nodes::place_suitability_client.call(srv)){
+        GPS_nodes::suitable = srv.response.suitable;
+        GPS_nodes::is_valid = srv.response.valid;
+    } else {
+        ROS_ERROR("Failed to call service get_suitability");
+        return EXIT_FAILURE;
     }
-}
-
-void GPS_nodes::callback_cost(GPS_nodes* node, const road_crossing::place_data::ConstPtr& msg)
-{
-    node->is_valid = msg->is_valid;
-    node->suitable = msg->suitable;
-    node->better_easting = msg->better_easting;
-    node->better_northing = msg->better_northing;
-    ROS_INFO("Place valid, suitable: [%d], [%d]", node->is_valid, node->suitable);
-    if (node->suitable)
-        ROS_INFO("Better place easting, northing: [%f], [%f]", node->better_easting, node->better_northing);
+    return EXIT_SUCCESS;
 }
 
 BT::NodeStatus GPS_nodes::cross_road::tick()
 {
-    if (is_valid)
+    if (GPS_nodes::is_valid)
         return BT::NodeStatus::SUCCESS;
     else
         return BT::NodeStatus::FAILURE;
@@ -79,7 +67,7 @@ BT::PortsList GPS_nodes::cross_road::providedPorts()
 
 BT::NodeStatus GPS_nodes::place_suitable::tick()
 {
-    if (suitable)
+    if (GPS_nodes::suitable)
         return BT::NodeStatus::SUCCESS;
     else
         return BT::NodeStatus::FAILURE;
@@ -92,9 +80,7 @@ BT::PortsList GPS_nodes::place_suitable::providedPorts()
 
 BT::NodeStatus GPS_nodes::better_place::tick()
 {
-    if (better_easting != 0 && better_northing != 0){
-        setOutput("better_easting", better_easting);
-        setOutput("better_northing", better_northing);
+    if (GPS_nodes::new_place){
         return BT::NodeStatus::SUCCESS;
     } else
         return BT::NodeStatus::FAILURE;
@@ -102,13 +88,13 @@ BT::NodeStatus GPS_nodes::better_place::tick()
 
 BT::PortsList GPS_nodes::better_place::providedPorts()
 {
-    return {BT::OutputPort<double>("better_easting"), BT::OutputPort<double>("better_northing")};
+    return {};
 }
 
 BT::NodeStatus GPS_nodes::get_position::tick()
 {
-    setOutput("easting", easting);
-    setOutput("northing", northing);
+    setOutput("easting", GPS_nodes::easting);
+    setOutput("northing", GPS_nodes::northing);
     return BT::NodeStatus::SUCCESS;
 }
 

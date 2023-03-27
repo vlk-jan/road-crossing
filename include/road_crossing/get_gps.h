@@ -16,11 +16,11 @@ class GPS_nodes
         virtual ~GPS_nodes(){}
 
         /**
-         * @brief Init the publishers for funcions in this class.
+         * @brief Initialize service clients for functions in this class.
          * 
          * @param nh ROS NodeHandle.
          */
-        void init_publishers(ros::NodeHandle& nh);
+        void init_service(ros::NodeHandle& nh);
 
         /**
          * @brief Subscriber for the gps data of the robot.
@@ -31,19 +31,9 @@ class GPS_nodes
         static void callback_gps(GPS_nodes* node, const sensor_msgs::NavSatFix::ConstPtr& msg);
 
         /**
-         * @brief Subscriber for the cost data, calculated by road cost.
-         * 
-         * @param node GPS_nodes object, necessary for static variables.
-         * @param msg Read message from the cost topic.
-         */
-        static void callback_cost(GPS_nodes* node, const road_crossing::place_data::ConstPtr& msg);
-
-        /**
          * @brief Request information from road cost node, if the current robot's position is suitable for road crossing.
-         * 
-         * TODO: rewrite as service
          */
-        void place_suitability();
+        int place_suitability();
 
         class cross_road : public BT::ConditionNode
         {
@@ -100,15 +90,29 @@ class GPS_nodes
 
                 static BT::PortsList providedPorts();
         };
+
+        class get_better_place : public BT::SyncActionNode
+        {
+            public:
+                get_better_place(const std::string& name, const BT::NodeConfiguration& config) :
+                    BT::SyncActionNode(name, config)
+                {}
+
+                virtual ~get_better_place(){}
+
+                BT::NodeStatus tick() override;
+
+                static BT::PortsList providedPorts();
+        };
     
     private:
-        static ros::Publisher pubUTM;
+        static ros::ServiceClient place_suitability_client;
         static double easting, northing;
         static double better_easting, better_northing;
         static bool is_valid, suitable, new_place;
 };
 
-ros::Publisher GPS_nodes::pubUTM;
+ros::ServiceClient GPS_nodes::place_suitability_client;
 double GPS_nodes::easting = 0;
 double GPS_nodes::northing = 0;
 double GPS_nodes::better_easting = 0;
