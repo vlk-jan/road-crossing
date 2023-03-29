@@ -44,7 +44,7 @@ class VEH_nodes
          *
          * @param msg Message with the vehicle data.
          */
-        void callback_vehicle(); // TODO: add message type
+        void callback_vehicle(); // TODO: add message type & implement
 
         class get_cars : public BT::SyncActionNode
         {

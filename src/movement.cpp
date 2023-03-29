@@ -3,7 +3,7 @@
 * Author: Jan Vlk
 * Date: 25.11.2022
 * Description: This file contains functions for moving the robot.
-* Last modified: 19.3.2023
+* Last modified: 29.3.2023
 */
 
 #include <cmath>
@@ -21,6 +21,7 @@
 void MOV_nodes::init_publishers(ros::NodeHandle& nh)
 {
     this->pub_cmd = nh.advertise<geometry_msgs::Twist>("cmd_vel", 5);
+    //this->pub_map = nh.advertise<??>("weight_map", 5);
 }
 
 BT::NodeStatus MOV_nodes::rotate_robot::tick()
@@ -58,4 +59,24 @@ BT::PortsList MOV_nodes::rotate_robot::providedPorts()
 {
     return {BT::InputPort<double>("req_azimuth"), BT::InputPort<double>("cur_azimuth"),
             BT::InputPort<ros::NodeHandle>("node_handle")};
+}
+
+BT::NodeStatus MOV_nodes::move_to_place::tick()
+{
+    BT::Optional<double> req_eas = getInput<double>("better_easting");
+    BT::Optional<double> req_nor = getInput<double>("better_northing");
+
+    if (!req_eas)
+        throw BT::RuntimeError("missing required input better_easting: ", req_eas.error());
+    if (!req_nor)
+        throw BT::RuntimeError("missing required input better_northing: ", req_nor.error());
+
+    // TODO: implement weight map creation & publishing
+
+    return BT::NodeStatus::FAILURE;
+}
+
+BT::PortsList MOV_nodes::move_to_place::providedPorts()
+{
+    return {BT::InputPort<double>("better_easting"), BT::InputPort<double>("better_northing")};
 }

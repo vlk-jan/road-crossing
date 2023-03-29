@@ -6,7 +6,6 @@
 
 #include "ros/ros.h"
 #include "sensor_msgs/NavSatFix.h"
-#include "road_crossing/place_data.h"
 
 
 class GPS_nodes
@@ -106,13 +105,14 @@ class GPS_nodes
         };
     
     private:
-        static ros::ServiceClient place_suitability_client;
+        static ros::ServiceClient place_suitability_client, get_better_place_client;
         static double easting, northing;
         static double better_easting, better_northing;
         static bool is_valid, suitable, new_place;
 };
 
 ros::ServiceClient GPS_nodes::place_suitability_client;
+ros::ServiceClient GPS_nodes::get_better_place_client;
 double GPS_nodes::easting = 0;
 double GPS_nodes::northing = 0;
 double GPS_nodes::better_easting = 0;
