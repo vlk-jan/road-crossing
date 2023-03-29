@@ -5,7 +5,7 @@ This is a ROS node to facilitate safe traverse of an autonomous robot across a r
 
 The main algorithm is based on a behavior-tree structure. This work does not include the detection of incoming vehicles, that is provided by a different node.
 
-## Instalation
+## Installation
 Clone this repository into your catkin workspace.
 
 ```bash
