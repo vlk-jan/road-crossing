@@ -37,3 +37,16 @@ pip install -r requirements.txt
 
 ## Documentation
 This package does not currently have a documentation. However the text of my bachelor thesis is [here](https://github.com/vlk-jan/bachelor_thesis), where I try to explain the code a bit.
+
+## License
+[![License](https://img.shields.io/badge/License-BSD_3--Clause-blue.svg)](https://github.com/vlk-jan/road_crossing/blob/master/LICENSE)
+
+## TODO
+- Short-term
+    - Save and load pickle file name passed with ROS param
+    - Vehical obtaining message type & implementation
+    - Add acceleration and width to collision calculation
+    - move_to_place weight map (+choose correct msg type) creation & implementation
+    - Implement step_from_road
+- Long-term
+    - Service for obtaining better place - possible need to rewrite road cost

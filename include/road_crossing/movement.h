@@ -3,14 +3,19 @@
 
 #include <cmath>
 
+#include "ros/ros.h"
+
 #include "behaviortree_cpp_v3/behavior_tree.h"
 #include "behaviortree_cpp_v3/bt_factory.h"
 
-#include "ros/ros.h"
 #include "road_crossing/movement.h"
 
+
 #define MAX_ROT_SPEED 1  // rad/s
+#define MIN_ROT_SPEED 0.15  // rad/s
 #define MAX_LIN_SPEED 1.2  // m/s
+#define MIN_LIN_SPEED 0.2  // m/s
+
 
 class MOV_nodes
 {
@@ -63,6 +68,8 @@ class MOV_nodes
         /**
          * @brief Node to move the robot way from the road. It is used when the robot is unable
          * to rotate. We probably need to move the robot away from the road and then rotate it.
+         * 
+         * TODO: Implement -- hijack cmd_vel
          */
         class step_from_road : public BT::SyncActionNode
         {

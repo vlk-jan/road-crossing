@@ -3,16 +3,17 @@
 * Author: Jan Vlk
 * Date: 25.11.2022
 * Description: This file contains functions for moving the robot.
-* Last modified: 29.3.2023
+* Last modified: 30.3.2023
 */
 
 #include <cmath>
 
+#include "ros/ros.h"
+#include "geometry_msgs/Twist.h"
+
 #include "behaviortree_cpp_v3/behavior_tree.h"
 #include "behaviortree_cpp_v3/bt_factory.h"
 
-#include "ros/ros.h"
-#include "geometry_msgs/Twist.h"
 #include "road_crossing/movement.h"
 #include "road_crossing/get_azimuth.h"
 #include "road_crossing/misc.h"

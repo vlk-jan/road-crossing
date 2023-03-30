@@ -29,7 +29,7 @@ class COND_nodes
                     BT::ConditionNode(name, config)
                 {}
                 
-                virtual ~start_algorithm() {}
+                virtual ~start_algorithm(){}
                 
                 BT::NodeStatus tick() override;
                 
