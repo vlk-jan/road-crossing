@@ -49,5 +49,6 @@ This package does not currently have a documentation. However the text of my bac
     - move_to_place weight map (point-cloud) creation & implementation
     - Implement step_from_road
 - Long-term
+    - Robot steering during the crossing, currently moving only forward and backward in a straight line
     - Service for obtaining better place - possible need to rewrite road cost
     - Vehicle obtaining (from ROS node) message type & implementation

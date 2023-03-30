@@ -75,22 +75,22 @@
             </Fallback>
             <SubTree ID="start_crossing" __shared_blackboard="true"/>
             <Sequence>
-                <Action ID="calculate_collision" max_vel_bwd="{max_velocity_bwd}" max_vel_fwd="{max_velocity_fwd}" min_vel_bwd="{max_velocity_bwd}" min_vel_fwd="{min_velocity_fwd}"/>
+                <Action ID="calculate_collision" max_vel_bwd="{max_vel_bwd}" max_vel_fwd="{max_vel_fwd}" min_vel_bwd="{max_vel_bwd}" min_vel_fwd="{min_vel_fwd}"/>
                 <Fallback>
                     <Sequence>
                         <Condition ID="collision_imminent"/>
                         <Fallback>
                             <Sequence>
-                                <Condition ID="collision_fwd_move" max_vel_fwd="{max_velocity_fwd}" min_vel_fwd="{min_velocity_fwd}"/>
+                                <Condition ID="collision_fwd_move" max_vel_fwd="{max_vel_fwd}" min_vel_fwd="{min_vel_fwd}"/>
                                 <Fallback>
                                     <Sequence>
-                                        <Condition ID="collision_bwd_move" max_vel_bwd="{max_velocity_bwd}" min_vel_bwd="{min_velocity_bwd}"/>
+                                        <Condition ID="collision_bwd_move" max_vel_bwd="{max_vel_bwd}" min_vel_bwd="{min_vel_bwd}"/>
                                         <Action ID="stop_movement"/>
                                     </Sequence>
-                                    <Action ID="move_bwd"/>
+                                    <Action ID="move_bwd" max_vel_bwd="{max_vel_bwd}" min_vel_bwd="{min_vel_bwd}"/>
                                 </Fallback>
                             </Sequence>
-                            <Action ID="move_fwd"/>
+                            <Action ID="move_fwd" max_vel_fwd="{max_vel_fwd}" min_vel_fwd="{min_vel_fwd}"/>
                         </Fallback>
                     </Sequence>
                     <Action ID="continue_movement"/>
@@ -113,19 +113,19 @@
             <input_port default="{new_place}" name="found_place"/>
         </Condition>
         <Action ID="calculate_collision">
-            <output_port default="{max_velocity_bwd}" name="max_vel_bwd"/>
-            <output_port default="{max_velocity_fwd}" name="max_vel_fwd"/>
-            <output_port default="{max_velocity_bwd}" name="min_vel_bwd"/>
-            <output_port default="{min_velocity_fwd}" name="min_vel_fwd"/>
+            <output_port default="{max_vel_bwd}" name="max_vel_bwd"/>
+            <output_port default="{max_vel_fwd}" name="max_vel_fwd"/>
+            <output_port default="{max_vel_bwd}" name="min_vel_bwd"/>
+            <output_port default="{min_vel_fwd}" name="min_vel_fwd"/>
         </Action>
         <Condition ID="cars_in_trajectory"/>
         <Condition ID="collision_bwd_move">
-            <input_port default="{max_velocity_bwd}" name="max_vel_bwd"/>
-            <input_port default="{min_velocity_bwd}" name="min_vel_bwd"/>
+            <input_port default="{max_vel_bwd}" name="max_vel_bwd"/>
+            <input_port default="{min_vel_bwd}" name="min_vel_bwd"/>
         </Condition>
         <Condition ID="collision_fwd_move">
-            <input_port default="{max_velocity_fwd}" name="max_vel_fwd"/>
-            <input_port default="{min_velocity_fwd}" name="min_vel_fwd"/>
+            <input_port default="{max_vel_fwd}" name="max_vel_fwd"/>
+            <input_port default="{min_vel_fwd}" name="min_vel_fwd"/>
         </Condition>
         <Condition ID="collision_imminent"/>
         <Action ID="compute_heading">
@@ -158,8 +158,14 @@
         <SubTree ID="init_values">
             <input_port default="true" name="__shared_blackboard">If false (default), the Subtree has an isolated blackboard and needs port remapping</input_port>
         </SubTree>
-        <Action ID="move_bwd"/>
-        <Action ID="move_fwd"/>
+        <Action ID="move_bwd">
+            <input_port default="{max_vel_bwd}" name="max_vel_bwd"/>
+            <input_port default="{min_vel_bwd}" name="min_vel_bwd"/>
+        </Action>
+        <Action ID="move_fwd">
+            <input_port default="{max_vel_fwd}" name="max_vel_fwd"/>
+            <input_port default="{min_vel_fwd}" name="min_vel_fwd"/>
+        </Action>
         <Action ID="move_to_place">
             <input_port default="{better_easting}" name="better_easting"/>
             <input_port default="{better_northing}" name="better_northing"/>

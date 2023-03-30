@@ -109,10 +109,10 @@ BT::NodeStatus VEH_nodes::calculate_collision::tick()
     VEH_nodes::collisions.num_collisions = VEH_nodes::vehicles.num_vehicles;
     VEH_nodes::collisions.data = {};
 
-    double max_velocity_fwd = 0;
-    double max_velocity_bwd = 0;
-    double min_velocity_fwd = std::numeric_limits<double>::max();
-    double min_velocity_bwd = std::numeric_limits<double>::min();
+    double max_vel_fwd = 0;
+    double max_vel_bwd = 0;
+    double min_vel_fwd = std::numeric_limits<double>::max();
+    double min_vel_bwd = std::numeric_limits<double>::min();
 
     for (int i=0; i<VEH_nodes::vehicles.num_vehicles; ++i){
         collision_info collision;
@@ -131,26 +131,26 @@ BT::NodeStatus VEH_nodes::calculate_collision::tick()
 
         // Determine the maximum and minimum velocities with regard to the direction of travel
         if (collision.v_front >= 0){
-            max_velocity_fwd = higher_velocity > max_velocity_fwd ? higher_velocity : max_velocity_fwd;
-            min_velocity_fwd = lower_velocity < min_velocity_fwd ? lower_velocity : min_velocity_fwd;
+            max_vel_fwd = higher_velocity > max_vel_fwd ? higher_velocity : max_vel_fwd;
+            min_vel_fwd = lower_velocity < min_vel_fwd ? lower_velocity : min_vel_fwd;
         } else {
-            max_velocity_bwd = higher_velocity < max_velocity_bwd ? higher_velocity : max_velocity_bwd;
-            min_velocity_bwd = lower_velocity > min_velocity_bwd ? lower_velocity : min_velocity_bwd;
+            max_vel_bwd = higher_velocity < max_vel_bwd ? higher_velocity : max_vel_bwd;
+            min_vel_bwd = lower_velocity > min_vel_bwd ? lower_velocity : min_vel_bwd;
         }
     }
 
-    setOutput<double>("max_velocity_fwd", max_velocity_fwd);
-    setOutput<double>("min_velocity_fwd", min_velocity_fwd);
-    setOutput<double>("max_velocity_bwd", max_velocity_bwd);
-    setOutput<double>("min_velocity_bwd", min_velocity_bwd);
+    setOutput<double>("max_vel_fwd", max_vel_fwd);
+    setOutput<double>("min_vel_fwd", min_vel_fwd);
+    setOutput<double>("max_vel_bwd", max_vel_bwd);
+    setOutput<double>("min_vel_bwd", min_vel_bwd);
 
     return BT::NodeStatus::SUCCESS;
 }
 
 BT::PortsList VEH_nodes::calculate_collision::providedPorts()
 {
-    return {BT::OutputPort<double>("max_velocity_fwd"), BT::OutputPort<double>("min_velocity_fwd"),
-            BT::OutputPort<double>("max_velocity_bwd"), BT::OutputPort<double>("min_velocity_bwd")};
+    return {BT::OutputPort<double>("max_vel_fwd"), BT::OutputPort<double>("min_vel_fwd"),
+            BT::OutputPort<double>("max_vel_bwd"), BT::OutputPort<double>("min_vel_bwd")};
 }
 
 BT::NodeStatus VEH_nodes::collision_imminent::tick()
@@ -169,15 +169,15 @@ BT::PortsList VEH_nodes::collision_imminent::providedPorts()
 
 BT::NodeStatus VEH_nodes::collision_fwd_move::tick()
 {
-    BT::Optional<double> max_velocity_fwd = getInput<double>("max_velocity_fwd");
-    BT::Optional<double> min_velocity_fwd = getInput<double>("min_velocity_fwd");
+    BT::Optional<double> max_vel_fwd = getInput<double>("max_vel_fwd");
+    BT::Optional<double> min_vel_fwd = getInput<double>("min_vel_fwd");
 
-    if (!max_velocity_fwd)
-        throw BT::RuntimeError("missing required input max_velocity_fwd: ", max_velocity_fwd.error());
-    if (!min_velocity_fwd)
-        throw BT::RuntimeError("missing required input min_velocity_fwd: ", min_velocity_fwd.error());
+    if (!max_vel_fwd)
+        throw BT::RuntimeError("missing required input max_vel_fwd: ", max_vel_fwd.error());
+    if (!min_vel_fwd)
+        throw BT::RuntimeError("missing required input min_vel_fwd: ", min_vel_fwd.error());
     
-    if (max_velocity_fwd.value() >= MAX_LIN_SPEED && min_velocity_fwd.value() <= MIN_LIN_SPEED)
+    if (max_vel_fwd.value() >= MAX_LIN_SPEED && min_vel_fwd.value() <= MIN_LIN_SPEED)
         return BT::NodeStatus::SUCCESS;
 
     return BT::NodeStatus::FAILURE;
@@ -185,20 +185,20 @@ BT::NodeStatus VEH_nodes::collision_fwd_move::tick()
 
 BT::PortsList VEH_nodes::collision_fwd_move::providedPorts()
 {
-    return {BT::InputPort<double>("max_velocity_fwd"), BT::InputPort<double>("min_velocity_fwd")};
+    return {BT::InputPort<double>("max_vel_fwd"), BT::InputPort<double>("min_vel_fwd")};
 }
 
 BT::NodeStatus VEH_nodes::collision_bwd_move::tick()
 {
-    BT::Optional<double> max_velocity_bwd = getInput<double>("max_velocity_bwd");
-    BT::Optional<double> min_velocity_bwd = getInput<double>("min_velocity_bwd");
+    BT::Optional<double> max_vel_bwd = getInput<double>("max_vel_bwd");
+    BT::Optional<double> min_vel_bwd = getInput<double>("min_vel_bwd");
 
-    if (!max_velocity_bwd)
-        throw BT::RuntimeError("missing required input max_velocity_bwd: ", max_velocity_bwd.error());
-    if (!min_velocity_bwd)
-        throw BT::RuntimeError("missing required input min_velocity_bwd: ", min_velocity_bwd.error());
+    if (!max_vel_bwd)
+        throw BT::RuntimeError("missing required input max_vel_bwd: ", max_vel_bwd.error());
+    if (!min_vel_bwd)
+        throw BT::RuntimeError("missing required input min_vel_bwd: ", min_vel_bwd.error());
     
-    if (max_velocity_bwd.value() <= -MAX_LIN_SPEED && min_velocity_bwd.value() >= -MIN_LIN_SPEED)
+    if (max_vel_bwd.value() <= -MAX_LIN_SPEED && min_vel_bwd.value() >= -MIN_LIN_SPEED)
         return BT::NodeStatus::SUCCESS;
 
     return BT::NodeStatus::FAILURE;
@@ -206,7 +206,7 @@ BT::NodeStatus VEH_nodes::collision_bwd_move::tick()
 
 BT::PortsList VEH_nodes::collision_bwd_move::providedPorts()
 {
-    return {BT::InputPort<double>("max_velocity_bwd"), BT::InputPort<double>("min_velocity_bwd")};
+    return {BT::InputPort<double>("max_vel_bwd"), BT::InputPort<double>("min_vel_bwd")};
 }
 
 /// @brief For testing purposes
