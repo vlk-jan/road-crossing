@@ -46,7 +46,7 @@ This package does not currently have a documentation. However the text of my bac
     - Save and load pickle file name passed with ROS param
     - Vehical obtaining message type & implementation
     - Add acceleration and width to collision calculation
-    - move_to_place weight map (+choose correct msg type) creation & implementation
+    - move_to_place weight map (point-cloud) creation & implementation
     - Implement step_from_road
 - Long-term
     - Service for obtaining better place - possible need to rewrite road cost
