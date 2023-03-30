@@ -51,7 +51,7 @@ BT::NodeStatus MOV_nodes::rotate_robot::tick()
     msg.angular.z = speed;
 
     MOV_nodes::pub_cmd.publish(msg);
-    ros::spin();
+    ros::spinOnce();
 
     return BT::NodeStatus::SUCCESS;
 }
@@ -72,12 +72,131 @@ BT::NodeStatus MOV_nodes::move_to_place::tick()
     if (!req_nor)
         throw BT::RuntimeError("missing required input better_northing: ", req_nor.error());
 
-    // TODO: implement weight map creation & publishing
-
     return BT::NodeStatus::FAILURE;
 }
 
 BT::PortsList MOV_nodes::move_to_place::providedPorts()
 {
     return {BT::InputPort<double>("better_easting"), BT::InputPort<double>("better_northing")};
+}
+
+BT::NodeStatus MOV_nodes::not_started::tick()
+{
+    if (MOV_nodes::is_moving)
+        return BT::NodeStatus::SUCCESS;
+    return BT::NodeStatus::FAILURE;
+}
+
+BT::PortsList MOV_nodes::not_started::providedPorts()
+{
+    return {};
+}
+
+BT::NodeStatus MOV_nodes::start_movement::tick()
+{
+    MOV_nodes::is_moving = true;
+    MOV_nodes::lin_speed = MAX_LIN_SPEED;
+    ROS_INFO("Movement started.");
+    return BT::NodeStatus::SUCCESS;
+}
+
+BT::PortsList MOV_nodes::start_movement::providedPorts()
+{
+    return {};
+}
+
+BT::NodeStatus MOV_nodes::continue_movement::tick()
+{
+    geometry_msgs::Twist msg = geometry_msgs::Twist();
+    msg.linear.x = MOV_nodes::lin_speed;
+
+    MOV_nodes::pub_cmd.publish(msg);
+    ros::spinOnce();
+
+    return BT::NodeStatus::SUCCESS;
+}
+
+BT::PortsList MOV_nodes::continue_movement::providedPorts()
+{
+    return {};
+}
+
+BT::NodeStatus MOV_nodes::move_fwd::tick()
+{
+    BT::Optional<double> max_vel_fwd = getInput<double>("max_vel_fwd");
+    BT::Optional<double> min_vel_fwd = getInput<double>("min_vel_fwd");
+
+    if (!max_vel_fwd)
+        throw BT::RuntimeError("missing required input max_vel_fwd: ", max_vel_fwd.error());
+    if (!min_vel_fwd)
+        throw BT::RuntimeError("missing required input min_vel_fwd: ", min_vel_fwd.error());
+
+    if (max_vel_fwd.value() + 0.1 <= MAX_LIN_SPEED){
+        MOV_nodes::lin_speed = MAX_LIN_SPEED;
+    } else if (min_vel_fwd.value() - 0.1 >= MIN_LIN_SPEED) {
+        MOV_nodes::lin_speed = min_vel_fwd.value() - 0.1;
+    } else {  // Should not happen
+        MOV_nodes::lin_speed = 0;
+        ROS_WARN("Movement forward requested, but no speed is possible.");
+    }
+
+    geometry_msgs::Twist msg = geometry_msgs::Twist();
+    msg.linear.x = MOV_nodes::lin_speed;
+    ROS_INFO("Moving forward with speed %f.", MOV_nodes::lin_speed);
+
+    MOV_nodes::pub_cmd.publish(msg);
+    ros::spinOnce();
+
+    return BT::NodeStatus::SUCCESS;
+}
+
+BT::PortsList MOV_nodes::move_fwd::providedPorts()
+{
+    return {BT::InputPort<double>("max_vel_fwd"), BT::InputPort<double>("min_vel_fwd")};
+}
+
+BT::NodeStatus MOV_nodes::move_bwd::tick()
+{
+    BT::Optional<double> max_vel_bwd = getInput<double>("max_vel_bwd");
+    BT::Optional<double> min_vel_bwd = getInput<double>("min_vel_bwd");
+
+    if (!max_vel_bwd)
+        throw BT::RuntimeError("missing required input max_vel_bwd: ", max_vel_bwd.error());
+    if (!min_vel_bwd)
+        throw BT::RuntimeError("missing required input min_vel_bwd: ", min_vel_bwd.error());
+
+    if (max_vel_bwd.value() - 0.1 >= -MAX_LIN_SPEED){
+        MOV_nodes::lin_speed = -MAX_LIN_SPEED;
+    } else if (min_vel_bwd.value() + 0.1 <= -MIN_LIN_SPEED) {
+        MOV_nodes::lin_speed = min_vel_bwd.value() + 0.1;
+    } else {  // Should not happen
+        MOV_nodes::lin_speed = 0;
+        ROS_WARN("Movement backward requested, but no speed is possible.");
+    }
+
+    geometry_msgs::Twist msg = geometry_msgs::Twist();
+    msg.linear.x = MOV_nodes::lin_speed;
+    ROS_INFO("Moving backward with speed %f", MOV_nodes::lin_speed);
+
+    MOV_nodes::pub_cmd.publish(msg);
+    ros::spinOnce();
+
+    return BT::NodeStatus::SUCCESS;
+}
+
+BT::PortsList MOV_nodes::move_bwd::providedPorts()
+{
+    return {BT::InputPort<double>("max_vel_bwd"), BT::InputPort<double>("min_vel_bwd")};
+}
+
+BT::NodeStatus MOV_nodes::stop_movement::tick()
+{
+    MOV_nodes::lin_speed = 0;
+    ROS_INFO("Movement stopped.");
+    return BT::NodeStatus::SUCCESS;
+}
+
+BT::PortsList MOV_nodes::stop_movement::providedPorts()
+{
+    return {};
 }

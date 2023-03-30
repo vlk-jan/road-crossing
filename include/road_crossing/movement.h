@@ -50,6 +50,8 @@ class MOV_nodes
         /**
          * @brief Node to move the robot to a better place where it can cross the road.
          * The place is determined with other nodes.
+         * 
+         * TODO: implement weight map (as point-cloud) creation & publishing
          */
         class move_to_place : public BT::SyncActionNode
         {
@@ -85,11 +87,137 @@ class MOV_nodes
                 static BT::PortsList providedPorts();
         };
 
+        /**
+         * @brief Node to indicate that the robot is moving.
+         */
+        class not_started : public BT::ConditionNode
+        {
+            public:
+                not_started(const std::string& name, const BT::NodeConfiguration& config) :
+                    BT::ConditionNode(name, config)
+                {}
+
+                virtual ~not_started(){}
+
+                BT::NodeStatus tick() override;
+
+                static BT::PortsList providedPorts();
+        };
+
+        /**
+         * @brief Initialize the movement of the robot.
+         */
+        class start_movement : public BT::SyncActionNode
+        {
+            public:
+                start_movement(const std::string& name, const BT::NodeConfiguration& config):
+                    BT::SyncActionNode(name, config)
+                {}
+
+                virtual ~start_movement(){}
+
+                BT::NodeStatus tick() override;
+
+                static BT::PortsList providedPorts();
+        };
+
+        /**
+         * @brief Continue with the movement set in previous nodes.
+         */
+        class continue_movement : public BT::SyncActionNode
+        {
+            public:
+                continue_movement(const std::string& name, const BT::NodeConfiguration& config):
+                    BT::SyncActionNode(name, config)
+                {}
+
+                virtual ~continue_movement(){}
+
+                BT::NodeStatus tick() override;
+
+                static BT::PortsList providedPorts();
+        };
+
+        /**
+         * @brief Movement forward. Possible change of speed or direction.
+         */
+        class move_fwd : public BT::SyncActionNode
+        {
+            public:
+                move_fwd(const std::string& name, const BT::NodeConfiguration& config):
+                    BT::SyncActionNode(name, config)
+                {}
+
+                virtual ~move_fwd(){}
+
+                BT::NodeStatus tick() override;
+
+                static BT::PortsList providedPorts();
+        };
+
+        /**
+         * @brief Movement backward. Possible change of speed or direction.
+         */
+        class move_bwd : public BT::SyncActionNode
+        {
+            public:
+                move_bwd(const std::string& name, const BT::NodeConfiguration& config):
+                    BT::SyncActionNode(name, config)
+                {}
+
+                virtual ~move_bwd(){}
+
+                BT::NodeStatus tick() override;
+
+                static BT::PortsList providedPorts();
+        };
+
+        /**
+         * @brief Stop the movement of the robot.
+         */
+        class stop_movement : public BT::SyncActionNode
+        {
+            public:
+                stop_movement(const std::string& name, const BT::NodeConfiguration& config):
+                    BT::SyncActionNode(name, config)
+                {}
+
+                virtual ~stop_movement(){}
+
+                BT::NodeStatus tick() override;
+
+                static BT::PortsList providedPorts();
+        };
+
+        /**
+         * @brief Check if the robot has crossed the road.
+         * 
+         * TODO: Implement
+         */
+        class crossing_finished : public BT::ConditionNode
+        {
+            public:
+                crossing_finished(const std::string& name, const BT::NodeConfiguration& config) :
+                    BT::ConditionNode(name, config)
+                {}
+
+                virtual ~crossing_finished(){}
+
+                BT::NodeStatus tick() override;
+
+                static BT::PortsList providedPorts();
+        };
+
     private:
         static ros::Publisher pub_cmd, pub_map;
+        static double lin_speed, rot_speed;
+        static bool is_moving;
 };
 
 ros::Publisher MOV_nodes::pub_cmd;
 ros::Publisher MOV_nodes::pub_map;
+double MOV_nodes::lin_speed = 0;
+double MOV_nodes::rot_speed = 0;
+bool MOV_nodes::is_moving = false;
 
 #endif

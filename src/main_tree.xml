@@ -66,7 +66,6 @@
     <!-- ////////// -->
     <BehaviorTree ID="road_crossing">
         <Sequence>
-            <Condition ID="crossing_finished"/>
             <Action ID="get_cars"/>
             <Fallback>
                 <Condition ID="cars_in_trajectory"/>
@@ -96,6 +95,7 @@
                     <Action ID="continue_movement"/>
                 </Fallback>
             </Sequence>
+            <Condition ID="crossing_finished"/>
         </Sequence>
     </BehaviorTree>
     <!-- ////////// -->
