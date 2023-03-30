@@ -3,20 +3,23 @@
 * Author: Jan Vlk
 * Date: 2.3.2022
 * Description: This file contains functions for operations dealing with vehicle detection and collisions.
-* Last modified: 23.3.2023
+* Last modified: 30.3.2023
 */
 
-#include "road_crossing/vehicles.h"
+#include <cmath>
+#include <limits>
+
+#include "ros/ros.h"
 
 #include "behaviortree_cpp_v3/behavior_tree.h"
 #include "behaviortree_cpp_v3/bt_factory.h"
 
-#include "ros/ros.h"
-#include <cmath>
-
+#include "road_crossing/vehicles.h"
+#include "road_crossing/movement.h"
 #include "road_crossing/misc.h"
 
-bool VEH_nodes::vehicle_collision(vehicle_info vehicle, vehicle_info robot, collision_info &collision)
+
+void VEH_nodes::vehicle_collision(vehicle_info vehicle, vehicle_info robot, collision_info &collision)
 {
     // Calculate the intersection point of the robot's and vehicle's paths
     double beta = (robot.x_dot*(vehicle.pos_y-robot.pos_y) - robot.y_dot*(vehicle.pos_x-robot.pos_x))/
@@ -49,7 +52,7 @@ bool VEH_nodes::vehicle_collision(vehicle_info vehicle, vehicle_info robot, coll
     // Calculate the velocity for robot to collide with the vehicle
     double robot_speed = sqrt(pow(robot.x_dot, 2) + pow(robot.y_dot, 2));
     double robot_phi = atan2(robot.y_dot, robot.x_dot);
-    //ROS_INFO("Robot speed: %f, phi: %f", vehicle_speed, vehicle_phi);
+    //ROS_INFO("Robot speed: %f, phi: %f", robot_speed, robot_phi);
 
     double robot_length_x = robot.length*cos(vehicle_phi)/2;
     double robot_length_y = robot.length*sin(vehicle_phi)/2;
@@ -65,17 +68,145 @@ bool VEH_nodes::vehicle_collision(vehicle_info vehicle, vehicle_info robot, coll
     double v_front = robot_travel_front/t_front;
     double v_back = robot_travel_front/t_back;
 
+    // Check if the collision is in the direction of travel of the robot
+    double rob_t = robot_travel_front/robot_speed;
+    bool collision_front = ((robot.pos_x + rob_t*robot.x_dot) == pos_x) &&
+                           ((robot.pos_y + rob_t*robot.y_dot) == pos_y);
+    
+    v_front = collision_front ? v_front : -v_front;
+    v_back = collision_front ? v_back : -v_back;
+    ROS_INFO("Velocity for collision: %f, %f", v_front, v_back);
+
+    rob_t = collision_front ? rob_t : -rob_t;
+    ROS_INFO("Time for robot till intersection: %f", rob_t);
+
     collision.car_id = vehicle.id;
     collision.v_front = v_front;
     collision.v_back = v_back;
 
     // Check if the robot will collide with the vehicle
-    double rob_t = robot_travel_front/robot_speed;
-    ROS_INFO("Time for robot till intersection: %f", rob_t);
+    // if they both travel at the provided velocities
     if (rob_t >= t_front && rob_t <= t_back)
-        return true;
+        collision.collide = true;
     else
-        return false;
+        collision.collide = false;
+}
+
+BT::NodeStatus VEH_nodes::cars_in_trajectory::tick()
+{
+    if (VEH_nodes::vehicles.num_vehicles == 0) // No vehicles detected
+        return BT::NodeStatus::FAILURE;
+    return BT::NodeStatus::SUCCESS;
+}
+
+BT::PortsList VEH_nodes::cars_in_trajectory::providedPorts()
+{
+    return {};
+}
+
+BT::NodeStatus VEH_nodes::calculate_collision::tick()
+{
+    VEH_nodes::collisions.num_collisions = VEH_nodes::vehicles.num_vehicles;
+    VEH_nodes::collisions.data = {};
+
+    double max_velocity_fwd = 0;
+    double max_velocity_bwd = 0;
+    double min_velocity_fwd = std::numeric_limits<double>::max();
+    double min_velocity_bwd = std::numeric_limits<double>::min();
+
+    for (int i=0; i<VEH_nodes::vehicles.num_vehicles; ++i){
+        collision_info collision;
+        VEH_nodes::vehicle_collision(VEH_nodes::vehicles.data[i], VEH_nodes::robot, collision);
+        VEH_nodes::collisions.data.push_back(collision);
+
+        // Determine the velocities with regard to the direction of travel
+        double higher_velocity, lower_velocity;
+        if (collision.v_front >= 0){
+            double higher_velocity = collision.v_front >= collision.v_back ? collision.v_front : collision.v_back;
+            double lower_velocity = collision.v_front <= collision.v_back ? collision.v_front : collision.v_back;
+        } else {
+            double higher_velocity = collision.v_front <= collision.v_back ? collision.v_front : collision.v_back;
+            double lower_velocity = collision.v_front >= collision.v_back ? collision.v_front : collision.v_back;
+        }
+
+        // Determine the maximum and minimum velocities with regard to the direction of travel
+        if (collision.v_front >= 0){
+            max_velocity_fwd = higher_velocity > max_velocity_fwd ? higher_velocity : max_velocity_fwd;
+            min_velocity_fwd = lower_velocity < min_velocity_fwd ? lower_velocity : min_velocity_fwd;
+        } else {
+            max_velocity_bwd = higher_velocity < max_velocity_bwd ? higher_velocity : max_velocity_bwd;
+            min_velocity_bwd = lower_velocity > min_velocity_bwd ? lower_velocity : min_velocity_bwd;
+        }
+    }
+
+    setOutput<double>("max_velocity_fwd", max_velocity_fwd);
+    setOutput<double>("min_velocity_fwd", min_velocity_fwd);
+    setOutput<double>("max_velocity_bwd", max_velocity_bwd);
+    setOutput<double>("min_velocity_bwd", min_velocity_bwd);
+
+    return BT::NodeStatus::SUCCESS;
+}
+
+BT::PortsList VEH_nodes::calculate_collision::providedPorts()
+{
+    return {BT::OutputPort<double>("max_velocity_fwd"), BT::OutputPort<double>("min_velocity_fwd"),
+            BT::OutputPort<double>("max_velocity_bwd"), BT::OutputPort<double>("min_velocity_bwd")};
+}
+
+BT::NodeStatus VEH_nodes::collision_imminent::tick()
+{
+    for (int i=0; i<VEH_nodes::collisions.num_collisions; ++i){
+        if (VEH_nodes::collisions.data[i].collide)
+            return BT::NodeStatus::SUCCESS;
+    }
+    return BT::NodeStatus::FAILURE;
+}
+
+BT::PortsList VEH_nodes::collision_imminent::providedPorts()
+{
+    return {};
+}
+
+BT::NodeStatus VEH_nodes::collision_fwd_move::tick()
+{
+    BT::Optional<double> max_velocity_fwd = getInput<double>("max_velocity_fwd");
+    BT::Optional<double> min_velocity_fwd = getInput<double>("min_velocity_fwd");
+
+    if (!max_velocity_fwd)
+        throw BT::RuntimeError("missing required input max_velocity_fwd: ", max_velocity_fwd.error());
+    if (!min_velocity_fwd)
+        throw BT::RuntimeError("missing required input min_velocity_fwd: ", min_velocity_fwd.error());
+    
+    if (max_velocity_fwd.value() >= MAX_LIN_SPEED && min_velocity_fwd.value() <= MIN_LIN_SPEED)
+        return BT::NodeStatus::SUCCESS;
+
+    return BT::NodeStatus::FAILURE;
+}
+
+BT::PortsList VEH_nodes::collision_fwd_move::providedPorts()
+{
+    return {BT::InputPort<double>("max_velocity_fwd"), BT::InputPort<double>("min_velocity_fwd")};
+}
+
+BT::NodeStatus VEH_nodes::collision_bwd_move::tick()
+{
+    BT::Optional<double> max_velocity_bwd = getInput<double>("max_velocity_bwd");
+    BT::Optional<double> min_velocity_bwd = getInput<double>("min_velocity_bwd");
+
+    if (!max_velocity_bwd)
+        throw BT::RuntimeError("missing required input max_velocity_bwd: ", max_velocity_bwd.error());
+    if (!min_velocity_bwd)
+        throw BT::RuntimeError("missing required input min_velocity_bwd: ", min_velocity_bwd.error());
+    
+    if (max_velocity_bwd.value() <= -MAX_LIN_SPEED && min_velocity_bwd.value() >= -MIN_LIN_SPEED)
+        return BT::NodeStatus::SUCCESS;
+
+    return BT::NodeStatus::FAILURE;
+}
+
+BT::PortsList VEH_nodes::collision_bwd_move::providedPorts()
+{
+    return {BT::InputPort<double>("max_velocity_bwd"), BT::InputPort<double>("min_velocity_bwd")};
 }
 
 /// @brief For testing purposes
@@ -88,7 +219,7 @@ int main(int argc, char **argv)
     vehicle_info vehicle;
     vehicle.id = 1;
     vehicle.pos_x = -30;
-    vehicle.pos_y = 5;
+    vehicle.pos_y = -5;
     vehicle.x_dot = 8.33;
     vehicle.y_dot = 0;
     vehicle.length = 4.7;
@@ -109,9 +240,9 @@ int main(int argc, char **argv)
 
     while (ros::ok())
     {
-        bool ret = veh_nodes.vehicle_collision(vehicle, robot, collision);
+        veh_nodes.vehicle_collision(vehicle, robot, collision);
         ROS_INFO("Collision info: %d, %f, %f", collision.car_id, collision.v_front, collision.v_back);
-        if (ret)
+        if (collision.collide)
             ROS_INFO("Collision with vehicle %d", collision.car_id);
         else
             ROS_INFO("No collision");
