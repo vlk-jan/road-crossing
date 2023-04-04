@@ -1,11 +1,13 @@
 # Road Crossing
 
 ## Overview
+
 This is a ROS node to facilitate safe traverse of an autonomous robot across a road. It was done as a bachelor thesis at FEE CTU.
 
 The main algorithm is based on a behavior-tree structure. This work does not include the detection of incoming vehicles, that is provided by a different node.
 
 ## Installation
+
 Clone this repository into your catkin workspace.
 
 ```bash
@@ -26,29 +28,36 @@ The package also requires additional libraries:
 - [UTM](https://github.com/Turbo87/utm) - python library for bidirectional UTM <-> WGS84 conversion.
 
 Installing c++ libraries:
+
 ```bash
 sudo apt-get install libgeographic-dev ros-$ROS_DISTRO-behaviortree-cpp-v3
 ```
 
 Installing python libraries
+
 ```bash
 pip install -r requirements.txt
 ```
 
 ## Documentation
+
 This package does not currently have a documentation. However the text of my bachelor thesis is [here](https://github.com/vlk-jan/bachelor_thesis), where I try to explain the code a bit.
 
 ## License
+
 [![License](https://img.shields.io/badge/License-BSD_3--Clause-blue.svg)](https://github.com/vlk-jan/road_crossing/blob/master/LICENSE)
 
 ## TODO
+
 - Short-term
-    - Implement obtaining data from injector
-    - Add acceleration and width to collision calculation
-    - move_to_place weight map (point-cloud) creation & implementation
-    - Implement step_from_road
-    - Implement crossing_finished
+  - Implement context score calculation
+  - Implement obtaining data from injector
+  - Add acceleration and width to collision calculation
+  - move_to_place weight map (point-cloud) creation & implementation
+  - Implement step_from_road
+  - Implement crossing_finished
+  - Add road width to road cost?
 - Long-term
-    - Robot steering during the crossing, currently moving only forward and backward in a straight line
-    - Service for obtaining better place - possible need to rewrite road cost
-    - Vehicle obtaining (from ROS node) message type & implementation
+  - Robot steering during the crossing, currently moving only forward and backward in a straight line
+  - Service for obtaining better place - possible need to rewrite road cost
+  - Vehicle obtaining (from ROS node) message type & implementation
