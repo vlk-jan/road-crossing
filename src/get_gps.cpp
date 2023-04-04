@@ -3,7 +3,7 @@
 * Author: Jan Vlk
 * Date: 13.2.2023
 * Description: This file contains miscellaneous functions and classes, or functions and classes that do not have a specific place yet.
-* Last modified: 29.3.2023
+* Last modified: 4.4.2023
 */
 
 #include "behaviortree_cpp_v3/behavior_tree.h"
@@ -95,7 +95,9 @@ BT::NodeStatus GPS_nodes::get_position::tick()
 {
     setOutput("easting", GPS_nodes::easting);
     setOutput("northing", GPS_nodes::northing);
-    return BT::NodeStatus::SUCCESS;
+    if (!GPS_nodes::place_suitability())
+        return BT::NodeStatus::SUCCESS;
+    return BT::NodeStatus::FAILURE;
 }
 
 BT::PortsList GPS_nodes::get_position::providedPorts()

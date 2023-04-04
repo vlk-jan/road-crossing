@@ -7,11 +7,11 @@
 #include "road_crossing/start_algorithm.h"
 
 
-class COND_nodes
+class Start_service
 {
     public:
-        COND_nodes() {}
-        virtual ~COND_nodes() {}
+        Start_service() {}
+        virtual ~Start_service() {}
         
         /**
          * @brief Callback for service server for starting the algorithm.
@@ -20,7 +20,7 @@ class COND_nodes
          * @param req Request from the service client.
          * @param res Response to the service client.
          */
-        static bool start_algorithm(COND_nodes* node, road_crossing::start_algorithm::Request& req, const road_crossing::start_algorithm::Response& res);
+        static bool start_algorithm(Start_service* node, road_crossing::start_algorithm::Request& req, const road_crossing::start_algorithm::Response& res);
 
         class start_algorithm : public BT::ConditionNode
         {
@@ -40,6 +40,6 @@ class COND_nodes
         static bool is_running;
 };
 
-bool COND_nodes::is_running = false;
+bool Start_service::is_running = false;
 
 #endif

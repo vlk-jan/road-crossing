@@ -32,7 +32,7 @@ class GPS_nodes
         /**
          * @brief Request information from road cost node, if the current robot's position is suitable for road crossing.
          */
-        int place_suitability();
+        static int place_suitability();
 
         class cross_road : public BT::ConditionNode
         {

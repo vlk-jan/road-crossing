@@ -3,7 +3,7 @@
 * Author: Jan Vlk
 * Date: 27.3.2023
 * Description: This file contains functions for starting the BT algorithm
-* Last modified: 27.3.2023
+* Last modified: 4.4.2023
 */
 
 #include "behaviortree_cpp_v3/behavior_tree.h"
@@ -20,10 +20,10 @@ int main(int argc, char **argv)
     ros::init(argc, argv, "start_srv");
     ros::NodeHandle nh;
 
-    COND_nodes cond_nodes;
+    Start_service cond_nodes;
 
     const boost::function<bool(road_crossing::start_algorithm::Request&, const road_crossing::start_algorithm::Response&)> start_service =
-          boost::bind(&COND_nodes::start_algorithm, &cond_nodes, _1, _2);
+          boost::bind(&Start_service::start_algorithm, &cond_nodes, _1, _2);
 
     ros::ServiceServer start_srv = nh.advertiseService("start_algorithm", start_service);
 
@@ -32,7 +32,7 @@ int main(int argc, char **argv)
     return EXIT_SUCCESS;
 }
 
-bool COND_nodes::start_algorithm(COND_nodes* node, road_crossing::start_algorithm::Request &req, const road_crossing::start_algorithm::Response &res)
+bool Start_service::start_algorithm(Start_service* node, road_crossing::start_algorithm::Request &req, const road_crossing::start_algorithm::Response &res)
 {
     if (req.start && req.stop){
         ROS_WARN("Start and stop algorithm service called");
@@ -47,15 +47,15 @@ bool COND_nodes::start_algorithm(COND_nodes* node, road_crossing::start_algorith
     return node->is_running;
 }
 
-BT::NodeStatus COND_nodes::start_algorithm::tick()
+BT::NodeStatus Start_service::start_algorithm::tick()
 {
-    if (COND_nodes::is_running)
+    if (Start_service::is_running)
         return BT::NodeStatus::SUCCESS;
     else
         return BT::NodeStatus::FAILURE;
 }
 
-BT::PortsList COND_nodes::start_algorithm::providedPorts()
+BT::PortsList Start_service::start_algorithm::providedPorts()
 {
     return {};
 }
