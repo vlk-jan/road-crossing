@@ -1,7 +1,6 @@
 import matplotlib.pyplot as plt
 import numpy as np
-import pyproj
-from geodesy import utm
+import utm
 import copy
 
 
@@ -23,9 +22,9 @@ class DataPoints():
         self.n_closest = n_closest
 
     def waypoints_to_utm(self):
-        for i,waypoint in enumerate(self.waypoints):
-            utm_coords = utm.fromLatLong(waypoint[0],waypoint[1])
-            waypoint = np.array([utm_coords.easting, utm_coords.northing])
+        for i, waypoint in enumerate(self.waypoints):
+            utm_coords = utm.from_latlon(waypoint[0], waypoint[1])
+            waypoint = np.array([utm_coords[0], utm_coords[1]])
             self.waypoints[i] = waypoint
 
     def narrow_region(self):
@@ -47,7 +46,7 @@ class DataPoints():
             arg_n_min_dist = np.argpartition(dist2,n)[:n]
         #n_closest_points = np.array(points)[arg_n_min_dist]
         distances = np.sqrt(dist2[arg_n_min_dist])
-        return [arg_n_min_dist,distances]
+        return [arg_n_min_dist, distances]
 
     def assign_height(self):
         """ To each waypoint assign height as the weighted mean of heights of the n
@@ -57,7 +56,7 @@ class DataPoints():
             n_closest_points = self.data_points[arg_n_min_dist]
             heights = n_closest_points[:,2]
             weights = np.reciprocal(distances)
-            height = np.sum(np.multiply(heights,weights/np.sum(weights)))
+            height = np.sum(np.multiply(heights, weights/np.sum(weights)))
             self.waypoints[i,2] = height
 
     def visualize(self):

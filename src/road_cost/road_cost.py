@@ -13,7 +13,8 @@ from road_crossing_consts import *
 
 
 class RoadCost:
-    road_segments = []
+    def __init__(self):
+        self.road_segments = []
 
     def road_cost(self, min_lat, min_long, max_lat, max_long):
         api = overpy.Overpass(url="https://overpass.kumi.systems/api/interpreter")
@@ -72,15 +73,24 @@ class RoadCost:
         rospy.loginfo("min_dist: {}, cost: {}".format(min_dist, cost))
         return cost
 
-    def save_road_segments(self):  # TODO: file name as param
-        with open("road_segments.pyc", "wb") as file:
+    def save_road_segments(self):
+        file_name = rospy.get_param("~road_file_name", "road_segments.pyc")
+        with open(file_name, "wb") as file:
             pickle.dump(self.road_segments, file)
-        rospy.INFO("Road segments saved")
+        print("INFO: Road segments saved")
 
-    def load_road_segments(self):  # TODO: file name as param & error handling
-        with open("road_segments.pyc", "rb") as file:
-            self.road_segments = pickle.load(file)
-        rospy.INFO("Road segments loaded")
+    def load_road_segments(self):
+        file_name = rospy.get_param("~road_file_name", "road_segments.pyc")
+        try:
+            with open(file_name, "rb") as file:
+                self.road_segments = pickle.load(file)
+            print("INFO: Road segments loaded")
+        except FileNotFoundError:
+            print("ERROR: Road segments not loaded, file not found")
+            exit()
+        except OSError:
+            print("ERROR: Road segments not loaded, file open error")
+            exit()
 
     def handle_road_suitability(self, req):
         easting = req.easting
@@ -99,6 +109,7 @@ class RoadCost:
     def get_suitability_server(self):
         rospy.init_node("get_suitability_server")
         s_get_suitability = rospy.Service("get_suitability", get_suitability, self.handle_road_suitability)
+        rospy.loginfo("Suitability server ready")
         rospy.spin()
 
     def handle_get_road_segment(self, req):
@@ -125,22 +136,5 @@ class RoadCost:
     def get_road_segment_server(self):
         rospy.init_node("get_road_segment_server")
         s_get_segment = rospy.Service("get_road_segment", get_road_segment, self.handle_get_road_segment)
+        rospy.loginfo("Road segment server ready")
         rospy.spin()
-
-
-if __name__ == "__main__":
-    rospy.init_node("road_cost_standalone")
-
-    #min_lat = rospy.get_param("/min_lat")
-    #min_long = rospy.get_param("/min_long")
-    #max_lat = rospy.get_param("/max_lat")
-    #max_long = rospy.get_param("/max_long")
-
-    min_lat = 50.09
-    min_long = 14.11
-    max_lat = 50.11
-    max_long = 14.13
-
-    road_cost_obj = RoadCost()
-    road_cost_obj.road_cost(min_lat, min_long, max_lat, max_long)
-    road_cost_obj.save_road_segments()

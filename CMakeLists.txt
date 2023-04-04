@@ -14,6 +14,8 @@ find_package(catkin REQUIRED COMPONENTS
 set(CMAKE_MODULE_PATH "${CMAKE_MODULE_PATH};/usr/share/cmake/geographiclib")
 find_package(GeographicLib REQUIRED)
 
+catkin_python_setup()
+
 add_message_files(
   FILES
   injector_msgs.msg
@@ -33,7 +35,9 @@ generate_messages(
   std_msgs
 )
 
-catkin_package()
+catkin_package(
+  CATKIN_DEPENDS message_runtime rospy
+)
 
 include_directories(
   include
@@ -44,7 +48,7 @@ include_directories(
 catkin_install_python(
   PROGRAMS
   src/test_injector.py
-  src/road_cost/road_cost.py
+  src/road_cost/road_cost_run.py
   src/road_cost/get_segment_srv.py
   src/road_cost/get_suitability_srv.py
 
@@ -71,12 +75,14 @@ target_link_libraries(movement_lib ${catkin_LIBRARIES} misc_lib)
 set(SOURCES src/get_gps.cpp include/road_crossing/get_gps.h)
 add_library(gps_lib ${catkin_LIBRARIES} ${SOURCES})
 target_link_libraries(gps_lib ${catkin_LIBRARIES})
+add_dependencies(gps_lib ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 add_executable(run_tree src/main.cpp)
 target_link_libraries(run_tree ${catkin_LIBRARIES} road_cross_tree_lib azimuth_lib movement_lib gps_lib)
 
 add_executable(start_srv src/start_srv.cpp include/road_crossing/start_srv.h)
 target_link_libraries(start_srv ${catkin_LIBRARIES})
+add_dependencies(start_srv ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 add_executable(vehicles src/vehicles.cpp)
 target_link_libraries(vehicles ${catkin_LIBRARIES})

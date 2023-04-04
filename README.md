@@ -23,7 +23,7 @@ The package also requires additional libraries:
 - [Numpy](https://numpy.org/doc/stable/) - python library for numerical calculations.
 - [Overpy](https://github.com/DinoTools/python-overpy) - python library for accesing the OSM overpass API.
 - [Shapely](https://shapely.readthedocs.io/en/stable/manual.html) - python library for work with geometrical objects.
-- [Geodesy](https://github.com/xoolive/geodesy) - python library for geographical conversions.
+- [UTM](https://github.com/Turbo87/utm) - python library for bidirectional UTM <-> WGS84 conversion.
 
 Installing c++ libraries:
 ```bash
