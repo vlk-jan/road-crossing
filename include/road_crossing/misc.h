@@ -53,4 +53,10 @@ double comp_heading(double rob_heading, double road_heading);
  */
 void gps_to_utm(double lat, double lon, double &x, double &y);
 
+/**
+ * @brief Calculates the score based on the context info given.
+ * Currently the context may only be given by the user via rosparam.
+ */
+int calculate_context_score();
+
 #endif

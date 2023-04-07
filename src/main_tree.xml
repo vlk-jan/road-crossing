@@ -28,16 +28,18 @@
                 <SubTree ID="get_heading" __shared_blackboard="true"/>
             </SequenceStar>
             <RetryUntilSuccessful num_attempts="10">
-                <Fallback>
+                <Sequence>
                     <Action ID="get_azimuth" cur_azimuth="{azimuth}"/>
-                    <Condition ID="robot_perpendicullar" cur_azimuth="{azimuth}" req_azimuth="{heading}"/>
-                    <ForceFailure>
-                        <Fallback>
-                            <Action ID="rotate_robot" direction="{direction}"/>
-                            <Action ID="step_from_road" easting="{easting}" northing="{northing}"/>
-                        </Fallback>
-                    </ForceFailure>
-                </Fallback>
+                    <Fallback>
+                        <Condition ID="robot_perpendicular" cur_azimuth="{azimuth}" req_azimuth="{heading}"/>
+                        <ForceFailure>
+                            <Fallback>
+                                <Action ID="rotate_robot" direction="{direction}"/>
+                                <Action ID="step_from_road" easting="{easting}" northing="{northing}"/>
+                            </Fallback>
+                        </ForceFailure>
+                    </Fallback>
+                </Sequence>
             </RetryUntilSuccessful>
         </SequenceStar>
     </BehaviorTree>
@@ -180,7 +182,7 @@
             <input_port default="{northing}" name="northing">current northing of the robot</input_port>
             <output_port default="{road_heading}" name="road_heading">heading of a road we need to cross</output_port>
         </Action>
-        <Condition ID="robot_perpendicullar">
+        <Condition ID="robot_perpendicular">
             <input_port default="{azimuth}" name="cur_azimuth">current azimuth of the robot</input_port>
             <input_port default="{heading}" name="req_azimuth">azimuth robot should have to be parallel to road we need to cross</input_port>
         </Condition>
