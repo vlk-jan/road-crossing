@@ -6,6 +6,8 @@
 
 #include "ros/ros.h"
 
+#include "road_crossing/injector_msgs.h"
+
 
 struct collision_info
 {
@@ -66,6 +68,14 @@ class VEH_nodes
          */
         static void callback_vehicle(); 
 
+        /**
+         * @brief Callback function for the vehicle injector subscriber.
+         * 
+         * @param node VEH_nodes object, necessary for static variables.
+         * @param msg Message with the vehicle data from the injector.
+         */
+        static void callback_vehicle_injector(VEH_nodes* node, const road_crossing::injector_msgs::ConstPtr& msg);
+
         class get_cars : public BT::SyncActionNode
         {
             public:
@@ -74,6 +84,20 @@ class VEH_nodes
                 {}
 
                 virtual ~get_cars(){}
+
+                BT::NodeStatus tick() override;
+
+                static BT::PortsList providedPorts();
+        };
+
+        class get_cars_injector : public BT::SyncActionNode
+        {
+            public:
+                get_cars_injector(const std::string& name, const BT::NodeConfiguration& config)
+                    : BT::SyncActionNode(name, config)
+                {}
+
+                virtual ~get_cars_injector(){}
 
                 BT::NodeStatus tick() override;
 

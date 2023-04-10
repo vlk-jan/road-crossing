@@ -3,7 +3,7 @@
 * Author: Jan Vlk
 * Date: 2.3.2022
 * Description: This file contains functions for operations dealing with vehicle detection and collisions.
-* Last modified: 30.3.2023
+* Last modified: 10.4.2023
 */
 
 #include <cmath>
@@ -17,6 +17,7 @@
 #include "road_crossing/vehicles.h"
 #include "road_crossing/movement.h"
 #include "road_crossing/misc.h"
+#include "road_crossing/injector_msgs.h"
 
 
 void VEH_nodes::vehicle_collision(vehicle_info vehicle, vehicle_info robot, collision_info &collision)
@@ -90,6 +91,50 @@ void VEH_nodes::vehicle_collision(vehicle_info vehicle, vehicle_info robot, coll
         collision.collide = true;
     else
         collision.collide = false;
+}
+
+void VEH_nodes::callback_vehicle_injector(VEH_nodes* node, const road_crossing::injector_msgs::ConstPtr& msg)
+{
+    for (int i = 0; i < node->vehicles.data.size(); ++i){
+        if (msg->veh_id == vehicles.data[i].id){
+            vehicles.data[i].pos_x = msg->lat;
+            vehicles.data[i].pos_y = msg->lon;
+            vehicles.data[i].x_dot = msg->x_dot;
+            vehicles.data[i].y_dot = msg->y_dot;
+            vehicles.data[i].x_ddot = msg->x_ddot;
+            vehicles.data[i].y_ddot = msg->y_ddot;
+            vehicles.data[i].length = msg->length;
+            vehicles.data[i].width = msg->width;
+
+            return;
+        }
+    }
+
+    vehicle_info vehicle;
+    vehicle.id = msg->veh_id;
+    vehicle.pos_x = msg->lat;
+    vehicle.pos_y = msg->lon;
+    vehicle.x_dot = msg->x_dot;
+    vehicle.y_dot = msg->y_dot;
+    vehicle.x_ddot = msg->x_ddot;
+    vehicle.y_ddot = msg->y_ddot;
+    vehicle.length = msg->length;
+    vehicle.width = msg->width;
+
+    vehicles.data.push_back(vehicle);
+    ++vehicles.num_vehicles;
+}
+
+BT::NodeStatus VEH_nodes::get_cars_injector::tick()
+{
+    setOutput("vehicles", VEH_nodes::vehicles);
+
+    return BT::NodeStatus::SUCCESS;
+}
+
+BT::PortsList VEH_nodes::get_cars_injector::providedPorts()
+{
+    return {BT::OutputPort<vehicle_info>("vehicles")};
 }
 
 BT::NodeStatus VEH_nodes::cars_in_trajectory::tick()

@@ -19,7 +19,7 @@ class GPS_nodes
          * 
          * @param nh ROS NodeHandle.
          */
-        void init_service(ros::NodeHandle& nh);
+        static void init_service(ros::NodeHandle& nh);
 
         /**
          * @brief Subscriber for the gps data of the robot.

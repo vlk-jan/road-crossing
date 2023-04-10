@@ -50,7 +50,6 @@ This package does not currently have a documentation. However the text of my bac
 ## TODO
 
 - Short-term
-  - Implement obtaining data from injector
   - Add acceleration and width to collision calculation
   - move_to_place weight map (point-cloud) creation & implementation
   - Implement step_from_road
