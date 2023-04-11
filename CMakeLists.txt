@@ -26,6 +26,7 @@ add_service_files(
   get_road_segment.srv
   get_suitability.srv
   start_algorithm.srv
+  get_road_info.srv
 )
 
 generate_messages(

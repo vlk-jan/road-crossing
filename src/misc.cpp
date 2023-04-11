@@ -3,7 +3,7 @@
 * Author: Jan Vlk
 * Date: 13.2.2023
 * Description: This file contains miscellaneous functions and classes, or functions and classes that do not have a specific place yet.
-* Last modified: 7.4.2023
+* Last modified: 11.4.2023
 */
 
 #include "road_crossing/misc.h"
@@ -13,6 +13,8 @@
 #include "ros/ros.h"
 
 #include <GeographicLib/UTMUPS.hpp>
+
+#include "road_crossing/get_road_info.h"
 
 
 double gps_points_heading(double lat1, double lon1, double lat2, double lon2)
@@ -64,69 +66,68 @@ void gps_to_utm(double lat, double lon, double &x, double &y)
     GeographicLib::UTMUPS::Forward(lat, lon, zone, northp, x, y);
 }
 
-int calculate_context_score()
+int calculate_context_score(float easting, float northing)
 {
     int score = 0;
+    road_crossing::get_road_info srv;
+    srv.request.easting = easting;
+    srv.request.northing = northing;
 
-    if (ros::param::has("/context_score/road_width"))
-    {
-        double road_width;
-        ros::param::get("/context_score/road_width", road_width);
-        if (road_width < 3.5)
-            score += 4;
-        else if (road_width < 4.5)
-            score += 3;
-        else if (road_width < 5.5)
-            score += 2;
-        else if (road_width < 6.5)
-            score += 1;
+    if (!road_info_client.call(srv)){
+        ROS_ERROR("Failed to call service get_road_info");
+        return score;
     }
-    if (ros::param::has("/context_score/max_velocity"))
-    {
-        double max_velocity;
-        ros::param::get("/context_score/max_velocity", max_velocity);
-        if (max_velocity < 30)
-            score += 3;
-        else if (max_velocity < 50)
-            score += 2;
-        else if (max_velocity < 80)
-            score += 1;
-    }
-    if (ros::param::has("context_score/road_type"))
-    {
-        std::string road_type;
-        ros::param::get("/context_score/road_type", road_type);
-        if (road_type == "motorway")
-            score -= 10;
-        else if (road_type == "trunk")
-            score -= 4;
-        else if (road_type == "primary")
-            score += 1;
-        else if (road_type == "secondary")
-            score += 2;
-        else if (road_type == "tertiary")
-            score += 3;
-    }
-    if (ros::param::has("context_score/num_lanes"))
-    {
-        int num_lanes;
-        ros::param::get("/context_score/num_lanes", num_lanes);
-        if (num_lanes == 1)
-            score += 5;
-        else if (num_lanes == 2)
-            score += 4;
-        else if (num_lanes == 3)
-            score += 2;
-        else if (num_lanes == 4)
-            score += 1;
-    }
-    if (ros::param::has("context_score/pedestrian_crossing"))
-    {
-        bool pedestrian_crossing;
-        ros::param::get("/context_score/pedestrian_crossing", pedestrian_crossing);
-        if (pedestrian_crossing)
-            score += 10;
-    }
+
+    double road_width = srv.response.road_width;
+    if (road_width < 3.5)
+        score += 4;
+    else if (road_width < 4.5)
+        score += 3;
+    else if (road_width < 5.5)
+        score += 2;
+    else if (road_width < 6.5)
+        score += 1;
+
+    double max_velocity = srv.response.maximal_velocity;
+    if (max_velocity < 30)
+        score += 3;
+    else if (max_velocity < 50)
+        score += 2;
+    else if (max_velocity < 80)
+        score += 1;
+
+    std::string road_type = srv.response.road_type;
+    if (road_type == "motorway")
+        score -= 10;
+    else if (road_type == "trunk")
+        score -= 4;
+    else if (road_type == "primary")
+        score += 1;
+    else if (road_type == "secondary")
+        score += 2;
+    else if (road_type == "tertiary")
+        score += 3;
+
+    int num_lanes = srv.response.num_lanes;
+    if (num_lanes == 1)
+        score += 5;
+    else if (num_lanes == 2)
+        score += 4;
+    else if (num_lanes == 3)
+        score += 2;
+    else if (num_lanes == 4)
+        score += 1;
+
+    bool pedestrian_crossing = srv.response.pedestrian_crossing;
+    if (pedestrian_crossing)
+        score += 10;
 
     return score;
+}
+
+void init_service(ros::NodeHandle &nh)
+{
+    std::string service_name = "get_road_info";
+    ros::service::waitForService(service_name);
+    road_info_client = nh.serviceClient<road_crossing::get_road_info>(service_name);
 }

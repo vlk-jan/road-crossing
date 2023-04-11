@@ -1,0 +1,11 @@
+float64 easting
+float64 northing
+---
+int32 expected_velocity
+int32 maximal_velocity
+int32 num_lanes
+int32 road_width
+string road_type
+bool pedestrian_crossing
+float64 crossing_easting
+float64 crossing_northing

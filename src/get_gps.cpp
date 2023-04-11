@@ -3,7 +3,7 @@
 * Author: Jan Vlk
 * Date: 13.2.2023
 * Description: This file contains miscellaneous functions and classes, or functions and classes that do not have a specific place yet.
-* Last modified: 7.4.2023
+* Last modified: 11.4.2023
 */
 
 #include "behaviortree_cpp_v3/behavior_tree.h"
@@ -41,7 +41,7 @@ int GPS_nodes::place_suitability()
     road_crossing::get_suitability srv;
     srv.request.easting = GPS_nodes::easting;
     srv.request.northing = GPS_nodes::northing;
-    srv.request.context_score = calculate_context_score();
+    srv.request.context_score = calculate_context_score(GPS_nodes::easting, GPS_nodes::northing);
 
     if (GPS_nodes::place_suitability_client.call(srv)){
         GPS_nodes::suitable = srv.response.suitable;

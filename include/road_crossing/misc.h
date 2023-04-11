@@ -1,6 +1,9 @@
 #ifndef MISC
 #define MISC
 
+#include "ros/ros.h"
+
+
 /**
  * @brief Calculate the heading from one point to other. The return is the azimut of observer
  * standing at the first point and looking in the direction of the second one.
@@ -55,8 +58,18 @@ void gps_to_utm(double lat, double lon, double &x, double &y);
 
 /**
  * @brief Calculates the score based on the context info given.
- * Currently the context may only be given by the user via rosparam.
+ * 
+ * @param easting Location for determining the closest road context score.
+ * @param northing Location for determining the closest road context score.
  */
-int calculate_context_score();
+int calculate_context_score(float easting, float northing);
+
+/**
+ * @brief Initialize service clients for functions in this class.
+ * 
+ * @param nh ROS NodeHandle.
+ */
+void init_service(ros::NodeHandle &nh);
+ros::ServiceClient road_info_client;
 
 #endif
