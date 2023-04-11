@@ -3,7 +3,7 @@
 * Author: Jan Vlk
 * Date: 25.11.2022
 * Description: This file contains functions for moving the robot.
-* Last modified: 30.3.2023
+* Last modified: 11.4.2023
 */
 
 #include <cmath>
@@ -78,6 +78,36 @@ BT::NodeStatus MOV_nodes::move_to_place::tick()
 BT::PortsList MOV_nodes::move_to_place::providedPorts()
 {
     return {BT::InputPort<double>("better_easting"), BT::InputPort<double>("better_northing")};
+}
+
+BT::NodeStatus MOV_nodes::step_from_road::tick()
+{
+    BT::Optional<double> rob_azi = getInput<double>("azimuth");
+    BT::Optional<double> road_azi = getInput<double>("road_heading");
+
+    if (!rob_azi)
+        throw BT::RuntimeError("missing required input azimuth: ", rob_azi.error());
+    if (!road_azi)
+        throw BT::RuntimeError("missing required input road_heading: ", road_azi.error());
+
+    double diff = angle_diff(rob_azi.value(), road_azi.value());
+    if (diff < 0.3){
+        ROS_WARN("Unable to safely step backwards");
+        return BT::NodeStatus::FAILURE;
+    }
+
+    geometry_msgs::Twist msg = geometry_msgs::Twist();
+    msg.angular.x = -MAX_LIN_SPEED/2;
+
+    MOV_nodes::pub_cmd.publish(msg);
+    ros::spinOnce();    
+
+    return BT::NodeStatus::SUCCESS;
+}
+
+BT::PortsList MOV_nodes::step_from_road::providedPorts()
+{
+    return {BT::InputPort<double>("azimuth"), BT::InputPort<double>("road_heading")};
 }
 
 BT::NodeStatus MOV_nodes::not_started::tick()

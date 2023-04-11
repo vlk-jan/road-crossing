@@ -52,7 +52,6 @@ This package does not currently have a documentation. However the text of my bac
 - Short-term
   - Add acceleration and width to collision calculation
   - move_to_place weight map (point-cloud) creation & implementation
-  - Implement step_from_road
   - Implement crossing_finished
   - Add road width to road cost?
 - Long-term

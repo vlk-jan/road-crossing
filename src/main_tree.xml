@@ -35,7 +35,7 @@
                         <ForceFailure>
                             <Fallback>
                                 <Action ID="rotate_robot" direction="{direction}"/>
-                                <Action ID="step_from_road" easting="{easting}" northing="{northing}"/>
+                                <Action ID="step_from_road" road_heading="{road_heading}" rob_azimuth="{azimuth}"/>
                             </Fallback>
                         </ForceFailure>
                     </Fallback>
@@ -195,8 +195,8 @@
         </SubTree>
         <Action ID="start_movement"/>
         <Action ID="step_from_road">
-            <input_port default="{easting}" name="easting">current easting of the robot</input_port>
-            <input_port default="{northing}" name="northing">current norhting of the robot</input_port>
+            <input_port default="{road_heading}" name="road_heading"/>
+            <input_port default="{azimuth}" name="rob_azimuth"/>
         </Action>
         <Action ID="stop_movement"/>
     </TreeNodesModel>
