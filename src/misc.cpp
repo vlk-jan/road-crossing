@@ -79,21 +79,21 @@ int calculate_context_score(float easting, float northing)
     }
 
     double road_width = srv.response.road_width;
-    if (road_width < 3.5)
+    if (road_width <= 3.5)
         score += 4;
-    else if (road_width < 4.5)
+    else if (road_width <= 4.5)
         score += 3;
-    else if (road_width < 5.5)
+    else if (road_width <= 5.5)
         score += 2;
-    else if (road_width < 6.5)
+    else if (road_width <= 6.5)
         score += 1;
 
     double max_velocity = srv.response.maximal_velocity;
-    if (max_velocity < 30)
+    if (max_velocity <= 30)
         score += 3;
-    else if (max_velocity < 50)
+    else if (max_velocity <= 50)
         score += 2;
-    else if (max_velocity < 80)
+    else if (max_velocity <= 80)
         score += 1;
 
     std::string road_type = srv.response.road_type;
