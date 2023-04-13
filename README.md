@@ -2,9 +2,9 @@
 
 ## Overview
 
-This is a ROS node to facilitate safe traverse of an autonomous robot across a road. It was done as a bachelor thesis at FEE CTU.
+This package provides a ROS node to facilitate safe traverse of an autonomous robot across a road. It was done as a bachelor's thesis at FEE CTU.
 
-The main algorithm is based on a behavior-tree structure. This work does not include the detection of incoming vehicles, that is provided by a different node.
+The main algorithm is based on a behavior-tree structure. This work does not include the detection of incoming vehicles that are provided by a different node.
 
 ## Installation
 
@@ -41,7 +41,7 @@ pip install -r requirements.txt
 
 ## Documentation
 
-This package does not currently have a documentation. However the text of my bachelor thesis is [here](https://github.com/vlk-jan/bachelor_thesis), where I try to explain the code a bit.
+This package does not currently have any documentation. However, the text of my bachelor thesis is [here](https://github.com/vlk-jan/bachelor_thesis), where I try to explain the code a bit.
 
 ## License
 
