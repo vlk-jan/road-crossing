@@ -3,7 +3,7 @@
 * Author: Jan Vlk
 * Date: 13.2.2023
 * Description: This file contains miscellaneous functions and classes, or functions and classes that do not have a specific place yet.
-* Last modified: 11.4.2023
+* Last modified: 13.4.2023
 */
 
 #include "road_crossing/misc.h"
@@ -23,8 +23,7 @@ double gps_points_heading(double lat1, double lon1, double lat2, double lon2)
     double y = sin(dLon) * cos(lat2);
     double x = cos(lat1) * sin(lat2) - sin(lat1) * cos(lat2) * cos(dLon);
     double brng = atan2(y, x);
-    brng = brng * 180 / M_PI;
-    brng = std::fmod((brng + 360), 360);
+    brng = std::fmod((brng + 2*M_PI), 2*M_PI);
     return brng;
 }
 
