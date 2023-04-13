@@ -51,7 +51,6 @@ This package does not currently have any documentation. However, the text of my 
 
 - Short-term
   - Add acceleration and width to collision calculation
-  - Implement crossing_finished
 - Long-term
   - Robot steering during the crossing, currently moving only forward and backward in a straight line
   - Service for obtaining better place - possible need to rewrite road cost

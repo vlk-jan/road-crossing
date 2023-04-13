@@ -3,7 +3,7 @@
 * Author: Jan Vlk
 * Date: 16.11.2022
 * Description: This file contains functions for operations dealing with compass and azimuth.
-* Last modified: 27.3.2023
+* Last modified: 13.4.2023
 */
 
 #include "behaviortree_cpp_v3/behavior_tree.h"
@@ -131,7 +131,7 @@ BT::NodeStatus AZI_nodes::equal_azimuths::tick()
     if (!cur_azimuth)
         throw BT::RuntimeError("missing required input cur_azimuth: ", cur_azimuth.error());
     
-    if (abs(req_azimuth.value() - cur_azimuth.value()) < 0.3f)
+    if (abs(req_azimuth.value() - cur_azimuth.value()) < EQUAL_AZI_LIMIT)
         return BT::NodeStatus::SUCCESS;
     return BT::NodeStatus::FAILURE;
 }

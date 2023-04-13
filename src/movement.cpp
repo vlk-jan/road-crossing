@@ -3,7 +3,7 @@
 * Author: Jan Vlk
 * Date: 25.11.2022
 * Description: This file contains functions for moving the robot.
-* Last modified: 11.4.2023
+* Last modified: 13.4.2023
 */
 
 #include <cmath>
@@ -17,12 +17,17 @@
 #include "road_crossing/movement.h"
 #include "road_crossing/get_azimuth.h"
 #include "road_crossing/misc.h"
+#include "road_crossing/get_gps.h"
+#include "road_crossing/get_finish.h"
 
 
 void MOV_nodes::init_publishers(ros::NodeHandle& nh)
 {
     this->pub_cmd = nh.advertise<geometry_msgs::Twist>("cmd_vel", 5);
     //this->pub_map = nh.advertise<??>("weight_map", 5);
+    std::string service_name = "get_finish";
+    ros::service::waitForService(service_name);
+    MOV_nodes::get_finish_client = nh.serviceClient<road_crossing::get_finish>(service_name);
 }
 
 BT::NodeStatus MOV_nodes::rotate_robot::tick()
@@ -227,6 +232,30 @@ BT::NodeStatus MOV_nodes::stop_movement::tick()
 }
 
 BT::PortsList MOV_nodes::stop_movement::providedPorts()
+{
+    return {};
+}
+
+BT::NodeStatus MOV_nodes::crossing_finished_gps::tick()
+{
+    double easting, northing;
+    GPS_nodes::req_position(easting, northing);
+    road_crossing::get_finish finish_srv;
+
+    finish_srv.request.easting = easting;
+    finish_srv.request.northing = northing;
+
+    if (MOV_nodes::get_finish_client.call(finish_srv)){
+        if (finish_srv.response.finish){
+            ROS_INFO("Crossing finished.");
+            return BT::NodeStatus::SUCCESS;
+        }
+    }
+
+    return BT::NodeStatus::FAILURE;
+}
+
+BT::PortsList MOV_nodes::crossing_finished_gps::providedPorts()
 {
     return {};
 }

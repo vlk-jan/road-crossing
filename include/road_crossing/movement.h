@@ -70,8 +70,6 @@ class MOV_nodes
         /**
          * @brief Node to move the robot way from the road. It is used when the robot is unable
          * to rotate. We probably need to move the robot away from the road and then rotate it.
-         * 
-         * TODO: Implement -- hijack cmd_vel
          */
         class step_from_road : public BT::SyncActionNode
         {
@@ -191,17 +189,15 @@ class MOV_nodes
 
         /**
          * @brief Check if the robot has crossed the road.
-         * 
-         * TODO: Implement
          */
-        class crossing_finished : public BT::ConditionNode
+        class crossing_finished_gps : public BT::ConditionNode
         {
             public:
-                crossing_finished(const std::string& name, const BT::NodeConfiguration& config) :
+                crossing_finished_gps(const std::string& name, const BT::NodeConfiguration& config) :
                     BT::ConditionNode(name, config)
                 {}
 
-                virtual ~crossing_finished(){}
+                virtual ~crossing_finished_gps(){}
 
                 BT::NodeStatus tick() override;
 
@@ -210,12 +206,14 @@ class MOV_nodes
 
     private:
         static ros::Publisher pub_cmd, pub_map;
+        static ros::ServiceClient get_finish_client;
         static double lin_speed, rot_speed;
         static bool is_moving;
 };
 
 ros::Publisher MOV_nodes::pub_cmd;
 ros::Publisher MOV_nodes::pub_map;
+ros::ServiceClient MOV_nodes::get_finish_client;
 double MOV_nodes::lin_speed = 0;
 double MOV_nodes::rot_speed = 0;
 bool MOV_nodes::is_moving = false;

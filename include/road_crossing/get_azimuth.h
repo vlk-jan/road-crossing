@@ -11,6 +11,9 @@
 #include "geometry_msgs/PoseStamped.h"
 
 
+#define EQUAL_AZI_LIMIT 0.1745 // 10 degrees
+
+
 struct compass_indices{
     int reference_i;
     int orientation_i;

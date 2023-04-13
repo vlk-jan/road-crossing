@@ -3,7 +3,7 @@
 * Author: Jan Vlk
 * Date: 27.3.2023
 * Description: This file contains functions for starting the BT algorithm
-* Last modified: 4.4.2023
+* Last modified: 13.4.2023
 */
 
 #include "behaviortree_cpp_v3/behavior_tree.h"
@@ -42,6 +42,8 @@ bool Start_service::start_algorithm(Start_service* node, road_crossing::start_al
     } else if (req.stop){
         ROS_INFO("Stop algorithm service called");
         node->is_running = false;
+    } else {
+        ROS_WARN("Start algorithm service called without any argument");
     }
 
     return node->is_running;

@@ -3,7 +3,7 @@
 * Author: Jan Vlk
 * Date: 13.2.2023
 * Description: This file contains miscellaneous functions and classes, or functions and classes that do not have a specific place yet.
-* Last modified: 11.4.2023
+* Last modified: 13.4.2023
 */
 
 #include "behaviortree_cpp_v3/behavior_tree.h"
@@ -51,6 +51,12 @@ int GPS_nodes::place_suitability()
         return EXIT_FAILURE;
     }
     return EXIT_SUCCESS;
+}
+
+void GPS_nodes::req_position(double& easting, double& northing)
+{
+    easting = GPS_nodes::easting;
+    northing = GPS_nodes::northing;
 }
 
 BT::NodeStatus GPS_nodes::cross_road::tick()

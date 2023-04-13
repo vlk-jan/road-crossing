@@ -27,6 +27,7 @@ add_service_files(
   get_suitability.srv
   start_algorithm.srv
   get_road_info.srv
+  get_finish.srv
 )
 
 generate_messages(
@@ -64,19 +65,21 @@ target_link_libraries(misc_lib ${catkin_LIBRARIES} ${GeographicLib_LIBRARIES})
 set(SOURCES src/get_azimuth.cpp include/road_crossing/get_azimuth.h)
 add_library(azimuth_lib ${catkin_LIBRARIES} ${SOURCES})
 target_link_libraries(azimuth_lib ${catkin_LIBRARIES} misc_lib)
+add_dependencies(misc_lib ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 set(SOURCES src/road_cross_tree.cpp include/road_crossing/road_cross_tree.h)
 add_library(road_cross_tree_lib ${SOURCES} ${catkin_LIBRARIES})
 target_link_libraries(road_cross_tree_lib ${catkin_LIBRARIES} azimuth_lib)
 
-set(SOURCES src/movement.cpp include/road_crossing/movement.h)
-add_library(movement_lib ${catkin_LIBRARIES} ${SOURCES})
-target_link_libraries(movement_lib ${catkin_LIBRARIES} misc_lib)
-
 set(SOURCES src/get_gps.cpp include/road_crossing/get_gps.h)
 add_library(gps_lib ${catkin_LIBRARIES} ${SOURCES})
 target_link_libraries(gps_lib ${catkin_LIBRARIES})
 add_dependencies(gps_lib ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+
+set(SOURCES src/movement.cpp include/road_crossing/movement.h)
+add_library(movement_lib ${catkin_LIBRARIES} ${SOURCES})
+target_link_libraries(movement_lib ${catkin_LIBRARIES} misc_lib gps_lib)
+add_dependencies(movement_lib ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 add_executable(run_tree src/main.cpp)
 target_link_libraries(run_tree ${catkin_LIBRARIES} road_cross_tree_lib azimuth_lib movement_lib gps_lib)

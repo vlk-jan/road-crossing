@@ -34,6 +34,11 @@ class GPS_nodes
          */
         static int place_suitability();
 
+        /**
+         * @brief Request the coordinates of latest recorded robot's position.
+         */
+        static void req_position(double& easting, double& northing);
+
         class cross_road : public BT::ConditionNode
         {
             public:

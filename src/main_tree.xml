@@ -14,6 +14,15 @@
         </Sequence>
     </BehaviorTree>
     <!-- ////////// -->
+    <BehaviorTree ID="finished">
+        <Fallback>
+            <Condition ID="crossing_finished"/>
+            <Inverter>
+                <Condition ID="start_algorithm"/>
+            </Inverter>
+        </Fallback>
+    </BehaviorTree>
+    <!-- ////////// -->
     <BehaviorTree ID="get_heading">
         <RetryUntilSuccessful num_attempts="10">
             <Sequence>
@@ -101,7 +110,7 @@
                     <Action ID="continue_movement"/>
                 </Fallback>
             </Sequence>
-            <Condition ID="crossing_finished"/>
+            <SubTree ID="finished"/>
         </Sequence>
     </BehaviorTree>
     <!-- ////////// -->
@@ -142,6 +151,7 @@
         <Action ID="continue_movement"/>
         <Condition ID="cross_road"/>
         <Condition ID="crossing_finished"/>
+        <SubTree ID="finished"/>
         <Action ID="get_azimuth">
             <output_port default="{azimuth}" name="cur_azimuth">current azimuth of robot</output_port>
         </Action>
