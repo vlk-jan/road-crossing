@@ -51,10 +51,10 @@ This package does not currently have any documentation. However, the text of my 
 
 - Short-term
   - Add acceleration and width to collision calculation
-  - move_to_place weight map (point-cloud) creation & implementation
   - Implement crossing_finished
-  - Add road width to road cost?
 - Long-term
   - Robot steering during the crossing, currently moving only forward and backward in a straight line
   - Service for obtaining better place - possible need to rewrite road cost
+  - move_to_place weight map (point-cloud) creation & implementation
   - Vehicle obtaining (from ROS node) message type & implementation
+  - Obtaining road info from real-world - using camera? - possibly different node, so just integration of the messages
