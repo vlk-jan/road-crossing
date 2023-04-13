@@ -3,7 +3,7 @@
 * Author: Jan Vlk
 * Date: 2.3.2022
 * Description: This file contains functions for operations dealing with vehicle detection and collisions.
-* Last modified: 10.4.2023
+* Last modified: 13.4.2023
 */
 
 #include <cmath>
@@ -22,75 +22,68 @@
 
 void VEH_nodes::vehicle_collision(vehicle_info vehicle, vehicle_info robot, collision_info &collision)
 {
-    // Calculate the intersection point of the robot's and vehicle's paths
-    double beta = (robot.x_dot*(vehicle.pos_y-robot.pos_y) - robot.y_dot*(vehicle.pos_x-robot.pos_x))/
-                  (vehicle.x_dot*robot.y_dot - vehicle.y_dot*robot.x_dot);
+    // Calculate the robot start position with respect to its length and vehicles width
+    double robot_len_x = (robot.length + vehicle.width)/2;
+    double robot_front_x = robot_len_x;
+    double robot_front_y = 0;
+    double robot_back_x = -robot_len_x;
+    double robot_back_y = 0;
 
-    double pos_x = vehicle.pos_x + beta*vehicle.x_dot;
-    double pos_y = vehicle.pos_y + beta*vehicle.y_dot;
-    ROS_INFO("Intersection point: (%f, %f)", pos_x, pos_y);
-
-    // Calculate the time of the vehicle till the intersection point
-    double vehicle_speed = sqrt(pow(vehicle.x_dot, 2) + pow(vehicle.y_dot, 2));
+    // Calculate the vehicle start position with respect to its length and robots width
     double vehicle_phi = atan2(vehicle.y_dot, vehicle.x_dot);
-    //ROS_INFO("Vehicle speed: %f, phi: %f", vehicle_speed, vehicle_phi);
+    double vehicle_len_x = (vehicle.length + robot.width)*cos(vehicle_phi)/2;
+    double vehicle_len_y = (vehicle.length + robot.width)*sin(vehicle_phi)/2;
+    double vehicle_front_x = vehicle.pos_x + vehicle_len_x;
+    double vehicle_front_y = vehicle.pos_y + vehicle_len_y;
+    double vehicle_back_x = vehicle.pos_x - vehicle_len_x;
+    double vehicle_back_y = vehicle.pos_y - vehicle_len_y;
 
-    double vehicle_length_x = vehicle.length*cos(vehicle_phi)/2;
-    double vehicle_length_y = vehicle.length*sin(vehicle_phi)/2;
-    double vehicle_front_x = vehicle.pos_x + vehicle_length_x;
-    double vehicle_front_y = vehicle.pos_y + vehicle_length_y;
-    double vehicle_back_x = vehicle.pos_x - vehicle_length_x;
-    double vehicle_back_y = vehicle.pos_y - vehicle_length_y;
-
-    double vehicle_travel_front = sqrt(pow(pos_x - vehicle_front_x, 2) + pow(pos_y - vehicle_front_y, 2));
-    double vehicle_travel_back = sqrt(pow(pos_x - vehicle_back_x, 2) + pow(pos_y - vehicle_back_y, 2));
-    //ROS_INFO("Vehicle travel: %f, %f", vehicle_travel_front, vehicle_travel_back);
-
-    double t_front = vehicle_travel_front/vehicle_speed;
-    double t_back = vehicle_travel_back/vehicle_speed;
-    ROS_INFO("Time for vehicle till intersection: %f, %f", t_front, t_back);
-
-    // Calculate the velocity for robot to collide with the vehicle
-    double robot_speed = sqrt(pow(robot.x_dot, 2) + pow(robot.y_dot, 2));
-    double robot_phi = atan2(robot.y_dot, robot.x_dot);
-    //ROS_INFO("Robot speed: %f, phi: %f", robot_speed, robot_phi);
-
-    double robot_length_x = robot.length*cos(vehicle_phi)/2;
-    double robot_length_y = robot.length*sin(vehicle_phi)/2;
-    double robot_front_x = robot.pos_x + robot_length_x;
-    double robot_front_y = robot.pos_y + robot_length_y;
-    double robot_back_x = robot.pos_x - robot_length_x;
-    double robot_back_y = robot.pos_y - robot_length_y;
-
-    double robot_travel_front = sqrt(pow(pos_x - robot_front_x, 2) + pow(pos_y - robot_front_y, 2));
-    double robot_travel_back = sqrt(pow(pos_x - robot_back_x, 2) + pow(pos_y - robot_back_y, 2));
-    //ROS_INFO("Robot travel: %f, %f", robot_travel_front, robot_travel_back);
-
-    double v_front = robot_travel_front/t_front;
-    double v_back = robot_travel_front/t_back;
-
-    // Check if the collision is in the direction of travel of the robot
-    double rob_t = robot_travel_front/robot_speed;
-    bool collision_front = ((robot.pos_x + rob_t*robot.x_dot) == pos_x) &&
-                           ((robot.pos_y + rob_t*robot.y_dot) == pos_y);
-    
-    v_front = collision_front ? v_front : -v_front;
-    v_back = collision_front ? v_back : -v_back;
-    ROS_INFO("Velocity for collision: %f, %f", v_front, v_back);
-
-    rob_t = collision_front ? rob_t : -rob_t;
-    ROS_INFO("Time for robot till intersection: %f", rob_t);
-
-    collision.car_id = vehicle.id;
-    collision.v_front = v_front;
-    collision.v_back = v_back;
-
-    // Check if the robot will collide with the vehicle
-    // if they both travel at the provided velocities
-    if (rob_t >= t_front && rob_t <= t_back)
-        collision.collide = true;
-    else
+    // Calculate the time till intersection point
+    double time1, time2;
+    if (vehicle.y_ddot == 0){
+        time1 = -(vehicle_front_y)/(vehicle.y_dot);
+        time2 = -(vehicle_back_y)/(vehicle.y_dot);
+    } else {
+        double a = (vehicle.y_ddot)/2;
+        double b = vehicle.y_dot;
+        double c1 = vehicle_front_y;
+        double d1 = pow(b, 2) - 4*a*c1;
+        if (!d1 < 0){
+            double t1 = (-b + sqrt(d1))/(2*a);
+            double t2 = (-b - sqrt(d1))/(2*a);
+            time1 = (t1 >= 0) ? t1 : t2;
+        }
+        double c2 = vehicle_back_y;
+        double d2 = pow(b, 2) - 4*a*c2;
+        if (!d2 < 0){
+            double t1 = (-b + sqrt(d2))/(2*a);
+            double t2 = (-b - sqrt(d2))/(2*a);
+            time2 = (t1 >= 0) ? t1 : t2;
+        }
+    }
+    double vel1, vel2;
+    if (time1){
+        ROS_INFO("Time till intersection point front: %f", time1);
+        double x1 = vehicle_front_x + vehicle.x_dot*time1 + vehicle.x_ddot*pow(time1, 2)/2;
+        if (time1 != 0)
+            vel1 = (x1 - robot_back_x)/time1;
+    }
+    if (time2){
+        ROS_INFO("Time till intersection point back: %f", time2);
+        double x2 = vehicle_back_x + vehicle.x_dot*time2 + vehicle.x_ddot*pow(time2, 2)/2;
+        if (time2 != 0)
+            vel2 = (x2 - robot_front_x)/time2;
+    }
+    if (vel1 && vel2){
+        collision.v_front = vel1;
+        collision.v_back = vel2;
+        bool collide = (robot.x_dot <= vel1) && (robot.x_dot >= vel2);
+        collision.collide = collide;
+    } else {
+        collision.v_front = 0;
+        collision.v_back = 0;
         collision.collide = false;
+    }
 }
 
 void VEH_nodes::callback_vehicle_injector(VEH_nodes* node, const road_crossing::injector_msgs::ConstPtr& msg)
@@ -267,6 +260,8 @@ int main(int argc, char **argv)
     vehicle.pos_y = -5;
     vehicle.x_dot = 8.33;
     vehicle.y_dot = 0;
+    vehicle.x_ddot = 0;
+    vehicle.y_ddot = 0;
     vehicle.length = 4.7;
     vehicle.width = 1.8;
 
@@ -274,8 +269,10 @@ int main(int argc, char **argv)
     robot.id = 0;
     robot.pos_x = 0;
     robot.pos_y = 0;
-    robot.x_dot = 0;
-    robot.y_dot = 1.3;
+    robot.x_dot = 1.3;
+    robot.y_dot = 0;
+    robot.x_ddot = 0;
+    robot.y_ddot = 0;
     robot.length = 1.1;
     robot.width = 0.5;
 

@@ -50,7 +50,8 @@ This package does not currently have any documentation. However, the text of my 
 ## TODO
 
 - Short-term
-  - Add acceleration and width to collision calculation
+  - Test collision calculation
+  - Create unit tests?
 - Long-term
   - Robot steering during the crossing, currently moving only forward and backward in a straight line
   - Service for obtaining better place - possible need to rewrite road cost
