@@ -110,35 +110,35 @@ BT::PortsList AZI_nodes::get_required_azimuth::providedPorts()
     return {BT::OutputPort<double>("req_azimuth")};
 }
 
-BT::NodeStatus AZI_nodes::get_current_azimuth::tick()
+BT::NodeStatus AZI_nodes::get_azimuth::tick()
 {
     setOutput("cur_azimuth", azimuth);
     return BT::NodeStatus::SUCCESS;
 }
 
-BT::PortsList AZI_nodes::get_current_azimuth::providedPorts()
+BT::PortsList AZI_nodes::get_azimuth::providedPorts()
 {
     return {BT::OutputPort<double>("cur_azimuth")};
 }
 
-BT::NodeStatus AZI_nodes::equal_azimuths::tick()
+BT::NodeStatus AZI_nodes::robot_perpendicular::tick()
 {
-    BT::Optional<double> req_azimuth = getInput<double>("req_azimuth");
-    BT::Optional<double> cur_azimuth = getInput<double>("cur_azimuth");
+    BT::Optional<double> req_azimuth = getInput<double>("azimuth");
+    BT::Optional<double> cur_azimuth = getInput<double>("heading");
     
     if (!req_azimuth)
-        throw BT::RuntimeError("missing required input req_azimuth: ", req_azimuth.error());
+        throw BT::RuntimeError("missing required input azimuth: ", req_azimuth.error());
     if (!cur_azimuth)
-        throw BT::RuntimeError("missing required input cur_azimuth: ", cur_azimuth.error());
+        throw BT::RuntimeError("missing required input heading: ", cur_azimuth.error());
     
     if (abs(req_azimuth.value() - cur_azimuth.value()) < EQUAL_AZI_LIMIT)
         return BT::NodeStatus::SUCCESS;
     return BT::NodeStatus::FAILURE;
 }
 
-BT::PortsList AZI_nodes::equal_azimuths::providedPorts()
+BT::PortsList AZI_nodes::robot_perpendicular::providedPorts()
 {
-    return {BT::InputPort<double>("req_azimuth"), BT::InputPort<double>("cur_azimuth")};
+    return {BT::InputPort<double>("azimuth"), BT::InputPort<double>("heading")};
 }
 
 BT::NodeStatus AZI_nodes::road_heading::tick()

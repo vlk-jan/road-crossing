@@ -9,6 +9,8 @@
 #include "road_crossing/get_gps.h"
 #include "road_crossing/get_azimuth.h"
 #include "road_crossing/road_cross_tree.h"
+#include "road_crossing/vehicles.h"
+#include "road_crossing/injector_msgs.h"
 
 int main(int argc, char **argv)
 {
@@ -27,12 +29,15 @@ int main(int argc, char **argv)
 
     AZI_nodes azi_nodes;
     GPS_nodes gps_nodes;
+    VEH_nodes veh_nodes;
     
     const boost::function<void(const compass_msgs::Azimuth::ConstPtr&)> cb_compass = boost::bind(&AZI_nodes::callback_compass, &azi_nodes, _1);
     const boost::function<void(const sensor_msgs::NavSatFix::ConstPtr&)> cb_gps = boost::bind(&GPS_nodes::callback_gps, &gps_nodes, _1);
+    const boost::function<void(const road_crossing::injector_msgs::ConstPtr&)> cb_veh = boost::bind(&VEH_nodes::callback_vehicle_injector, &veh_nodes, _1);
 
     ros::Subscriber sub_compass = nh.subscribe(compass, 5, cb_compass);
     ros::Subscriber sub_gps = nh.subscribe(gps, 5, cb_gps);
+    ros::Subscriber sub_veh = nh.subscribe("injector", 5, cb_veh);
 
     BT_tree.run_tree();
 

@@ -23,7 +23,7 @@ int main(int argc, char **argv)
     Start_service cond_nodes;
 
     const boost::function<bool(road_crossing::start_algorithm::Request&, const road_crossing::start_algorithm::Response&)> start_service =
-          boost::bind(&Start_service::start_algorithm, &cond_nodes, _1, _2);
+          boost::bind(&Start_service::start_algorithm_service, &cond_nodes, _1, _2);
 
     ros::ServiceServer start_srv = nh.advertiseService("start_algorithm", start_service);
 
@@ -32,7 +32,7 @@ int main(int argc, char **argv)
     return EXIT_SUCCESS;
 }
 
-bool Start_service::start_algorithm(Start_service* node, road_crossing::start_algorithm::Request &req, const road_crossing::start_algorithm::Response &res)
+bool Start_service::start_algorithm_service(Start_service* node, road_crossing::start_algorithm::Request &req, const road_crossing::start_algorithm::Response &res)
 {
     if (req.start && req.stop){
         ROS_WARN("Start and stop algorithm service called");

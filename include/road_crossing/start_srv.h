@@ -20,7 +20,7 @@ class Start_service
          * @param req Request from the service client.
          * @param res Response to the service client.
          */
-        static bool start_algorithm(Start_service* node, road_crossing::start_algorithm::Request& req, const road_crossing::start_algorithm::Response& res);
+        static bool start_algorithm_service(Start_service* node, road_crossing::start_algorithm::Request& req, const road_crossing::start_algorithm::Response& res);
 
         class start_algorithm : public BT::ConditionNode
         {

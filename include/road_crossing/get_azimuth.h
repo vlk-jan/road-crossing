@@ -63,28 +63,28 @@ class AZI_nodes
                 static BT::PortsList providedPorts();
         };
 
-        class get_current_azimuth : public BT::SyncActionNode
+        class get_azimuth : public BT::SyncActionNode
         {
             public:
-                get_current_azimuth(const std::string& name, const BT::NodeConfiguration& config):
+                get_azimuth(const std::string& name, const BT::NodeConfiguration& config):
                     BT::SyncActionNode(name, config)
                 {}
 
-                virtual ~get_current_azimuth(){}
+                virtual ~get_azimuth(){}
 
                 BT::NodeStatus tick() override;
 
                 static BT::PortsList providedPorts();
         };
 
-        class equal_azimuths : public BT::ConditionNode
+        class robot_perpendicular : public BT::ConditionNode
         {
             public:
-                equal_azimuths(const std::string& name, const BT::NodeConfiguration& config):
+                robot_perpendicular(const std::string& name, const BT::NodeConfiguration& config):
                     BT::ConditionNode(name, config)
                 {}
 
-                virtual ~equal_azimuths(){}
+                virtual ~robot_perpendicular(){}
 
                 BT::NodeStatus tick() override;
 
