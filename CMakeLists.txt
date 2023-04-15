@@ -53,6 +53,7 @@ catkin_install_python(
   src/road_cost/road_cost_run.py
   src/road_cost/get_segment_srv.py
   src/road_cost/get_suitability_srv.py
+  src/road_cost/get_finish_srv.py
 
   DESTINATION
   ${CATKIN_PACKAGE_BIN_DESTINATION}
@@ -81,8 +82,18 @@ add_library(movement_lib ${catkin_LIBRARIES} ${SOURCES})
 target_link_libraries(movement_lib ${catkin_LIBRARIES} misc_lib gps_lib)
 add_dependencies(movement_lib ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
+set(SOURCES src/vehicles.cpp include/road_crossing/vehicles.h)
+add_library(vehicles_lib ${catkin_LIBRARIES} ${SOURCES})
+target_link_libraries(vehicles_lib ${catkin_LIBRARIES} misc_lib movement_lib)
+add_dependencies(vehicles_lib ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+
+set(SOURCES src/start_srv.cpp include/road_crossing/start_srv.h)
+add_library(start_lib ${catkin_LIBRARIES} ${SOURCES})
+target_link_libraries(start_lib ${catkin_LIBRARIES} misc_lib movement_lib gps_lib vehicles_lib)
+add_dependencies(start_lib ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+
 add_executable(run_tree src/main.cpp)
-target_link_libraries(run_tree ${catkin_LIBRARIES} road_cross_tree_lib azimuth_lib movement_lib gps_lib)
+target_link_libraries(run_tree ${catkin_LIBRARIES} road_cross_tree_lib azimuth_lib movement_lib gps_lib vehicles_lib start_lib)
 
 add_executable(start_srv src/start_srv.cpp include/road_crossing/start_srv.h)
 target_link_libraries(start_srv ${catkin_LIBRARIES})

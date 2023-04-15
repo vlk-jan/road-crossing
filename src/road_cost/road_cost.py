@@ -1,5 +1,5 @@
 import rospy
-from road_crossing.srv import get_road_segment, get_road_segmentResponse, get_suitability, get_suitabilityResponse
+from road_crossing.srv import get_road_segment, get_road_segmentResponse, get_suitability, get_suitabilityResponse, get_finish, get_finishResponse
 
 import overpy
 from math import floor
@@ -137,4 +137,24 @@ class RoadCost:
         rospy.init_node("get_road_segment_server")
         s_get_segment = rospy.Service("get_road_segment", get_road_segment, self.handle_get_road_segment)
         rospy.loginfo("Road segment server ready")
+        rospy.spin()
+
+    def handle_get_finish(self, req):
+        point = geometry.Point(req.easting, req.northing)
+        min_dist = float('inf')
+
+        for segment_level in range(len(self.road_segments)):
+            for segment in self.road_segments[segment_level]:
+                dist = segment.distance(point)
+                if (dist < min_dist):
+                    min_dist = dist
+        
+        ret = True if min_dist > 9 else False
+
+        return get_finishResponse(ret)
+
+    def get_finish_server(self):
+        rospy.init_node("get_finish_server")
+        s_get_finish = rospy.Service("get_finish", get_finish, self.handle_get_finish)
+        rospy.loginfo("Finish server ready")
         rospy.spin()
