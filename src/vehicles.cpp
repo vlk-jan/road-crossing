@@ -22,6 +22,8 @@
 
 void VEH_nodes::vehicle_collision(vehicle_info vehicle, vehicle_info robot, collision_info &collision)
 {
+    collision.car_id = vehicle.id;
+
     // Calculate the robot start position with respect to its length and vehicles width
     double robot_len_x = (robot.length + vehicle.width)/2;
     double robot_front_x = robot_len_x;
@@ -48,40 +50,54 @@ void VEH_nodes::vehicle_collision(vehicle_info vehicle, vehicle_info robot, coll
         double b = vehicle.y_dot;
         double c1 = vehicle_front_y;
         double d1 = pow(b, 2) - 4*a*c1;
-        if (!d1 < 0){
+        //ROS_INFO("d1: %f", d1);
+        if (d1 >= 0){
             double t1 = (-b + sqrt(d1))/(2*a);
             double t2 = (-b - sqrt(d1))/(2*a);
-            time1 = (t1 >= 0) ? t1 : t2;
+            //ROS_INFO("d1, t1: %f, t2: %f", t1, t2);
+            if (t1 >= 0 && t2 >= 0)
+                time1 = (t1 <= t2) ? t1 : t2;
+            else
+                time1 = (t1 >= 0) ? t1 : t2;
         }
         double c2 = vehicle_back_y;
         double d2 = pow(b, 2) - 4*a*c2;
-        if (!d2 < 0){
+        //ROS_INFO("d2: %f", d2);
+        if (d2 >= 0){
             double t1 = (-b + sqrt(d2))/(2*a);
             double t2 = (-b - sqrt(d2))/(2*a);
-            time2 = (t1 >= 0) ? t1 : t2;
+            //ROS_INFO("d2, t1: %f, t2: %f", t1, t2);
+            if (t1 >= 0 && t2 >= 0)
+                time2 = (t1 <= t2) ? t1 : t2;
+            else
+                time2 = (t1 >= 0) ? t1 : t2;
         }
     }
+
+    // Calculate the velocity of the vehicle at the intersection point
     double vel1, vel2;
     if (time1){
-        ROS_INFO("Time till intersection point front: %f", time1);
+        //ROS_INFO("Time till intersection point front: %f", time1);
         double x1 = vehicle_front_x + vehicle.x_dot*time1 + vehicle.x_ddot*pow(time1, 2)/2;
         if (time1 != 0)
             vel1 = (x1 - robot_back_x)/time1;
     }
     if (time2){
-        ROS_INFO("Time till intersection point back: %f", time2);
+        //ROS_INFO("Time till intersection point back: %f", time2);
         double x2 = vehicle_back_x + vehicle.x_dot*time2 + vehicle.x_ddot*pow(time2, 2)/2;
         if (time2 != 0)
             vel2 = (x2 - robot_front_x)/time2;
     }
+
+    // Set results to collision info
     if (vel1 && vel2){
         collision.v_front = vel1;
         collision.v_back = vel2;
         bool collide = (robot.x_dot <= vel1) && (robot.x_dot >= vel2);
         collision.collide = collide;
     } else {
-        collision.v_front = 0;
-        collision.v_back = 0;
+        collision.v_front = (vel1) ? vel1 : 0;
+        collision.v_back = (vel2) ? vel2 : 0;
         collision.collide = false;
     }
 }
@@ -256,12 +272,12 @@ int main(int argc, char **argv)
 
     vehicle_info vehicle;
     vehicle.id = 1;
-    vehicle.pos_x = -30;
-    vehicle.pos_y = -5;
-    vehicle.x_dot = 8.33;
-    vehicle.y_dot = 0;
+    vehicle.pos_x = 15;
+    vehicle.pos_y = 10;
+    vehicle.x_dot = 0;
+    vehicle.y_dot = -1;
     vehicle.x_ddot = 0;
-    vehicle.y_ddot = 0;
+    vehicle.y_ddot = 0.01;
     vehicle.length = 4.7;
     vehicle.width = 1.8;
 
@@ -269,7 +285,7 @@ int main(int argc, char **argv)
     robot.id = 0;
     robot.pos_x = 0;
     robot.pos_y = 0;
-    robot.x_dot = 1.3;
+    robot.x_dot = 1.5;
     robot.y_dot = 0;
     robot.x_ddot = 0;
     robot.y_ddot = 0;
