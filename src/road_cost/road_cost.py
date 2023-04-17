@@ -156,7 +156,7 @@ class RoadCost:
             road_segment = geometry.LineString([(road_info.easting_1, road_info.northing_1), (road_info.easting_2, road_info.northing_2)])
             dist = point.distance(road_segment)
         
-        ret = True if dist-road_info.road_width > 0 else False
+        ret = True if dist-(road_info.road_width/2) > 0 else False
 
         return get_finishResponse(ret)
 
