@@ -58,7 +58,9 @@ class road_data:
 
         if index is not None:
             i = index
-            return get_road_infoResponse(self.data[i].expected_velocity, self.data[i].maximal_velocity. self.data[i].num_lanes /
+            return get_road_infoResponse(self.data[i].cross_segment.coords[0,0], self.data[i].cross_segment.coords[0,1] /
+                                         self.data[i].cross_segment.coords[1,0], self.data[i].cross_segment.coords[1,1] /
+                                         self.data[i].expected_velocity, self.data[i].maximal_velocity. self.data[i].num_lanes /
                                          self.data[i].road_width, self.road_type, self.data[i].peddestrian_crossing /
                                          self.data[i].peddestrian_crossing.coords[0] if self.data[i].peddestrian_crossing else 0 /
                                          self.data[i].peddestrian_crossing.coords[1] if self.data[i].peddestrian_crossing else 0)

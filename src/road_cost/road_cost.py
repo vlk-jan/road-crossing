@@ -1,5 +1,5 @@
 import rospy
-from road_crossing.srv import get_road_segment, get_road_segmentResponse, get_suitability, get_suitabilityResponse, get_finish, get_finishResponse
+from road_crossing.srv import get_road_segment, get_road_segmentResponse, get_suitability, get_suitabilityResponse, get_finish, get_finishResponse, get_road_info
 
 import overpy
 from math import floor
@@ -139,17 +139,24 @@ class RoadCost:
         rospy.loginfo("Road segment server ready")
         rospy.spin()
 
+    def get_road_info_client(self, easting, northing):
+        rospy.wait_for_service("get_road_info")
+        try:
+            road_info = rospy.ServiceProxy("get_road_info", get_road_info)
+            resp = road_info(easting, northing)
+            return resp
+        except rospy.ServiceException as e:
+            print("Service call failed: %s"%e)
+
     def handle_get_finish(self, req):
         point = geometry.Point(req.easting, req.northing)
-        min_dist = float('inf')
-
-        for segment_level in range(len(self.road_segments)):
-            for segment in self.road_segments[segment_level]:
-                dist = segment.distance(point)
-                if (dist < min_dist):
-                    min_dist = dist
         
-        ret = True if min_dist > 9 else False
+        road_info = self.get_road_info_client(req.easting, req.northing)
+        if (road_info is not None):
+            road_segment = geometry.LineString([(road_info.easting_1, road_info.northing_1), (road_info.easting_2, road_info.northing_2)])
+            dist = point.distance(road_segment)
+        
+        ret = True if dist-road_info.road_width > 0 else False
 
         return get_finishResponse(ret)
 
