@@ -57,6 +57,8 @@ void VEH_nodes::vehicle_collision(vehicle_info vehicle, vehicle_info robot, coll
             //ROS_INFO("d1, t1: %f, t2: %f", t1, t2);
             if (t1 >= 0 && t2 >= 0)
                 time1 = (t1 <= t2) ? t1 : t2;
+            else if (t1 < 0 && t2 < 0)
+                time1 = (t1 >= t2) ? t1 : t2;
             else
                 time1 = (t1 >= 0) ? t1 : t2;
         }
@@ -69,12 +71,14 @@ void VEH_nodes::vehicle_collision(vehicle_info vehicle, vehicle_info robot, coll
             //ROS_INFO("d2, t1: %f, t2: %f", t1, t2);
             if (t1 >= 0 && t2 >= 0)
                 time2 = (t1 <= t2) ? t1 : t2;
+            else if (t1 < 0 && t2 < 0)
+                time2 = (t1 >= t2) ? t1 : t2;
             else
                 time2 = (t1 >= 0) ? t1 : t2;
         }
     }
 
-    // Calculate the velocity of the vehicle at the intersection point
+    // Calculate the velocity for the robot to collide with the vehicle
     double vel1, vel2;
     if (time1){
         //ROS_INFO("Time till intersection point front: %f", time1);
@@ -277,7 +281,7 @@ int main(int argc, char **argv)
     vehicle.x_dot = 0;
     vehicle.y_dot = -1;
     vehicle.x_ddot = 0;
-    vehicle.y_ddot = 0.01;
+    vehicle.y_ddot = 0.1;
     vehicle.length = 4.7;
     vehicle.width = 1.8;
 
