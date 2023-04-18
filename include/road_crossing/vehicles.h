@@ -15,6 +15,7 @@ struct collision_info
     double v_front;
     double v_back;
     bool collide;
+    bool collide_stop;
 };
 
 struct vehicle_info
@@ -168,6 +169,20 @@ class VEH_nodes
                 {}
 
                 virtual ~collision_bwd_move(){}
+
+                BT::NodeStatus tick() override;
+
+                static BT::PortsList providedPorts();
+        };
+
+        class collision_on_stop : public BT::ConditionNode
+        {
+            public:
+                collision_on_stop(const std::string& name, const BT::NodeConfiguration& config)
+                    : BT::ConditionNode(name, config)
+                {}
+
+                virtual ~collision_on_stop(){}
 
                 BT::NodeStatus tick() override;
 

@@ -3,7 +3,7 @@
 * Author: Jan Vlk
 * Date: 16.11.2022
 * Description: This file contains the class and functions for the BT itself.
-* Last modified: 13.4.2023
+* Last modified: 18.4.2023
 */
 
 #include "behaviortree_cpp_v3/behavior_tree.h"
@@ -53,6 +53,7 @@ Road_cross_tree::Road_cross_tree(std::string filename)
     this->factory.registerNodeType<MOV_nodes::move_bwd>("move_bwd");
     this->factory.registerNodeType<VEH_nodes::collision_bwd_move>("collision_bwd_move");
     this->factory.registerNodeType<MOV_nodes::stop_movement>("stop_movement");
+    this->factory.registerNodeType<VEH_nodes::collision_on_stop>("collision_on_stop");
     this->factory.registerNodeType<MOV_nodes::crossing_finished_gps>("crossing_finished");
 
     this->tree = this->factory.createTreeFromFile(filename);

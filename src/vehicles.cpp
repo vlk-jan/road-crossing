@@ -3,7 +3,7 @@
 * Author: Jan Vlk
 * Date: 2.3.2022
 * Description: This file contains functions for operations dealing with vehicle detection and collisions.
-* Last modified: 13.4.2023
+* Last modified: 18.4.2023
 */
 
 #include <cmath>
@@ -41,7 +41,7 @@ void VEH_nodes::vehicle_collision(vehicle_info vehicle, vehicle_info robot, coll
     double vehicle_back_y = vehicle.pos_y - vehicle_len_y;
 
     // Calculate the time till intersection point
-    double time1, time2;
+    double time1 = 0, time2 = 0;
     if (vehicle.y_ddot == 0){
         time1 = -(vehicle_front_y)/(vehicle.y_dot);
         time2 = -(vehicle_back_y)/(vehicle.y_dot);
@@ -79,17 +79,21 @@ void VEH_nodes::vehicle_collision(vehicle_info vehicle, vehicle_info robot, coll
     }
 
     // Calculate the velocity for the robot to collide with the vehicle
-    double vel1, vel2;
+    double vel1 = 0, vel2 = 0;
     if (time1){
         //ROS_INFO("Time till intersection point front: %f", time1);
         double x1 = vehicle_front_x + vehicle.x_dot*time1 + vehicle.x_ddot*pow(time1, 2)/2;
-        if (time1 != 0)
+        if (x1 <= robot_front_x && x1 >= robot_back_x)
+            vel1 = 0;
+        else if (time1 != 0)
             vel1 = (x1 - robot_back_x)/time1;
     }
     if (time2){
         //ROS_INFO("Time till intersection point back: %f", time2);
         double x2 = vehicle_back_x + vehicle.x_dot*time2 + vehicle.x_ddot*pow(time2, 2)/2;
-        if (time2 != 0)
+        if (x2 <= robot_front_x && x2 >= robot_back_x)
+            vel2 = 0;
+        else if (time2 != 0)
             vel2 = (x2 - robot_front_x)/time2;
     }
 
@@ -103,6 +107,8 @@ void VEH_nodes::vehicle_collision(vehicle_info vehicle, vehicle_info robot, coll
         collision.v_front = (vel1) ? vel1 : 0;
         collision.v_back = (vel2) ? vel2 : 0;
         collision.collide = false;
+        bool collide = (time1 != 0 && vel1 == 0) || (time2 != 0 && vel2 == 0);
+        collision.collide_stop = collide;
     }
 }
 
@@ -267,6 +273,20 @@ BT::PortsList VEH_nodes::collision_bwd_move::providedPorts()
     return {BT::InputPort<double>("max_vel_bwd"), BT::InputPort<double>("min_vel_bwd")};
 }
 
+BT::NodeStatus VEH_nodes::collision_on_stop::tick()
+{
+    for (int i=0; i<VEH_nodes::collisions.num_collisions; ++i){
+        if (VEH_nodes::collisions.data[i].collide_stop)
+            return BT::NodeStatus::SUCCESS;
+    }
+    return BT::NodeStatus::FAILURE;
+}
+
+BT::PortsList VEH_nodes::collision_on_stop::providedPorts()
+{
+    return {};
+}
+
 /// @brief For testing purposes
 int main(int argc, char **argv)
 {
@@ -276,12 +296,12 @@ int main(int argc, char **argv)
 
     vehicle_info vehicle;
     vehicle.id = 1;
-    vehicle.pos_x = 15;
+    vehicle.pos_x = 0;
     vehicle.pos_y = 10;
     vehicle.x_dot = 0;
     vehicle.y_dot = -1;
     vehicle.x_ddot = 0;
-    vehicle.y_ddot = 0.1;
+    vehicle.y_ddot = 0.05;
     vehicle.length = 4.7;
     vehicle.width = 1.8;
 
@@ -306,6 +326,8 @@ int main(int argc, char **argv)
         ROS_INFO("Collision info: %d, %f, %f", collision.car_id, collision.v_front, collision.v_back);
         if (collision.collide)
             ROS_INFO("Collision with vehicle %d", collision.car_id);
+        else if (collision.collide_stop)
+            ROS_INFO("Collision with vehicle %d, stop", collision.car_id);
         else
             ROS_INFO("No collision");
 
