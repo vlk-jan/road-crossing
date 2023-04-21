@@ -32,8 +32,8 @@ void MOV_nodes::init_publishers(ros::NodeHandle& nh)
 
 BT::NodeStatus MOV_nodes::rotate_robot::tick()
 {
-    BT::Optional<double> req_azimuth = getInput<double>("req_azimuth");
-    BT::Optional<double> cur_azimuth = getInput<double>("cur_azimuth");
+    BT::Optional<double> req_azimuth = getInput<double>("azimuth");
+    BT::Optional<double> cur_azimuth = getInput<double>("heading");
 
     if (!req_azimuth)
         throw BT::RuntimeError("missing required input req_azimuth: ", req_azimuth.error());
@@ -63,8 +63,7 @@ BT::NodeStatus MOV_nodes::rotate_robot::tick()
 
 BT::PortsList MOV_nodes::rotate_robot::providedPorts()
 {
-    return {BT::InputPort<double>("req_azimuth"), BT::InputPort<double>("cur_azimuth"),
-            BT::InputPort<ros::NodeHandle>("node_handle")};
+    return {BT::InputPort<double>("heading"), BT::InputPort<double>("azimuth")};
 }
 
 BT::NodeStatus MOV_nodes::move_to_place::tick()

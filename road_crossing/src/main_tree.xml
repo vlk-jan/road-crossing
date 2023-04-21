@@ -37,19 +37,19 @@
         <SequenceStar>
             <SequenceStar>
                 <RetryUntilSuccessful num_attempts="10">
-                    <Action ID="get_azimuth" cur_azimuth="{azimuth}"/>
+                    <Action ID="get_azimuth" azimuth="{azimuth}"/>
                 </RetryUntilSuccessful>
                 <SubTree ID="get_heading" __shared_blackboard="true"/>
             </SequenceStar>
             <RetryUntilSuccessful num_attempts="10">
                 <Sequence>
-                    <Action ID="get_azimuth" cur_azimuth="{azimuth}"/>
+                    <Action ID="get_azimuth" azimuth="{azimuth}"/>
                     <Fallback>
-                        <Condition ID="robot_perpendicular" cur_azimuth="{azimuth}" req_azimuth="{heading}"/>
+                        <Condition ID="robot_perpendicular" azimuth="{azimuth}" heading="{heading}"/>
                         <ForceFailure>
                             <Fallback>
-                                <Action ID="rotate_robot" direction="{direction}"/>
-                                <Action ID="step_from_road" road_heading="{road_heading}" rob_azimuth="{azimuth}"/>
+                                <Action ID="rotate_robot" azimuth="{azimuth}" heading="{heading}"/>
+                                <Action ID="step_from_road" azimuth="{azimuth}" road_heading="{road_heading}"/>
                             </Fallback>
                         </ForceFailure>
                     </Fallback>
@@ -69,10 +69,10 @@
                 <Condition ID="place_suitable"/>
                 <Fallback>
                     <Sequence>
-                        <Condition ID="better_place_found" found_place="{new_place}"/>
+                        <Condition ID="better_place_found"/>
                         <Action ID="move_to_place" better_easting="{better_easting}" better_northing="{better_northing}"/>
                     </Sequence>
-                    <Action ID="get_better_place" better_easting="{better_easting}" better_northing="{better_northing}" foud_place="{new_place}"/>
+                    <Action ID="get_better_place" better_easting="{better_easting}" better_northing="{better_northing}" new_place="{new_place}"/>
                     <AlwaysSuccess/>
                 </Fallback>
             </Fallback>
@@ -127,9 +127,7 @@
     </BehaviorTree>
     <!-- ////////// -->
     <TreeNodesModel>
-        <Condition ID="better_place_found">
-            <input_port default="{new_place}" name="found_place"/>
-        </Condition>
+        <Condition ID="better_place_found"/>
         <Action ID="calculate_collision">
             <output_port default="{max_vel_bwd}" name="max_vel_bwd"/>
             <output_port default="{max_vel_fwd}" name="max_vel_fwd"/>
@@ -157,12 +155,12 @@
         <Condition ID="crossing_finished"/>
         <SubTree ID="finished"/>
         <Action ID="get_azimuth">
-            <output_port default="{azimuth}" name="cur_azimuth">current azimuth of robot</output_port>
+            <output_port default="{azimuth}" name="azimuth">current azimuth of robot</output_port>
         </Action>
         <Action ID="get_better_place">
             <output_port default="{better_easting}" name="better_easting"/>
             <output_port default="{better_northing}" name="better_northing"/>
-            <output_port default="{new_place}" name="foud_place"/>
+            <output_port default="{new_place}" name="new_place"/>
         </Action>
         <Action ID="get_cars"/>
         <SubTree ID="get_heading">
@@ -201,11 +199,12 @@
             <output_port default="{road_heading}" name="road_heading">heading of a road we need to cross</output_port>
         </Action>
         <Condition ID="robot_perpendicular">
-            <input_port default="{azimuth}" name="cur_azimuth">current azimuth of the robot</input_port>
-            <input_port default="{heading}" name="req_azimuth">azimuth robot should have to be parallel to road we need to cross</input_port>
+            <input_port default="{azimuth}" name="azimuth">current azimuth of the robot</input_port>
+            <input_port default="{heading}" name="heading">azimuth robot should have to be parallel to road we need to cross</input_port>
         </Condition>
         <Action ID="rotate_robot">
-            <input_port default="{direction}" name="direction">1 = clockwise, -1 = counter clockwise</input_port>
+            <input_port default="{azimuth}" name="azimuth"/>
+            <input_port default="{heading}" name="heading"/>
         </Action>
         <Condition ID="start_algorithm"/>
         <SubTree ID="start_crossing">
@@ -213,8 +212,8 @@
         </SubTree>
         <Action ID="start_movement"/>
         <Action ID="step_from_road">
+            <input_port default="{azimuth}" name="azimuth"/>
             <input_port default="{road_heading}" name="road_heading"/>
-            <input_port default="{azimuth}" name="rob_azimuth"/>
         </Action>
         <Action ID="stop_movement"/>
     </TreeNodesModel>

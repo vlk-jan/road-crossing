@@ -28,12 +28,12 @@ void GPS_nodes::callback_gps(GPS_nodes* node, const sensor_msgs::NavSatFix::Cons
 {
     double lat = msg->latitude;
     double lon = msg->longitude;
-    ROS_INFO("Current lat, lon: [%f], [%f]", lat, lon);
+    //ROS_INFO("Current lat, lon: [%f], [%f]", lat, lon);
     double x, y;
     gps_to_utm(lat, lon, x, y);
     node->easting = x;
     node->northing = y;
-    ROS_INFO("Current easting, northing: [%f], [%f]", node->easting, node->northing);
+    //ROS_INFO("Current easting, northing: [%f], [%f]", node->easting, node->northing);
 }
 
 int GPS_nodes::place_suitability()

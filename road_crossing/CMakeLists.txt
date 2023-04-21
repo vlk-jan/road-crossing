@@ -7,6 +7,7 @@ find_package(catkin REQUIRED COMPONENTS
   compass_msgs
   geometry_msgs
   std_msgs
+  road_crossing_msgs
   behaviortree_cpp_v3
   message_generation
 )
@@ -15,11 +16,6 @@ set(CMAKE_MODULE_PATH "${CMAKE_MODULE_PATH};/usr/share/cmake/geographiclib")
 find_package(GeographicLib REQUIRED)
 
 catkin_python_setup()
-
-add_message_files(
-  FILES
-  injector_msgs.msg
-)
 
 add_service_files(
   FILES
@@ -32,8 +28,6 @@ add_service_files(
 
 generate_messages(
   DEPENDENCIES 
-  compass_msgs 
-  geometry_msgs
   std_msgs
 )
 

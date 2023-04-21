@@ -17,7 +17,7 @@
 #include "road_crossing/vehicles.h"
 #include "road_crossing/movement.h"
 #include "road_crossing/misc.h"
-#include "road_crossing/injector_msgs.h"
+#include "road_crossing_msgs/injector_msgs.h"
 
 
 void VEH_nodes::vehicle_collision(vehicle_info vehicle, vehicle_info robot, collision_info &collision)
@@ -112,7 +112,7 @@ void VEH_nodes::vehicle_collision(vehicle_info vehicle, vehicle_info robot, coll
     }
 }
 
-void VEH_nodes::callback_vehicle_injector(VEH_nodes* node, const road_crossing::injector_msgs::ConstPtr& msg)
+void VEH_nodes::callback_vehicle_injector(VEH_nodes* node, const road_crossing_msgs::injector_msgs::ConstPtr& msg)
 {
     for (int i = 0; i < node->vehicles.data.size(); ++i){
         if (msg->veh_id == vehicles.data[i].id){

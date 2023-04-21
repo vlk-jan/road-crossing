@@ -112,13 +112,13 @@ BT::PortsList AZI_nodes::get_required_azimuth::providedPorts()
 
 BT::NodeStatus AZI_nodes::get_azimuth::tick()
 {
-    setOutput("cur_azimuth", azimuth);
+    setOutput("azimuth", azimuth);
     return BT::NodeStatus::SUCCESS;
 }
 
 BT::PortsList AZI_nodes::get_azimuth::providedPorts()
 {
-    return {BT::OutputPort<double>("cur_azimuth")};
+    return {BT::OutputPort<double>("azimuth")};
 }
 
 BT::NodeStatus AZI_nodes::robot_perpendicular::tick()

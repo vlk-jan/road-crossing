@@ -6,7 +6,7 @@
 
 #include "ros/ros.h"
 
-#include "road_crossing/injector_msgs.h"
+#include "road_crossing_msgs/injector_msgs.h"
 
 
 struct collision_info
@@ -75,7 +75,7 @@ class VEH_nodes
          * @param node VEH_nodes object, necessary for static variables.
          * @param msg Message with the vehicle data from the injector.
          */
-        static void callback_vehicle_injector(VEH_nodes* node, const road_crossing::injector_msgs::ConstPtr& msg);
+        static void callback_vehicle_injector(VEH_nodes* node, const road_crossing_msgs::injector_msgs::ConstPtr& msg);
 
         class get_cars : public BT::SyncActionNode
         {
