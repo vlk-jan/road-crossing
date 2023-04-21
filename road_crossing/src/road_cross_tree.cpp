@@ -62,5 +62,6 @@ Road_cross_tree::Road_cross_tree(std::string filename)
 int Road_cross_tree::run_tree()
 {
     this->tree.tickRoot();
+    this->tree.sleep(std::chrono::milliseconds(10));
     return EXIT_SUCCESS;
 }
