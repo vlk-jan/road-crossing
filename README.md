@@ -16,7 +16,7 @@ git clone https://github.com/vlk-jan/road_crossing.git
 
 For this package to work you need to install additional packages:
 
-- [Compass](https://github.com/ctu-vras/compass) - provides the robots azimuth. The message files are also necessary.
+- [Compass](https://github.com/ctu-vras/compass) - provides the robots azimuth.
 
 The package also requires additional libraries:
 
@@ -51,6 +51,7 @@ This package does not currently have any documentation. However, the text of my 
 
 - Short-term
   - Create unit tests?
+  - Simulation testing
 - Long-term
   - Robot steering during the crossing, currently moving only forward and backward in a straight line
   - Service for obtaining better place - possible need to rewrite road cost
