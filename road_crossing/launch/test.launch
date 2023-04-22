@@ -23,9 +23,9 @@
     <node name="get_suitability" pkg="road_crossing" type="get_suitability_srv.py"
           respawn="true" respawn_delay="1.0" output="screen"/>
 
-    <param name="road_crossing/road_info_file" type="str" value="/road_info.pyc"/>
+    <param name="road_crossing/road_info_file" type="str" value="$(dirname)/../../../../road_info.pyc"/>
 
     <node name="get_road_info" pkg="road_crossing" type="get_road_info_srv.py"
-          respawn="true" respawn_delay="1.0" output="screen">
+          respawn="false" respawn_delay="1.0" output="screen">
     </node>
 </launch>

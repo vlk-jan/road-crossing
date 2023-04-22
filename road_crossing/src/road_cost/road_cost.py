@@ -83,7 +83,6 @@ class RoadCost:
 
     def load_road_segments(self):
         file_name = rospy.get_param("road_crossing/road_file_name", "./road_segments.pyc")
-        print("Loading road segments from file: {}".format(file_name))
         try:
             with open(file_name, "rb") as file:
                 self.road_segments = pickle.load(file)

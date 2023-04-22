@@ -57,7 +57,6 @@ bool Start_service::start_algorithm_service(road_crossing::start_algorithm::Requ
 
     if (valid){
         res.is_running = running;
-        ROS_INFO("Is running: %d", running);
         road_crossing_msgs::start_msgs msg;
         msg.valid = true;
         msg.start = running;
@@ -77,7 +76,6 @@ void Start_service::start_callback(Start_service *node, const road_crossing_msgs
 
 BT::NodeStatus Start_service::start_algorithm::tick()
 {
-    ROS_INFO("Is running: %d", is_running);
     if (is_running)
         return BT::NodeStatus::SUCCESS;
     else

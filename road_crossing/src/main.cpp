@@ -13,6 +13,7 @@
 #include "road_crossing_msgs/injector_msgs.h"
 #include "road_crossing_msgs/start_msgs.h"
 #include "road_crossing/start_srv.h"
+#include "road_crossing/movement.h"
 
 int main(int argc, char **argv)
 {
@@ -36,6 +37,7 @@ int main(int argc, char **argv)
     AZI_nodes azi_nodes;
     GPS_nodes gps_nodes;
     VEH_nodes veh_nodes;
+    MOV_nodes mov_nodes;
     Start_service start_serv;
     
     const boost::function<void(const compass_msgs::Azimuth::ConstPtr&)> cb_compass =
@@ -51,6 +53,11 @@ int main(int argc, char **argv)
     ros::Subscriber sub_gps = nh.subscribe(gps, 5, cb_gps);
     ros::Subscriber sub_veh = nh.subscribe("/injector", 5, cb_veh);
     ros::Subscriber sub_start = nh.subscribe("/road_crossing/start", 5, cb_start);
+
+    gps_nodes.init_service(nh);
+    azi_nodes.init_service(nh);
+    mov_nodes.init_publishers(nh);
+    start_serv.init_publishers(nh);
 
     BT::FileLogger logger_file(BT_tree.tree, "./bt_trace.fbl");
     //BT::StdCoutLogger logger_cout(BT_tree.tree);
