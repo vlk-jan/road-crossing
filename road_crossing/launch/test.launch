@@ -1,16 +1,31 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <launch>
-    <arg name="tree_file" default="test_tree.xml"/>
+    <arg name="tree_file" default="main_tree.xml"/>
+
     <node name="magnetometer_compass" pkg="compass" type="magnetometer_compass"
           respawn="true" respawn_delay="1.0" output="screen">
-        <rosparam subst_value="true">
-            publish_mag_azimuth_ned_red: true
-        </rosparam>
+        <param name="publish_true_azimuth_enu_rad" type="bool" value="true"/>
+        <param name="magnetic_model" type="str" value="wmm2020"/>
     </node>
-    <node name="test_tree" pkg="road_crossing" type="run_tree"
+
+    <node name="start_srv" pkg="road_crossing" type="start_srv"
+          respawn="true" respawn_delay="1.0" output="screen"/>
+
+    <node name="get_finish" pkg="road_crossing" type="get_finish_srv.py"
+          respawn="true" respawn_delay="1.0" output="screen"/>
+
+    <param name="road_crossing/road_file_name" type="str" value="$(dirname)/../../../../road_segments.pyc"/>
+
+    <node name="get_segment" pkg="road_crossing" type="get_segment_srv.py"
           respawn="true" respawn_delay="1.0" output="screen">
-        <rosparam subst_value="true">
-            tree_file: $(arg tree_file)
-        </rosparam>
+    </node>
+    
+    <node name="get_suitability" pkg="road_crossing" type="get_suitability_srv.py"
+          respawn="true" respawn_delay="1.0" output="screen"/>
+
+    <param name="road_crossing/road_info_file" type="str" value="/road_info.pyc"/>
+
+    <node name="get_road_info" pkg="road_crossing" type="get_road_info_srv.py"
+          respawn="true" respawn_delay="1.0" output="screen">
     </node>
 </launch>

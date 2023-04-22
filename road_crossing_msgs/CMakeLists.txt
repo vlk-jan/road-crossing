@@ -9,6 +9,7 @@ find_package(catkin REQUIRED COMPONENTS
 add_message_files(
   FILES
   injector_msgs.msg
+  start_msgs.msg
 )
 
 generate_messages(

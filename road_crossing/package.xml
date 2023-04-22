@@ -1,8 +1,8 @@
 <?xml version="1.0"?>
 <package format="2">
   <name>road_crossing</name>
-  <version>0.0.1</version>
-  <description>The road_crosser package</description>
+  <version>1.0.0</version>
+  <description>Control algorithm for safe traversation of roads with a robot.</description>
 
   <author email="vlkjan6@fel.cvut.cz">Vlk Jan</author>
   <maintainer email="vlkjan6@fel.cvut.cz">Vlk Jan</maintainer>
@@ -11,20 +11,20 @@
 
   <buildtool_depend>catkin</buildtool_depend>
   
+  <build_depend>road_crossing_msgs</build_depend>
   <build_depend>roscpp</build_depend>
   <build_depend>rospy</build_depend>
   <build_depend>behaviortree_cpp_v3</build_depend>
   <build_depend>std_msgs</build_depend>
-  <build_depend>road_crossing_msgs</build_depend>
   <build_depend>message_generation</build_depend>
   <build_depend>compass_msgs</build_depend>
   <build_depend>geographiclib</build_depend>
   
+  <exec_depend>road_crossing_msgs</exec_depend>
   <exec_depend>roscpp</exec_depend>
   <exec_depend>rospy</exec_depend>
   <exec_depend>behaviortree_cpp_v3</exec_depend>
   <exec_depend>std_msgs</exec_depend>
-  <exec_depend>road_crossing_msgs</exec_depend>
   <exec_depend>message_runtime</exec_depend>
   <exec_depend>compass_msgs</exec_depend>
   <exec_depend>geographiclib</exec_depend>

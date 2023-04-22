@@ -3,7 +3,7 @@
 * Author: Jan Vlk
 * Date: 16.11.2022
 * Description: This file contains functions for operations dealing with compass and azimuth.
-* Last modified: 13.4.2023
+* Last modified: 22.4.2023
 */
 
 #include "behaviortree_cpp_v3/behavior_tree.h"
@@ -72,7 +72,7 @@ void AZI_nodes::callback_compass(AZI_nodes* node, const compass_msgs::Azimuth::C
             node->azimuth = deg_to_rad(msg->azimuth);
     }
     node->azimuth = msg->azimuth;
-    ROS_INFO("Current azimuth: [%f]", node->azimuth);
+    //ROS_INFO("Current azimuth: [%f]", node->azimuth);
 }
 
 void AZI_nodes::callback_quat(AZI_nodes* node, const geometry_msgs::QuaternionStamped::ConstPtr& msg)

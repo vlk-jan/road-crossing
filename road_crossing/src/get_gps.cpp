@@ -3,7 +3,7 @@
 * Author: Jan Vlk
 * Date: 13.2.2023
 * Description: This file contains miscellaneous functions and classes, or functions and classes that do not have a specific place yet.
-* Last modified: 13.4.2023
+* Last modified: 22.4.2023
 */
 
 #include "behaviortree_cpp_v3/behavior_tree.h"
@@ -38,6 +38,10 @@ void GPS_nodes::callback_gps(GPS_nodes* node, const sensor_msgs::NavSatFix::Cons
 
 int GPS_nodes::place_suitability()
 {
+    if (GPS_nodes::easting == 0 && GPS_nodes::northing == 0){
+        ROS_WARN("GPS was not received -> no position set");
+        return EXIT_FAILURE;
+    }
     road_crossing::get_suitability srv;
     srv.request.easting = GPS_nodes::easting;
     srv.request.northing = GPS_nodes::northing;

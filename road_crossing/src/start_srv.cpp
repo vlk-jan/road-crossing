@@ -3,7 +3,7 @@
 * Author: Jan Vlk
 * Date: 27.3.2023
 * Description: This file contains functions for starting the BT algorithm
-* Last modified: 13.4.2023
+* Last modified: 22.4.2023
 */
 
 #include "behaviortree_cpp_v3/behavior_tree.h"
@@ -13,6 +13,7 @@
 
 #include "road_crossing/start_srv.h"
 #include "road_crossing/start_algorithm.h"
+#include "road_crossing_msgs/start_msgs.h"
 
 
 int main(int argc, char **argv)
@@ -20,10 +21,10 @@ int main(int argc, char **argv)
     ros::init(argc, argv, "start_srv");
     ros::NodeHandle nh;
 
-    Start_service cond_nodes;
+    Start_service::init_publishers(nh);
 
-    const boost::function<bool(road_crossing::start_algorithm::Request&, const road_crossing::start_algorithm::Response&)> start_service =
-          boost::bind(&Start_service::start_algorithm_service, &cond_nodes, _1, _2);
+    const boost::function<bool(road_crossing::start_algorithm::Request&, road_crossing::start_algorithm::Response&)> start_service =
+          boost::bind(&Start_service::start_algorithm_service, _1, _2);
 
     ros::ServiceServer start_srv = nh.advertiseService("start_algorithm", start_service);
 
@@ -32,26 +33,52 @@ int main(int argc, char **argv)
     return EXIT_SUCCESS;
 }
 
-bool Start_service::start_algorithm_service(Start_service* node, road_crossing::start_algorithm::Request &req, const road_crossing::start_algorithm::Response &res)
+void Start_service::init_publishers(ros::NodeHandle& nh)
 {
+    Start_service::start_pub = nh.advertise<road_crossing_msgs::start_msgs>("/road_crossing/start", 5);
+}
+
+bool Start_service::start_algorithm_service(road_crossing::start_algorithm::Request &req, road_crossing::start_algorithm::Response &res)
+{
+    bool valid = false;
+    bool running = false;
     if (req.start && req.stop){
         ROS_WARN("Start and stop algorithm service called");
     } else if (req.start){
         ROS_INFO("Start algorithm service called");
-        node->is_running = true;
+        running = true;
+        valid = true;
     } else if (req.stop){
         ROS_INFO("Stop algorithm service called");
-        node->is_running = false;
+        valid = true;
     } else {
         ROS_WARN("Start algorithm service called without any argument");
     }
 
-    return node->is_running;
+    if (valid){
+        res.is_running = running;
+        ROS_INFO("Is running: %d", running);
+        road_crossing_msgs::start_msgs msg;
+        msg.valid = true;
+        msg.start = running;
+        Start_service::start_pub.publish(msg);
+        return running;
+    } else
+        return false;
+}
+
+void Start_service::start_callback(Start_service *node, const road_crossing_msgs::start_msgs::ConstPtr& msg)
+{
+    ROS_INFO("Start callback called");
+    if (msg->valid){
+        node->is_running = msg->start;
+    }
 }
 
 BT::NodeStatus Start_service::start_algorithm::tick()
 {
-    if (Start_service::is_running)
+    ROS_INFO("Is running: %d", is_running);
+    if (is_running)
         return BT::NodeStatus::SUCCESS;
     else
         return BT::NodeStatus::FAILURE;
