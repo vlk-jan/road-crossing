@@ -1,5 +1,7 @@
 import rospy
-from road_crossing.srv import get_road_segment, get_road_segmentResponse, get_suitability, get_suitabilityResponse, get_finish, get_finishResponse, get_road_info
+from road_crossing.srv import get_road_segment, get_road_segmentResponse, get_suitability,\
+                              get_suitabilityResponse, get_finish, get_finishResponse, get_road_info,\
+                              get_road_infoResponse
 
 import overpy
 from math import floor
@@ -74,22 +76,23 @@ class RoadCost:
         return cost
 
     def save_road_segments(self):
-        file_name = rospy.get_param("~road_file_name", "road_segments.pyc")
+        file_name = rospy.get_param("road_crossing/road_file_name", "./road_segments.pyc")
         with open(file_name, "wb") as file:
             pickle.dump(self.road_segments, file)
-        print("INFO: Road segments saved")
+        rospy.loginfo("Road segments saved")
 
     def load_road_segments(self):
-        file_name = rospy.get_param("~road_file_name", "road_segments.pyc")
+        file_name = rospy.get_param("road_crossing/road_file_name", "./road_segments.pyc")
+        print("Loading road segments from file: {}".format(file_name))
         try:
             with open(file_name, "rb") as file:
                 self.road_segments = pickle.load(file)
-            print("INFO: Road segments loaded")
+            rospy.loginfo("Road segments loaded")
         except FileNotFoundError:
-            print("ERROR: Road segments not loaded, file not found")
+            rospy.logerr("Road segments not loaded, file not found")
             exit()
         except OSError:
-            print("ERROR: Road segments not loaded, file open error")
+            rospy.logerr("Road segments not loaded, file open error")
             exit()
 
     def handle_road_suitability(self, req):
@@ -110,6 +113,7 @@ class RoadCost:
         rospy.init_node("get_suitability_server")
         s_get_suitability = rospy.Service("get_suitability", get_suitability, self.handle_road_suitability)
         rospy.loginfo("Suitability server ready")
+        self.load_road_segments()
         rospy.spin()
 
     def handle_get_road_segment(self, req):
@@ -137,6 +141,7 @@ class RoadCost:
         rospy.init_node("get_road_segment_server")
         s_get_segment = rospy.Service("get_road_segment", get_road_segment, self.handle_get_road_segment)
         rospy.loginfo("Road segment server ready")
+        self.load_road_segments()
         rospy.spin()
 
     def get_road_info_client(self, easting, northing):
@@ -146,7 +151,7 @@ class RoadCost:
             resp = road_info(easting, northing)
             return resp
         except rospy.ServiceException as e:
-            print("Service call failed: %s"%e)
+            rospy.logerr("Service call failed: %s"%e)
 
     def handle_get_finish(self, req):
         point = geometry.Point(req.easting, req.northing)
@@ -164,4 +169,74 @@ class RoadCost:
         rospy.init_node("get_finish_server")
         s_get_finish = rospy.Service("get_finish", get_finish, self.handle_get_finish)
         rospy.loginfo("Finish server ready")
+        self.load_road_segments()
         rospy.spin()
+
+class road_info:
+    def __init__(self):
+        self.cross_segment = None
+        self.expected_velocity = None
+        self.maximal_velocity = None
+        self.lane_num = None
+        self.road_width = None
+        self.road_type = None
+        self.peddestrian_crossing = None
+        self.peddestrian_crossing_coords = None
+
+class road_data:
+    def __init__(self):
+        self.data = []
+
+    def add_road(self, road : road_info):
+        self.data.append(road)
+
+    def save(self):
+        file_name = rospy.get_param("~road_info_file", "road_info.pyc")
+        with open(file_name, "wb") as fp:
+            pickle.dump(self.data, fp)
+        rospy.loginfo("Road info saved")
+
+    def load(self):
+        file_name = rospy.get_param("~road_info_file", "road_info.pyc")
+        try:
+            with open(file_name, "rb") as file:
+                self.data = pickle.load(file)
+            rospy.loginfo("Road info loaded")
+        except FileNotFoundError:
+            rospy.logerr("Road info not loaded, file not found")
+            exit()
+        except OSError:
+            rospy.logerr("Road info not loaded, file open error")
+            exit()
+
+    def handle_road_info(self, req):
+        location = geometry.Point(req.easting, req.northing)
+
+        min_dist = float('inf')
+        index = None
+
+        for i in range(len(self.data)):
+            dist = location.distance(self.data[i].road_segment)
+            if (min_dist >= dist):
+                if (min_dist == dist):
+                    rospy.logwarn("Two segments in equal distance")
+                    return
+                min_dist = dist
+                index = i
+
+        if index is not None:
+            i = index
+            return get_road_infoResponse(self.data[i].cross_segment.coords[0,0], self.data[i].cross_segment.coords[0,1] /
+                                         self.data[i].cross_segment.coords[1,0], self.data[i].cross_segment.coords[1,1] /
+                                         self.data[i].expected_velocity, self.data[i].maximal_velocity. self.data[i].num_lanes /
+                                         self.data[i].road_width, self.road_type, self.data[i].peddestrian_crossing /
+                                         self.data[i].peddestrian_crossing.coords[0] if self.data[i].peddestrian_crossing else 0 /
+                                         self.data[i].peddestrian_crossing.coords[1] if self.data[i].peddestrian_crossing else 0)
+
+    def get_road_info_server(self):
+        rospy.init_node("get_road_info_server")
+        s_get_road_ifno = rospy.Service("get_road_info", get_road_info, self.handle_road_info)
+        rospy.loginfo("Road info server ready")
+        self.load()
+        rospy.spin()
+

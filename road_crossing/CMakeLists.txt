@@ -48,6 +48,8 @@ catkin_install_python(
   src/road_cost/get_segment_srv.py
   src/road_cost/get_suitability_srv.py
   src/road_cost/get_finish_srv.py
+  src/road_cost/get_road_info_srv.py
+  src/start.py
 
   DESTINATION
   ${CATKIN_PACKAGE_BIN_DESTINATION}
