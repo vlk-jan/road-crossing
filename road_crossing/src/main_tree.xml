@@ -9,7 +9,10 @@
                     <SubTree ID="init_values" __shared_blackboard="true"/>
                     <SubTree ID="get_parallel_to_road" __shared_blackboard="true"/>
                 </SequenceStar>
-                <SubTree ID="road_crossing" __shared_blackboard="true"/>
+                <Sequence>
+                    <SubTree ID="road_crossing" __shared_blackboard="true"/>
+                    <SubTree ID="finished" __shared_blackboard="true"/>
+                </Sequence>
             </SequenceStar>
         </Sequence>
     </BehaviorTree>
@@ -63,7 +66,6 @@
             <SequenceStar>
                 <Action ID="get_position" easting="{easting}" northing="{northing}"/>
                 <Condition ID="cross_road"/>
-                <SetBlackboard output_key="{new_place}" value="false"/>
             </SequenceStar>
             <Fallback>
                 <Condition ID="place_suitable"/>
@@ -72,7 +74,7 @@
                         <Condition ID="better_place_found"/>
                         <Action ID="move_to_place" better_easting="{better_easting}" better_northing="{better_northing}"/>
                     </Sequence>
-                    <Action ID="get_better_place" better_easting="{better_easting}" better_northing="{better_northing}" new_place="{new_place}"/>
+                    <Action ID="get_better_place" better_easting="{better_easting}" better_northing="{better_northing}"/>
                     <AlwaysSuccess/>
                 </Fallback>
             </Fallback>
@@ -83,37 +85,40 @@
         <Sequence>
             <Action ID="get_cars"/>
             <Fallback>
-                <Condition ID="cars_in_trajectory"/>
-                <SubTree ID="start_crossing" __shared_blackboard="true"/>
-                <Action ID="continue_movement"/>
-            </Fallback>
-            <SubTree ID="start_crossing" __shared_blackboard="true"/>
-            <Sequence>
-                <Action ID="calculate_collision" max_vel_bwd="{max_vel_bwd}" max_vel_fwd="{max_vel_fwd}" min_vel_bwd="{max_vel_bwd}" min_vel_fwd="{min_vel_fwd}"/>
-                <Fallback>
-                    <Sequence>
-                        <Condition ID="collision_imminent"/>
-                        <Fallback>
-                            <Sequence>
-                                <Condition ID="collision_fwd_move" max_vel_fwd="{max_vel_fwd}" min_vel_fwd="{min_vel_fwd}"/>
-                                <Fallback>
-                                    <Sequence>
-                                        <Condition ID="collision_on_stop"/>
-                                        <Inverter>
-                                            <Condition ID="collision_bwd_move" max_vel_bwd="{max_vel_bwd}" min_vel_bwd="{min_vel_bwd}"/>
-                                        </Inverter>
-                                        <Action ID="move_bwd" max_vel_bwd="{max_vel_bwd}" min_vel_bwd="{min_vel_bwd}"/>
-                                    </Sequence>
-                                    <Action ID="stop_movement"/>
-                                </Fallback>
-                            </Sequence>
-                            <Action ID="move_fwd" max_vel_fwd="{max_vel_fwd}" min_vel_fwd="{min_vel_fwd}"/>
-                        </Fallback>
-                    </Sequence>
+                <Sequence>
+                    <Inverter>
+                        <Condition ID="cars_in_trajectory"/>
+                    </Inverter>
+                    <SubTree ID="start_crossing" __shared_blackboard="true"/>
                     <Action ID="continue_movement"/>
-                </Fallback>
-            </Sequence>
-            <SubTree ID="finished"/>
+                </Sequence>
+                <Sequence>
+                    <SubTree ID="start_crossing" __shared_blackboard="true"/>
+                    <Action ID="calculate_collision" max_vel_bwd="{max_vel_bwd}" max_vel_fwd="{max_vel_fwd}" min_vel_bwd="{max_vel_bwd}" min_vel_fwd="{min_vel_fwd}"/>
+                    <Fallback>
+                        <Sequence>
+                            <Condition ID="collision_imminent"/>
+                            <Fallback>
+                                <Sequence>
+                                    <Condition ID="collision_fwd_move" max_vel_fwd="{max_vel_fwd}" min_vel_fwd="{min_vel_fwd}"/>
+                                    <Fallback>
+                                        <Sequence>
+                                            <Condition ID="collision_on_stop"/>
+                                            <Inverter>
+                                                <Condition ID="collision_bwd_move" max_vel_bwd="{max_vel_bwd}" min_vel_bwd="{min_vel_bwd}"/>
+                                            </Inverter>
+                                            <Action ID="move_bwd" max_vel_bwd="{max_vel_bwd}" min_vel_bwd="{min_vel_bwd}"/>
+                                        </Sequence>
+                                        <Action ID="stop_movement"/>
+                                    </Fallback>
+                                </Sequence>
+                                <Action ID="move_fwd" max_vel_fwd="{max_vel_fwd}" min_vel_fwd="{min_vel_fwd}"/>
+                            </Fallback>
+                        </Sequence>
+                        <Action ID="continue_movement"/>
+                    </Fallback>
+                </Sequence>
+            </Fallback>
         </Sequence>
     </BehaviorTree>
     <!-- ////////// -->
@@ -153,14 +158,15 @@
         <Action ID="continue_movement"/>
         <Condition ID="cross_road"/>
         <Condition ID="crossing_finished"/>
-        <SubTree ID="finished"/>
+        <SubTree ID="finished">
+            <input_port default="true" name="__shared_blackboard">If false (default), the Subtree has an isolated blackboard and needs port remapping</input_port>
+        </SubTree>
         <Action ID="get_azimuth">
             <output_port default="{azimuth}" name="azimuth">current azimuth of robot</output_port>
         </Action>
         <Action ID="get_better_place">
             <output_port default="{better_easting}" name="better_easting"/>
             <output_port default="{better_northing}" name="better_northing"/>
-            <output_port default="{new_place}" name="new_place"/>
         </Action>
         <Action ID="get_cars"/>
         <SubTree ID="get_heading">

@@ -3,7 +3,7 @@
 * Author: Jan Vlk
 * Date: 13.2.2023
 * Description: This file contains miscellaneous functions and classes, or functions and classes that do not have a specific place yet.
-* Last modified: 22.4.2023
+* Last modified: 23.4.2023
 */
 
 #include "behaviortree_cpp_v3/behavior_tree.h"
@@ -122,12 +122,10 @@ BT::NodeStatus GPS_nodes::get_better_place::tick()
     // until than -- FAILURE -> continue in current place
     setOutput("better_easting", 0.0);
     setOutput("better_northing", 0.0);
-    setOutput("new_place", false);
     return BT::NodeStatus::FAILURE;
 }
 
 BT::PortsList GPS_nodes::get_better_place::providedPorts()
 {
-    return {BT::OutputPort<double>("better_easting"), BT::OutputPort<double>("better_northing"),
-            BT::OutputPort<bool>("new_place")};
+    return {BT::OutputPort<double>("better_easting"), BT::OutputPort<double>("better_northing")};
 }

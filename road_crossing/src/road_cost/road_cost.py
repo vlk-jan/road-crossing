@@ -144,7 +144,7 @@ class RoadCost:
         rospy.spin()
 
     def get_road_info_client(self, easting, northing):
-        rospy.wait_for_service("get_road_info")
+        #rospy.wait_for_service("get_road_info")
         try:
             road_info = rospy.ServiceProxy("get_road_info", get_road_info)
             resp = road_info(easting, northing)
@@ -159,8 +159,9 @@ class RoadCost:
         if (road_info is not None):
             road_segment = geometry.LineString([(road_info.easting_1, road_info.northing_1), (road_info.easting_2, road_info.northing_2)])
             dist = point.distance(road_segment)
+            ret = True if dist-(road_info.road_width/2) > 0 else False
         
-        ret = True if dist-(road_info.road_width/2) > 0 else False
+        ret = ret if road_info is not None else False
 
         return get_finishResponse(ret)
 

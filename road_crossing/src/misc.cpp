@@ -3,7 +3,7 @@
 * Author: Jan Vlk
 * Date: 13.2.2023
 * Description: This file contains miscellaneous functions and classes, or functions and classes that do not have a specific place yet.
-* Last modified: 13.4.2023
+* Last modified: 23.4.2023
 */
 
 #include "road_crossing/misc.h"
@@ -49,7 +49,9 @@ double deg_to_rad(double angle)
 double comp_heading(double rob_heading, double road_heading)
 {
     double heading1 = road_heading + M_PI/2;
+    heading1 = heading1 < 0 ? 2*M_PI + heading1 : heading1;
     double heading2 = road_heading - M_PI/2;
+    heading2 = heading2 < 0 ? 2*M_PI + heading2 : heading2;
     double diff1 = angle_diff(rob_heading, heading1);
     double diff2 = angle_diff(rob_heading, heading2);
     if (std::abs(diff1) < std::abs(diff2))

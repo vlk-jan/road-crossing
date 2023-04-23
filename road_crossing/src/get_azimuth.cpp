@@ -3,7 +3,7 @@
 * Author: Jan Vlk
 * Date: 16.11.2022
 * Description: This file contains functions for operations dealing with compass and azimuth.
-* Last modified: 22.4.2023
+* Last modified: 23.4.2023
 */
 
 #include "behaviortree_cpp_v3/behavior_tree.h"
@@ -22,29 +22,27 @@
 
 std::string AZI_nodes::get_topic()
 {
-    std::string param = "~publish_";
+    std::string param = "/magnetometer_compass/publish_";
     std::string reference_str[] = {"utm", "true", "mag"};
     int ref_len = 3;
-    std::string orientation_str[] = {"ned", "enu"};
+    std::string orientation_str[] = {"enu", "ned"};
     int ori_len = 2;
     std::string data_type_str[] = {"rad", "deg", "quat", "imu", "pose"};
     int data_len = 5;
-
-    bool published = false;
-    ROS_INFO("Searching for topic...");
 
     for (int i=0; i<ref_len; ++i){
         for (int j=0; j<ori_len; ++j){
             for (int k=0; k<data_len; ++k){
                 param += reference_str[i] + "_azimuth_" + orientation_str[j] + "_" + data_type_str[k];
-                ros::param::get(param, published);
-                if (published){
-                    this->indices.reference_i = i;
-                    this->indices.orientation_i = j;
-                    this->indices.data_type_i = k;
-                    return (reference_str[i] + "/" +  orientation_str[j] + "/" + data_type_str[k]);
+                if (ros::param::has(param)){
+                    AZI_nodes::indices.reference_i = i;
+                    AZI_nodes::indices.orientation_i = j;
+                    AZI_nodes::indices.data_type_i = k;
+                    std::string ret = ("/compass/" + reference_str[i] + "/" +  orientation_str[j] + "/" + data_type_str[k]);
+                    std::cout << ret << std::endl;
+                    return ret;
                 }
-                param = "~publish_";
+                param = "/magnetometer_compass/publish_";
             }
         }
     }
@@ -60,19 +58,18 @@ void AZI_nodes::init_service(ros::NodeHandle& nh)
 
 void AZI_nodes::callback_compass(AZI_nodes* node, const compass_msgs::Azimuth::ConstPtr& msg)
 {
-    if (indices.data_type_i == 0){
-        if (indices.orientation_i == 0)
-           node->azimuth = ned_to_enu(msg->azimuth);
+    if (AZI_nodes::indices.data_type_i == 0){
+        if (AZI_nodes::indices.orientation_i == 0)
+           AZI_nodes::azimuth = ned_to_enu(msg->azimuth);
         else
-            node->azimuth = msg->azimuth;
+            AZI_nodes::azimuth = msg->azimuth;
     } else{
-        if (indices.orientation_i == 0)
-            node->azimuth = ned_to_enu(deg_to_rad(msg->azimuth));
+        if (AZI_nodes::indices.orientation_i == 0)
+            AZI_nodes::azimuth = ned_to_enu(deg_to_rad(msg->azimuth));
         else
-            node->azimuth = deg_to_rad(msg->azimuth);
+            AZI_nodes::azimuth = deg_to_rad(msg->azimuth);
     }
-    node->azimuth = msg->azimuth;
-    //ROS_INFO("Current azimuth: [%f]", node->azimuth);
+    //ROS_INFO("Current azimuth: %f", AZI_nodes::azimuth);
 }
 
 void AZI_nodes::callback_quat(AZI_nodes* node, const geometry_msgs::QuaternionStamped::ConstPtr& msg)
@@ -112,7 +109,7 @@ BT::PortsList AZI_nodes::get_required_azimuth::providedPorts()
 
 BT::NodeStatus AZI_nodes::get_azimuth::tick()
 {
-    setOutput("azimuth", azimuth);
+    setOutput("azimuth", AZI_nodes::azimuth);
     return BT::NodeStatus::SUCCESS;
 }
 
@@ -180,7 +177,7 @@ BT::NodeStatus AZI_nodes::compute_heading::tick()
         throw BT::RuntimeError("missing required input road_heading: ", road_heading.error());
     
     double heading = comp_heading(rob_heading.value(), road_heading.value());
-    setOutput("req_azimuth", heading);
+    setOutput("req_azimuth", rob_heading.value()-0.1); //Simulation purposes
     return BT::NodeStatus::SUCCESS;
 }
 

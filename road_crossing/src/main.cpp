@@ -1,7 +1,14 @@
+/*
+* Name: main.cpp
+* Author: Jan Vlk
+* Date: 16.11.2022
+* Description: Main file of our algorithm, creates ROS subscribers, BT tree and provides.
+* Last modified: 23.4.2023
+*/
+
 #include "behaviortree_cpp_v3/behavior_tree.h"
 #include "behaviortree_cpp_v3/bt_factory.h"
 #include "behaviortree_cpp_v3/loggers/bt_file_logger.h"
-#include "behaviortree_cpp_v3/loggers/bt_cout_logger.h"
 
 #include "ros/ros.h"
 #include "compass_msgs/Azimuth.h"
@@ -29,8 +36,10 @@ int main(int argc, char **argv)
     
     Road_cross_tree BT_tree(tree_file);
 
-    std::string compass = "/compass/true/enu/rad";
+    std::string compass;
     std::string gps = "/gps/fix";
+    std::string vehicles = "/road_crossing/injector";
+    std::string start = "/road_crossing/start";
 
     ros::NodeHandle nh;
 
@@ -39,6 +48,8 @@ int main(int argc, char **argv)
     VEH_nodes veh_nodes;
     MOV_nodes mov_nodes;
     Start_service start_serv;
+
+    compass = azi_nodes.get_topic();
     
     const boost::function<void(const compass_msgs::Azimuth::ConstPtr&)> cb_compass =
                             boost::bind(&AZI_nodes::callback_compass, &azi_nodes, _1);
@@ -51,8 +62,8 @@ int main(int argc, char **argv)
 
     ros::Subscriber sub_compass = nh.subscribe(compass, 5, cb_compass);
     ros::Subscriber sub_gps = nh.subscribe(gps, 5, cb_gps);
-    ros::Subscriber sub_veh = nh.subscribe("/injector", 5, cb_veh);
-    ros::Subscriber sub_start = nh.subscribe("/road_crossing/start", 5, cb_start);
+    ros::Subscriber sub_veh = nh.subscribe(vehicles, 5, cb_veh);
+    ros::Subscriber sub_start = nh.subscribe(start, 5, cb_start);
 
     gps_nodes.init_service(nh);
     azi_nodes.init_service(nh);
@@ -60,11 +71,9 @@ int main(int argc, char **argv)
     start_serv.init_publishers(nh);
 
     BT::FileLogger logger_file(BT_tree.tree, "./bt_trace.fbl");
-    //BT::StdCoutLogger logger_cout(BT_tree.tree);
 
     while (ros::ok()){
         BT_tree.run_tree();
-
         ros::spinOnce();
     }
 

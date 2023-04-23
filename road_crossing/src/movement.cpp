@@ -3,7 +3,7 @@
 * Author: Jan Vlk
 * Date: 25.11.2022
 * Description: This file contains functions for moving the robot.
-* Last modified: 13.4.2023
+* Last modified: 23.4.2023
 */
 
 #include <cmath>
@@ -32,8 +32,8 @@ void MOV_nodes::init_publishers(ros::NodeHandle& nh)
 
 BT::NodeStatus MOV_nodes::rotate_robot::tick()
 {
-    BT::Optional<double> req_azimuth = getInput<double>("azimuth");
-    BT::Optional<double> cur_azimuth = getInput<double>("heading");
+    BT::Optional<double> cur_azimuth = getInput<double>("azimuth");
+    BT::Optional<double> req_azimuth = getInput<double>("heading");
 
     if (!req_azimuth)
         throw BT::RuntimeError("missing required input req_azimuth: ", req_azimuth.error());
@@ -46,7 +46,7 @@ BT::NodeStatus MOV_nodes::rotate_robot::tick()
     // ensure that robot rotates maximum of half a circle
     double diff = angle_diff(cur_azimuth.value(), req_azimuth.value());
 
-    if (diff < 0){  // rotation to the right
+    if (diff > 0){  // rotation to the right
         speed = diff*speed_const;
     } else {  // rotation to the left
         speed = -1 * diff*speed_const;
@@ -54,6 +54,8 @@ BT::NodeStatus MOV_nodes::rotate_robot::tick()
 
     geometry_msgs::Twist msg = geometry_msgs::Twist();
     msg.angular.z = speed;
+    //ROS_INFO("Cur azimuth: %f, req azimuth: %f", cur_azimuth.value(), req_azimuth.value());
+    //ROS_INFO("Angle diff: %f, speed: %f", diff, speed);
 
     MOV_nodes::pub_cmd.publish(msg);
     ros::spinOnce();
@@ -116,7 +118,7 @@ BT::PortsList MOV_nodes::step_from_road::providedPorts()
 
 BT::NodeStatus MOV_nodes::not_started::tick()
 {
-    if (MOV_nodes::is_moving)
+    if (!MOV_nodes::is_moving)
         return BT::NodeStatus::SUCCESS;
     return BT::NodeStatus::FAILURE;
 }
