@@ -52,13 +52,13 @@ int main(int argc, char **argv)
     compass = azi_nodes.get_topic();
     
     const boost::function<void(const compass_msgs::Azimuth::ConstPtr&)> cb_compass =
-                            boost::bind(&AZI_nodes::callback_compass, &azi_nodes, _1);
+                            boost::bind(&AZI_nodes::callback_compass, _1);
     const boost::function<void(const sensor_msgs::NavSatFix::ConstPtr&)> cb_gps =
-                            boost::bind(&GPS_nodes::callback_gps, &gps_nodes, _1);
+                            boost::bind(&GPS_nodes::callback_gps, _1);
     const boost::function<void(const road_crossing_msgs::injector_msgs::ConstPtr&)> cb_veh =
-                            boost::bind(&VEH_nodes::callback_vehicle_injector, &veh_nodes, _1);
+                            boost::bind(&VEH_nodes::callback_vehicle_injector, _1);
     const boost::function<void(const road_crossing_msgs::start_msgs::ConstPtr&)> cb_start = 
-                            boost::bind(&Start_service::start_callback, &start_serv, _1);
+                            boost::bind(&Start_service::start_callback, _1);
 
     ros::Subscriber sub_compass = nh.subscribe(compass, 5, cb_compass);
     ros::Subscriber sub_gps = nh.subscribe(gps, 5, cb_gps);

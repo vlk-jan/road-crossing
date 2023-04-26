@@ -3,7 +3,7 @@
 * Author: Jan Vlk
 * Date: 16.11.2022
 * Description: This file contains functions for operations dealing with compass and azimuth.
-* Last modified: 23.4.2023
+* Last modified: 26.4.2023
 */
 
 #include "behaviortree_cpp_v3/behavior_tree.h"
@@ -39,7 +39,6 @@ std::string AZI_nodes::get_topic()
                     AZI_nodes::indices.orientation_i = j;
                     AZI_nodes::indices.data_type_i = k;
                     std::string ret = ("/compass/" + reference_str[i] + "/" +  orientation_str[j] + "/" + data_type_str[k]);
-                    std::cout << ret << std::endl;
                     return ret;
                 }
                 param = "/magnetometer_compass/publish_";
@@ -56,7 +55,7 @@ void AZI_nodes::init_service(ros::NodeHandle& nh)
     AZI_nodes::client = nh.serviceClient<road_crossing::get_road_segment>(service_name);
 }
 
-void AZI_nodes::callback_compass(AZI_nodes* node, const compass_msgs::Azimuth::ConstPtr& msg)
+void AZI_nodes::callback_compass(const compass_msgs::Azimuth::ConstPtr& msg)
 {
     if (AZI_nodes::indices.data_type_i == 0){
         if (AZI_nodes::indices.orientation_i == 0)
@@ -69,31 +68,30 @@ void AZI_nodes::callback_compass(AZI_nodes* node, const compass_msgs::Azimuth::C
         else
             AZI_nodes::azimuth = deg_to_rad(msg->azimuth);
     }
-    //ROS_INFO("Current azimuth: %f", AZI_nodes::azimuth);
 }
 
-void AZI_nodes::callback_quat(AZI_nodes* node, const geometry_msgs::QuaternionStamped::ConstPtr& msg)
+void AZI_nodes::callback_quat(const geometry_msgs::QuaternionStamped::ConstPtr& msg)
 {
     if (indices.orientation_i == 0)
-        node->azimuth = ned_to_enu(tf::getYaw(msg->quaternion));
+        AZI_nodes::azimuth = ned_to_enu(tf::getYaw(msg->quaternion));
     else
-        node->azimuth = tf::getYaw(msg->quaternion);
+        AZI_nodes::azimuth = tf::getYaw(msg->quaternion);
 }
 
-void AZI_nodes::callback_imu(AZI_nodes* node, const sensor_msgs::Imu::ConstPtr& msg)
+void AZI_nodes::callback_imu(const sensor_msgs::Imu::ConstPtr& msg)
 {
     if (indices.orientation_i == 0)
-        node->azimuth = ned_to_enu(tf::getYaw(msg->orientation));
+        AZI_nodes::azimuth = ned_to_enu(tf::getYaw(msg->orientation));
     else
-        node->azimuth = tf::getYaw(msg->orientation);
+        AZI_nodes::azimuth = tf::getYaw(msg->orientation);
 }
 
-void AZI_nodes::callback_pose(AZI_nodes* node, const geometry_msgs::PoseStamped::ConstPtr& msg)
+void AZI_nodes::callback_pose(const geometry_msgs::PoseStamped::ConstPtr& msg)
 {
     if (indices.orientation_i == 0)
-        node->azimuth = ned_to_enu(tf::getYaw(msg->pose.orientation));
+        AZI_nodes::azimuth = ned_to_enu(tf::getYaw(msg->pose.orientation));
     else
-        node->azimuth = tf::getYaw(msg->pose.orientation);
+        AZI_nodes::azimuth = tf::getYaw(msg->pose.orientation);
 }
 
 BT::NodeStatus AZI_nodes::get_required_azimuth::tick()

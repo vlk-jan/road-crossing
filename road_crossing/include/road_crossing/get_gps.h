@@ -27,7 +27,7 @@ class GPS_nodes
          * @param node GPS_nodes object, necessary for static variables.
          * @param msg Read message from the gps topic.
          */
-        static void callback_gps(GPS_nodes* node, const sensor_msgs::NavSatFix::ConstPtr& msg);
+        static void callback_gps(const sensor_msgs::NavSatFix::ConstPtr& msg);
 
         /**
          * @brief Request information from road cost node, if the current robot's position is suitable for road crossing.

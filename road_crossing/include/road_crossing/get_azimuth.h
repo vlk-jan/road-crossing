@@ -40,13 +40,13 @@ class AZI_nodes
          */
         void init_service(ros::NodeHandle& nh);
 
-        static void callback_compass(AZI_nodes* node, const compass_msgs::Azimuth::ConstPtr& msg);
+        static void callback_compass(const compass_msgs::Azimuth::ConstPtr& msg);
 
-        static void callback_quat(AZI_nodes* node, const geometry_msgs::QuaternionStamped::ConstPtr& msg);
+        static void callback_quat(const geometry_msgs::QuaternionStamped::ConstPtr& msg);
 
-        static void callback_imu(AZI_nodes* node, const sensor_msgs::Imu::ConstPtr& msg);
+        static void callback_imu(const sensor_msgs::Imu::ConstPtr& msg);
 
-        static void callback_pose(AZI_nodes* node, const geometry_msgs::PoseStamped::ConstPtr& msg);
+        static void callback_pose(const geometry_msgs::PoseStamped::ConstPtr& msg);
 
         /// @brief Testing only, not used in the final version
         class get_required_azimuth : public BT::SyncActionNode

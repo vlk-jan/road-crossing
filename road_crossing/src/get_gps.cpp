@@ -3,7 +3,7 @@
 * Author: Jan Vlk
 * Date: 13.2.2023
 * Description: This file contains miscellaneous functions and classes, or functions and classes that do not have a specific place yet.
-* Last modified: 23.4.2023
+* Last modified: 26.4.2023
 */
 
 #include "behaviortree_cpp_v3/behavior_tree.h"
@@ -24,16 +24,15 @@ void GPS_nodes::init_service(ros::NodeHandle& nh)
     GPS_nodes::place_suitability_client = nh.serviceClient<road_crossing::get_suitability>(service_name);
 }
 
-void GPS_nodes::callback_gps(GPS_nodes* node, const sensor_msgs::NavSatFix::ConstPtr& msg)
+void GPS_nodes::callback_gps(const sensor_msgs::NavSatFix::ConstPtr& msg)
 {
     double lat = msg->latitude;
     double lon = msg->longitude;
-    //ROS_INFO("Current lat, lon: [%f], [%f]", lat, lon);
     double x, y;
+
     gps_to_utm(lat, lon, x, y);
-    node->easting = x;
-    node->northing = y;
-    //ROS_INFO("Current easting, northing: [%f], [%f]", node->easting, node->northing);
+    GPS_nodes::easting = x;
+    GPS_nodes::northing = y;
 }
 
 int GPS_nodes::place_suitability()
@@ -42,6 +41,7 @@ int GPS_nodes::place_suitability()
         ROS_WARN("GPS was not received -> no position set");
         return EXIT_FAILURE;
     }
+
     road_crossing::get_suitability srv;
     srv.request.easting = GPS_nodes::easting;
     srv.request.northing = GPS_nodes::northing;
