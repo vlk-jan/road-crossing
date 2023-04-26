@@ -50,6 +50,8 @@ This package does not currently have any documentation. However, the text of my 
 ## TODO
 
 - Short-term
+  - Test ending condition
+  - Test cars via injector in simulation
   - Create unit tests?
   - Simulation testing
 - Long-term

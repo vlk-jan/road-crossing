@@ -3,7 +3,7 @@
 * Author: Jan Vlk
 * Date: 2.3.2022
 * Description: This file contains functions for operations dealing with vehicle detection and collisions.
-* Last modified: w8.4.2023
+* Last modified: 26.4.2023
 */
 
 #include <cmath>
@@ -116,13 +116,10 @@ void VEH_nodes::vehicle_collision(vehicle_info vehicle, vehicle_info robot, coll
 void VEH_nodes::callback_vehicle_injector(const road_crossing_msgs::injector_msgs::ConstPtr& msg)
 {
     double easting, northing;
-    GPS_nodes::req_position(easting, northing);
-    double x, y;
-    gps_to_utm(msg->lat, msg->lon, x, y);
     for (int i = 0; i < VEH_nodes::vehicles.data.size(); ++i){
         if (msg->veh_id == vehicles.data[i].id){
-            VEH_nodes::vehicles.data[i].pos_x = x - easting;
-            VEH_nodes::vehicles.data[i].pos_y = y - northing;
+            VEH_nodes::vehicles.data[i].pos_x = msg->easting - easting;
+            VEH_nodes::vehicles.data[i].pos_y = msg->northing - northing;
             VEH_nodes::vehicles.data[i].x_dot = msg->x_dot;
             VEH_nodes::vehicles.data[i].y_dot = msg->y_dot;
             VEH_nodes::vehicles.data[i].x_ddot = msg->x_ddot;
@@ -136,8 +133,8 @@ void VEH_nodes::callback_vehicle_injector(const road_crossing_msgs::injector_msg
 
     vehicle_info vehicle;
     vehicle.id = msg->veh_id;
-    vehicle.pos_x = x - easting;
-    vehicle.pos_y = y - northing;
+    vehicle.pos_x = msg->easting - easting;
+    vehicle.pos_y = msg->northing - northing;
     vehicle.x_dot = msg->x_dot;
     vehicle.y_dot = msg->y_dot;
     vehicle.x_ddot = msg->x_ddot;

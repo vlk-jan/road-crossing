@@ -7,6 +7,7 @@ import overpy
 from math import floor
 import shapely.geometry as geometry
 import pickle
+import utm
 
 import road_detection as rd_det
 import road_curvature as rd_cur
@@ -72,7 +73,7 @@ class RoadCost:
                     if (dist < 10):
                         cost = ROAD_CROSSINGS_RANKS - segment_level
 
-        rospy.loginfo("min_dist: {}, cost: {}".format(min_dist, cost))
+        #rospy.loginfo("min_dist: {}, cost: {}".format(min_dist, cost))
         return cost
 
     def save_road_segments(self):
@@ -158,8 +159,12 @@ class RoadCost:
         road_info = self.get_road_info_client(req.easting, req.northing)
         if (road_info is not None):
             road_segment = geometry.LineString([(road_info.easting_1, road_info.northing_1), (road_info.easting_2, road_info.northing_2)])
-            dist = point.distance(road_segment)
-            ret = True if dist-(road_info.road_width/2) > 0 else False
+            dist1 = point.distance(road_segment)
+            dist2 = point.distance(geometry.Point(road_info.start_easting, road_info.start_northing))
+            print(dist1, dist2)
+            ret1 = True if dist1-(road_info.road_width/2) > 0 else False
+            ret2 = True if dist2-road_info.road_width > 0 else False
+            ret = ret1 and ret2
         
         ret = ret if road_info is not None else False
 
@@ -175,6 +180,7 @@ class RoadCost:
 class road_info:
     def __init__(self):
         self.cross_segment = None
+        self.start_point = None
         self.expected_velocity = None
         self.maximal_velocity = None
         self.lane_num = None
@@ -190,14 +196,37 @@ class road_data:
     def add_road(self, road : road_info):
         self.data.append(road)
 
+    def add_test_road(self):
+        road = road_info()
+        road_cost = RoadCost()
+        road_cost.load_road_segments()
+        point = utm.from_latlon(50.0918150, 14.1249011)
+        
+        min_dist = float('inf')
+        for segment_level in range(len(road_cost.road_segments)):
+            for segment in road_cost.road_segments[segment_level]:
+                dist = segment.distance(geometry.Point(point))
+                if dist < min_dist:
+                    min_dist = dist
+                    road.cross_segment = segment
+
+        road.start_point = geometry.Point(point)
+        road.expected_velocity = 50
+        road.maximal_velocity = 50
+        road.lane_num = 2
+        road.road_width = 10
+        road.road_type = "primary"
+        road.peddestrian_crossing = False
+        return road
+
     def save(self):
-        file_name = rospy.get_param("~road_info_file", "road_info.pyc")
+        file_name = rospy.get_param("road_crossing/road_info_file", "road_info.pyc")
         with open(file_name, "wb") as fp:
             pickle.dump(self.data, fp)
         rospy.loginfo("Road info saved")
 
     def load(self):
-        file_name = rospy.get_param("~road_info_file", "road_info.pyc")
+        file_name = rospy.get_param("road_crossing/road_info_file", "road_info.pyc")
         try:
             with open(file_name, "rb") as file:
                 self.data = pickle.load(file)
@@ -216,7 +245,7 @@ class road_data:
         index = None
 
         for i in range(len(self.data)):
-            dist = location.distance(self.data[i].road_segment)
+            dist = location.distance(self.data[i].cross_segment)
             if (min_dist >= dist):
                 if (min_dist == dist):
                     rospy.logwarn("Two segments in equal distance")
@@ -226,12 +255,7 @@ class road_data:
 
         if index is not None:
             i = index
-            return get_road_infoResponse(self.data[i].cross_segment.coords[0,0], self.data[i].cross_segment.coords[0,1] /
-                                         self.data[i].cross_segment.coords[1,0], self.data[i].cross_segment.coords[1,1] /
-                                         self.data[i].expected_velocity, self.data[i].maximal_velocity. self.data[i].num_lanes /
-                                         self.data[i].road_width, self.road_type, self.data[i].peddestrian_crossing /
-                                         self.data[i].peddestrian_crossing.coords[0] if self.data[i].peddestrian_crossing else 0 /
-                                         self.data[i].peddestrian_crossing.coords[1] if self.data[i].peddestrian_crossing else 0)
+            return get_road_infoResponse(self.data[i].cross_segment.coords[0][0], self.data[i].cross_segment.coords[0][1], self.data[i].cross_segment.coords[1][0], self.data[i].cross_segment.coords[1][1], self.data[i].start_point.coords[0][0], self.data[i].start_point.coords[0][1], self.data[i].expected_velocity, self.data[i].maximal_velocity, self.data[i].lane_num, self.data[i].road_width, self.data[i].road_type, self.data[i].peddestrian_crossing, self.data[i].peddestrian_crossing.coords[0] if self.data[i].peddestrian_crossing else 0, self.data[i].peddestrian_crossing.coords[1] if self.data[i].peddestrian_crossing else 0)
 
     def get_road_info_server(self):
         rospy.init_node("get_road_info_server")
@@ -239,4 +263,3 @@ class road_data:
         rospy.loginfo("Road info server ready")
         self.load()
         rospy.spin()
-

@@ -4,8 +4,8 @@ Header header
 int64 veh_id
 
 # Position of the vehicle
-float64 lat
-float64 lon
+float64 easting
+float64 northing
 
 # Velocity of the vehicle
 float64 x_dot
