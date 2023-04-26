@@ -205,7 +205,7 @@ class MOV_nodes
         };
 
     private:
-        static ros::Publisher pub_cmd, pub_map;
+        static ros::Publisher pub_cmd, pub_map, pub_finish;
         static ros::ServiceClient get_finish_client;
         static double lin_speed, rot_speed;
         static bool is_moving;
@@ -213,6 +213,7 @@ class MOV_nodes
 
 ros::Publisher MOV_nodes::pub_cmd;
 ros::Publisher MOV_nodes::pub_map;
+ros::Publisher MOV_nodes::pub_finish;
 ros::ServiceClient MOV_nodes::get_finish_client;
 double MOV_nodes::lin_speed = 0;
 double MOV_nodes::rot_speed = 0;

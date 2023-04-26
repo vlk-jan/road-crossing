@@ -3,7 +3,7 @@
 * Author: Jan Vlk
 * Date: 16.11.2022
 * Description: Main file of our algorithm, creates ROS subscribers, BT tree and provides.
-* Last modified: 23.4.2023
+* Last modified: 26.4.2023
 */
 
 #include "behaviortree_cpp_v3/behavior_tree.h"
@@ -21,6 +21,7 @@
 #include "road_crossing_msgs/start_msgs.h"
 #include "road_crossing/start_srv.h"
 #include "road_crossing/movement.h"
+#include "road_crossing/misc.h"
 
 int main(int argc, char **argv)
 {
@@ -69,6 +70,7 @@ int main(int argc, char **argv)
     azi_nodes.init_service(nh);
     mov_nodes.init_publishers(nh);
     start_serv.init_publishers(nh);
+    init_service(nh);
 
     BT::FileLogger logger_file(BT_tree.tree, "./bt_trace.fbl");
 

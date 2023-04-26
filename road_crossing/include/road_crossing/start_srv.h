@@ -27,7 +27,7 @@ class Start_service
          */
         static bool start_algorithm_service(road_crossing::start_algorithm::Request& req, road_crossing::start_algorithm::Response& res);
 
-        static void start_callback(Start_service *node, const road_crossing_msgs::start_msgs::ConstPtr& msg);
+        static void start_callback(const road_crossing_msgs::start_msgs::ConstPtr& msg);
 
         class start_algorithm : public BT::ConditionNode
         {

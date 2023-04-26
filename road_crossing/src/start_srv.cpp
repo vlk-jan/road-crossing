@@ -3,7 +3,7 @@
 * Author: Jan Vlk
 * Date: 27.3.2023
 * Description: This file contains functions for starting the BT algorithm
-* Last modified: 22.4.2023
+* Last modified: 26.4.2023
 */
 
 #include "behaviortree_cpp_v3/behavior_tree.h"
@@ -66,17 +66,17 @@ bool Start_service::start_algorithm_service(road_crossing::start_algorithm::Requ
         return false;
 }
 
-void Start_service::start_callback(Start_service *node, const road_crossing_msgs::start_msgs::ConstPtr& msg)
+void Start_service::start_callback(const road_crossing_msgs::start_msgs::ConstPtr& msg)
 {
     ROS_INFO("Start callback called");
     if (msg->valid){
-        node->is_running = msg->start;
+        Start_service::is_running = msg->start;
     }
 }
 
 BT::NodeStatus Start_service::start_algorithm::tick()
 {
-    if (is_running)
+    if (Start_service::is_running)
         return BT::NodeStatus::SUCCESS;
     else
         return BT::NodeStatus::FAILURE;
