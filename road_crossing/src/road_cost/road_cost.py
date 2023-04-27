@@ -73,7 +73,6 @@ class RoadCost:
                     if (dist < 10):
                         cost = ROAD_CROSSINGS_RANKS - segment_level
 
-        #rospy.loginfo("min_dist: {}, cost: {}".format(min_dist, cost))
         return cost
 
     def save_road_segments(self):
@@ -161,7 +160,6 @@ class RoadCost:
             road_segment = geometry.LineString([(road_info.easting_1, road_info.northing_1), (road_info.easting_2, road_info.northing_2)])
             dist1 = point.distance(road_segment)
             dist2 = point.distance(geometry.Point(road_info.start_easting, road_info.start_northing))
-            print(dist1, dist2)
             ret1 = True if dist1-(road_info.road_width/2) > 0 else False
             ret2 = True if dist2-road_info.road_width > 0 else False
             ret = ret1 and ret2
@@ -200,7 +198,7 @@ class road_data:
         road = road_info()
         road_cost = RoadCost()
         road_cost.load_road_segments()
-        point = utm.from_latlon(50.0918150, 14.1249011)
+        point = utm.from_latlon(50.092925, 14.124759)
         
         min_dist = float('inf')
         for segment_level in range(len(road_cost.road_segments)):
@@ -215,8 +213,12 @@ class road_data:
         road.maximal_velocity = 50
         road.lane_num = 2
         road.road_width = 10
-        road.road_type = "primary"
+        road.road_type = "tertiary"
         road.peddestrian_crossing = False
+
+        print("min dist: {}".format(min_dist))
+        print(road.cross_segment.coords[0], road.cross_segment.coords[1])
+        print(point)
         return road
 
     def save(self):
