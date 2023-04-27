@@ -51,6 +51,7 @@ This package does not currently have any documentation. However, the text of my 
 
 - Short-term
   - Test cars via injector in simulation
+  - Test errors in vehicle detection - test robustness
   - Create unit tests?
   - Simulation testing
 - Long-term
