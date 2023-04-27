@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<launch>
+    <arg name="tree_file" default="$(dirname)/../src/main_tree.xml"/>
+
+    <param name="/road_crossing/tree_file" type="str" value="$(arg tree_file)"/>
+    <param name="/road_crossing/testing" type="bool" value="false"/>
+
+    <node name="run_tree" pkg="road_crossing" type="run_tree"
+          respawn="true" respawn_delay="1.0" output="screen"/>
+</launch>

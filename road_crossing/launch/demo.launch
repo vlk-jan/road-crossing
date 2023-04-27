@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<launch>
+    <arg name="tree_file" default="$(dirname)/../src/main_tree.xml"/>
+
+    <include file="$(dirname)/services.launch"/>
+
+    <include file="$(dirname)/crossing.launch">
+        <arg name="tree_file" value="$(arg tree_file)"/>
+    </include>
+</launch>

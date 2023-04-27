@@ -165,6 +165,9 @@ class RoadCost:
             ret = ret1 and ret2
         
         ret = ret if road_info is not None else False
+        #if (ret):
+        #    rospy.loginfo("Finish point: {}, {}".format(req.easting, req.northing))
+        #    rospy.loginfo("Traveled distance: {}".format(dist2))
 
         return get_finishResponse(ret)
 

@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <launch>
-    <arg name="tree_file" default="main_tree.xml"/>
+    <node name="mag_shift" pkg="gps_to_path" type="get_mag_shift"
+          respawn="true" respawn_delay="1.0"/>
 
     <node name="magnetometer_compass" pkg="compass" type="magnetometer_compass"
           respawn="true" respawn_delay="1.0" output="screen">
@@ -26,6 +27,6 @@
     <param name="road_crossing/road_info_file" type="str" value="$(dirname)/../../../../road_info.pyc"/>
 
     <node name="get_road_info" pkg="road_crossing" type="get_road_info_srv.py"
-          respawn="false" respawn_delay="1.0" output="screen">
+          respawn="true" respawn_delay="1.0" output="screen">
     </node>
 </launch>
