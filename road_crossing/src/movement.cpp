@@ -3,7 +3,7 @@
 * Author: Jan Vlk
 * Date: 25.11.2022
 * Description: This file contains functions for moving the robot.
-* Last modified: 26.4.2023
+* Last modified: 28.4.2023
 */
 
 #include <cmath>
@@ -143,10 +143,10 @@ BT::PortsList MOV_nodes::start_movement::providedPorts()
     return {};
 }
 
-BT::NodeStatus MOV_nodes::continue_movement::tick()
+BT::NodeStatus MOV_nodes::move_fwd_full::tick()
 {
     geometry_msgs::Twist msg = geometry_msgs::Twist();
-    msg.linear.x = MOV_nodes::lin_speed;
+    msg.linear.x = MAX_LIN_SPEED;
 
     MOV_nodes::pub_cmd.publish(msg);
     ros::spinOnce();
@@ -154,7 +154,7 @@ BT::NodeStatus MOV_nodes::continue_movement::tick()
     return BT::NodeStatus::SUCCESS;
 }
 
-BT::PortsList MOV_nodes::continue_movement::providedPorts()
+BT::PortsList MOV_nodes::move_fwd_full::providedPorts()
 {
     return {};
 }

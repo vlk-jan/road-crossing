@@ -122,14 +122,14 @@ class MOV_nodes
         /**
          * @brief Continue with the movement set in previous nodes.
          */
-        class continue_movement : public BT::SyncActionNode
+        class move_fwd_full : public BT::SyncActionNode
         {
             public:
-                continue_movement(const std::string& name, const BT::NodeConfiguration& config):
+               move_fwd_full(const std::string& name, const BT::NodeConfiguration& config):
                     BT::SyncActionNode(name, config)
                 {}
 
-                virtual ~continue_movement(){}
+                virtual ~move_fwd_full(){}
 
                 BT::NodeStatus tick() override;
 

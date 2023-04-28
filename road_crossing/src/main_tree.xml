@@ -90,32 +90,26 @@
                         <Condition ID="cars_in_trajectory"/>
                     </Inverter>
                     <SubTree ID="start_crossing" __shared_blackboard="true"/>
-                    <Action ID="continue_movement"/>
+                    <Action ID="move_fwd_full"/>
                 </Sequence>
                 <Sequence>
                     <SubTree ID="start_crossing" __shared_blackboard="true"/>
                     <Action ID="calculate_collision" max_vel_bwd="{max_vel_bwd}" max_vel_fwd="{max_vel_fwd}" min_vel_bwd="{max_vel_bwd}" min_vel_fwd="{min_vel_fwd}"/>
                     <Fallback>
                         <Sequence>
-                            <Condition ID="collision_imminent"/>
+                            <Condition ID="collision_fwd_move" max_vel_fwd="{max_vel_fwd}" min_vel_fwd="{min_vel_fwd}"/>
                             <Fallback>
                                 <Sequence>
-                                    <Condition ID="collision_fwd_move" max_vel_fwd="{max_vel_fwd}" min_vel_fwd="{min_vel_fwd}"/>
-                                    <Fallback>
-                                        <Sequence>
-                                            <Condition ID="collision_on_stop"/>
-                                            <Inverter>
-                                                <Condition ID="collision_bwd_move" max_vel_bwd="{max_vel_bwd}" min_vel_bwd="{min_vel_bwd}"/>
-                                            </Inverter>
-                                            <Action ID="move_bwd" max_vel_bwd="{max_vel_bwd}" min_vel_bwd="{min_vel_bwd}"/>
-                                        </Sequence>
-                                        <Action ID="stop_movement"/>
-                                    </Fallback>
+                                    <Condition ID="collision_on_stop"/>
+                                    <Inverter>
+                                        <Condition ID="collision_bwd_move" max_vel_bwd="{max_vel_bwd}" min_vel_bwd="{min_vel_bwd}"/>
+                                    </Inverter>
+                                    <Action ID="move_bwd" max_vel_bwd="{max_vel_bwd}" min_vel_bwd="{min_vel_bwd}"/>
                                 </Sequence>
-                                <Action ID="move_fwd" max_vel_fwd="{max_vel_fwd}" min_vel_fwd="{min_vel_fwd}"/>
+                                <Action ID="stop_movement"/>
                             </Fallback>
                         </Sequence>
-                        <Action ID="continue_movement"/>
+                        <Action ID="move_fwd" max_vel_fwd="{max_vel_fwd}" min_vel_fwd="{min_vel_fwd}"/>
                     </Fallback>
                 </Sequence>
             </Fallback>
@@ -155,7 +149,6 @@
             <input_port default="{road_heading}" name="road_heading">heading of the road we need to cross</input_port>
             <input_port default="{azimuth}" name="rob_azimuth">current azimuth of the robot</input_port>
         </Action>
-        <Action ID="continue_movement"/>
         <Condition ID="cross_road"/>
         <Condition ID="crossing_finished"/>
         <SubTree ID="finished">
@@ -190,6 +183,7 @@
             <input_port default="{max_vel_fwd}" name="max_vel_fwd"/>
             <input_port default="{min_vel_fwd}" name="min_vel_fwd"/>
         </Action>
+        <Action ID="move_fwd_full"/>
         <Action ID="move_to_place">
             <input_port default="{better_easting}" name="better_easting"/>
             <input_port default="{better_northing}" name="better_northing"/>
