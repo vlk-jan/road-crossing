@@ -120,7 +120,7 @@ class MOV_nodes
         };
 
         /**
-         * @brief Continue with the movement set in previous nodes.
+         * @brief Move forward with full speed.
          */
         class move_fwd_full : public BT::SyncActionNode
         {

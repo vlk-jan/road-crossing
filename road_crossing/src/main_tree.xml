@@ -9,10 +9,7 @@
                     <SubTree ID="init_values" __shared_blackboard="true"/>
                     <SubTree ID="get_parallel_to_road" __shared_blackboard="true"/>
                 </SequenceStar>
-                <Sequence>
-                    <SubTree ID="road_crossing" __shared_blackboard="true"/>
-                    <SubTree ID="finished" __shared_blackboard="true"/>
-                </Sequence>
+                <SubTree ID="road_crossing" __shared_blackboard="true"/>
             </SequenceStar>
         </Sequence>
     </BehaviorTree>
@@ -113,6 +110,7 @@
                     </Fallback>
                 </Sequence>
             </Fallback>
+            <SubTree ID="finished" __shared_blackboard="true"/>
         </Sequence>
     </BehaviorTree>
     <!-- ////////// -->
