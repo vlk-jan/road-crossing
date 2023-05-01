@@ -3,7 +3,7 @@
 * Author: Jan Vlk
 * Date: 2.3.2022
 * Description: This file contains functions for operations dealing with vehicle detection and collisions.
-* Last modified: 26.4.2023
+* Last modified: 1.5.2023
 */
 
 #include <cmath>
@@ -82,7 +82,7 @@ void VEH_nodes::vehicle_collision(vehicle_info vehicle, vehicle_info robot, coll
     // Calculate the velocity for the robot to collide with the vehicle
     double vel1 = 0, vel2 = 0;
     if (time1){
-        //ROS_INFO("Time till intersection point front: %f", time1);
+        ROS_INFO("Time till intersection point front: %f", time1);
         double x1 = vehicle_front_x + vehicle.x_dot*time1 + vehicle.x_ddot*pow(time1, 2)/2;
         if (x1 <= robot_front_x && x1 >= robot_back_x)
             vel1 = 0;
@@ -90,7 +90,7 @@ void VEH_nodes::vehicle_collision(vehicle_info vehicle, vehicle_info robot, coll
             vel1 = (x1 - robot_back_x)/time1;
     }
     if (time2){
-        //ROS_INFO("Time till intersection point back: %f", time2);
+        ROS_INFO("Time till intersection point back: %f", time2);
         double x2 = vehicle_back_x + vehicle.x_dot*time2 + vehicle.x_ddot*pow(time2, 2)/2;
         if (x2 <= robot_front_x && x2 >= robot_back_x)
             vel2 = 0;
@@ -111,11 +111,14 @@ void VEH_nodes::vehicle_collision(vehicle_info vehicle, vehicle_info robot, coll
         bool collide = (time1 != 0 && vel1 == 0) || (time2 != 0 && vel2 == 0);
         collision.collide_stop = collide;
     }
+
+    ROS_INFO("Calculation, v_front: %f, v_back: %f", collision.v_front, collision.v_back);
 }
 
 void VEH_nodes::callback_vehicle_injector(const road_crossing_msgs::injector_msgs::ConstPtr& msg)
 {
     double easting, northing;
+    GPS_nodes::req_position(easting, northing);
     for (int i = 0; i < VEH_nodes::vehicles.data.size(); ++i){
         if (msg->veh_id == vehicles.data[i].id){
             VEH_nodes::vehicles.data[i].pos_x = msg->easting - easting;
@@ -126,6 +129,8 @@ void VEH_nodes::callback_vehicle_injector(const road_crossing_msgs::injector_msg
             VEH_nodes::vehicles.data[i].y_ddot = msg->y_ddot;
             VEH_nodes::vehicles.data[i].length = msg->length;
             VEH_nodes::vehicles.data[i].width = msg->width;
+
+            ROS_INFO("vehicle pos_x: %f, pos_y: %f", VEH_nodes::vehicles.data[i].pos_x, VEH_nodes::vehicles.data[i].pos_y);
 
             return;
         }
@@ -160,7 +165,7 @@ BT::PortsList VEH_nodes::get_cars_injector::providedPorts()
 
 BT::NodeStatus VEH_nodes::cars_in_trajectory::tick()
 {
-    if (VEH_nodes::vehicles.num_vehicles == 0) // No vehicles detected
+    if (VEH_nodes::vehicles.num_vehicles == 0)  // No vehicles detected
         return BT::NodeStatus::FAILURE;
     return BT::NodeStatus::SUCCESS;
 }
@@ -178,21 +183,24 @@ BT::NodeStatus VEH_nodes::calculate_collision::tick()
     double max_vel_fwd = 0;
     double max_vel_bwd = 0;
     double min_vel_fwd = std::numeric_limits<double>::max();
-    double min_vel_bwd = std::numeric_limits<double>::min();
+    double min_vel_bwd = -std::numeric_limits<double>::max();
+
+    VEH_nodes::robot.x_dot = MOV_nodes::get_lin_vel();
 
     for (int i=0; i<VEH_nodes::vehicles.num_vehicles; ++i){
         collision_info collision;
         VEH_nodes::vehicle_collision(VEH_nodes::vehicles.data[i], VEH_nodes::robot, collision);
         VEH_nodes::collisions.data.push_back(collision);
+        ROS_INFO("v_front: %f, v_back: %f", collision.v_front, collision.v_back);
 
         // Determine the velocities with regard to the direction of travel
         double higher_velocity, lower_velocity;
         if (collision.v_front >= 0){
-            double higher_velocity = collision.v_front >= collision.v_back ? collision.v_front : collision.v_back;
-            double lower_velocity = collision.v_front <= collision.v_back ? collision.v_front : collision.v_back;
+            higher_velocity = collision.v_front >= collision.v_back ? collision.v_front : collision.v_back;
+            lower_velocity = collision.v_front <= collision.v_back ? collision.v_front : collision.v_back;
         } else {
-            double higher_velocity = collision.v_front <= collision.v_back ? collision.v_front : collision.v_back;
-            double lower_velocity = collision.v_front >= collision.v_back ? collision.v_front : collision.v_back;
+            higher_velocity = collision.v_front <= collision.v_back ? collision.v_front : collision.v_back;
+            lower_velocity = collision.v_front >= collision.v_back ? collision.v_front : collision.v_back;
         }
 
         // Determine the maximum and minimum velocities with regard to the direction of travel
@@ -243,7 +251,7 @@ BT::NodeStatus VEH_nodes::collision_fwd_move::tick()
     if (!min_vel_fwd)
         throw BT::RuntimeError("missing required input min_vel_fwd: ", min_vel_fwd.error());
     
-    if (max_vel_fwd.value() >= MAX_LIN_SPEED && min_vel_fwd.value() <= MIN_LIN_SPEED)
+    if (max_vel_fwd.value() + 0.1 >= MAX_LIN_SPEED && min_vel_fwd.value() - 0.1 <= MIN_LIN_SPEED)
         return BT::NodeStatus::SUCCESS;
 
     return BT::NodeStatus::FAILURE;
@@ -264,7 +272,7 @@ BT::NodeStatus VEH_nodes::collision_bwd_move::tick()
     if (!min_vel_bwd)
         throw BT::RuntimeError("missing required input min_vel_bwd: ", min_vel_bwd.error());
     
-    if (max_vel_bwd.value() <= -MAX_LIN_SPEED && min_vel_bwd.value() >= -MIN_LIN_SPEED)
+    if (max_vel_bwd.value() - 0.1 <= -MAX_LIN_SPEED && min_vel_bwd.value() + 0.1 >= -MIN_LIN_SPEED)
         return BT::NodeStatus::SUCCESS;
 
     return BT::NodeStatus::FAILURE;

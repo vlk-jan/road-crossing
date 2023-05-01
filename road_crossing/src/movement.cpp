@@ -3,7 +3,7 @@
 * Author: Jan Vlk
 * Date: 25.11.2022
 * Description: This file contains functions for moving the robot.
-* Last modified: 28.4.2023
+* Last modified: 1.5.2023
 */
 
 #include <cmath>
@@ -30,6 +30,11 @@ void MOV_nodes::init_publishers(ros::NodeHandle& nh)
     std::string service_name = "get_finish";
     ros::service::waitForService(service_name);
     MOV_nodes::get_finish_client = nh.serviceClient<road_crossing::get_finish>(service_name);
+}
+
+double MOV_nodes::get_lin_vel()
+{
+    return MOV_nodes::lin_speed;
 }
 
 BT::NodeStatus MOV_nodes::rotate_robot::tick()
@@ -177,6 +182,11 @@ BT::NodeStatus MOV_nodes::move_fwd::tick()
         MOV_nodes::lin_speed = 0;
         ROS_WARN("Movement forward requested, but no speed is possible.");
     }
+
+    if (MOV_nodes::lin_speed > MAX_LIN_SPEED)
+        MOV_nodes::lin_speed = MAX_LIN_SPEED;
+    if (MOV_nodes::lin_speed < MIN_LIN_SPEED)
+        MOV_nodes::lin_speed = MIN_LIN_SPEED;
 
     geometry_msgs::Twist msg = geometry_msgs::Twist();
     msg.linear.x = MOV_nodes::lin_speed;

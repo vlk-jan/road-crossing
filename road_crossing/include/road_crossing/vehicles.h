@@ -195,7 +195,7 @@ class VEH_nodes
         static collisions_data collisions;
 };
 
-vehicle_info VEH_nodes::robot;
+vehicle_info VEH_nodes::robot = {0, 0, 0, 1.2, 0, 0, 0, 1.1, 0.5};
 vehicles_data VEH_nodes::vehicles;
 collisions_data VEH_nodes::collisions;
 

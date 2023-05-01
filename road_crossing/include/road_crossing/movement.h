@@ -31,6 +31,11 @@ class MOV_nodes
         void init_publishers(ros::NodeHandle& nh);
 
         /**
+         * @brief Return current linear velocity.
+         */
+        static double get_lin_vel();
+
+        /**
          * @brief Node to rotate the robot. Main usage is to get robot perpendicular to the road.
          */
         class rotate_robot : public BT::SyncActionNode
