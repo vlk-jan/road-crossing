@@ -3,7 +3,7 @@
 * Author: Jan Vlk
 * Date: 2.3.2022
 * Description: This file contains functions for operations dealing with vehicle detection and collisions.
-* Last modified: 1.5.2023
+* Last modified: 2.5.2023
 */
 
 #include <cmath>
@@ -88,6 +88,7 @@ void VEH_nodes::vehicle_collision(vehicle_info vehicle, vehicle_info robot, coll
             vel1 = 0;
         else if (time1 != 0)
             vel1 = (x1 - robot_back_x)/time1;
+        vel1 = (time1 < 0 && vel1 > 0) ? -vel1 : vel1;
     }
     if (time2){
         ROS_INFO("Time till intersection point back: %f", time2);
@@ -96,6 +97,7 @@ void VEH_nodes::vehicle_collision(vehicle_info vehicle, vehicle_info robot, coll
             vel2 = 0;
         else if (time2 != 0)
             vel2 = (x2 - robot_front_x)/time2;
+        vel2 = (time2 < 0 && vel2 > 0) ? -vel2 : vel2;
     }
 
     // Set results to collision info
@@ -251,8 +253,10 @@ BT::NodeStatus VEH_nodes::collision_fwd_move::tick()
     if (!min_vel_fwd)
         throw BT::RuntimeError("missing required input min_vel_fwd: ", min_vel_fwd.error());
     
-    if (max_vel_fwd.value() + 0.1 >= MAX_LIN_SPEED && min_vel_fwd.value() - 0.1 <= MIN_LIN_SPEED)
+    if (max_vel_fwd.value() + 0.1 >= MAX_LIN_SPEED && min_vel_fwd.value() - 0.1 <= MIN_LIN_SPEED){
+        ROS_INFO("Collision fwd move");
         return BT::NodeStatus::SUCCESS;
+    }
 
     return BT::NodeStatus::FAILURE;
 }
@@ -272,8 +276,10 @@ BT::NodeStatus VEH_nodes::collision_bwd_move::tick()
     if (!min_vel_bwd)
         throw BT::RuntimeError("missing required input min_vel_bwd: ", min_vel_bwd.error());
     
-    if (max_vel_bwd.value() - 0.1 <= -MAX_LIN_SPEED && min_vel_bwd.value() + 0.1 >= -MIN_LIN_SPEED)
+    if (max_vel_bwd.value() - 0.1 <= -MAX_LIN_SPEED && min_vel_bwd.value() + 0.1 >= -MIN_LIN_SPEED){
+        ROS_INFO("Collision bwd move");
         return BT::NodeStatus::SUCCESS;
+    }
 
     return BT::NodeStatus::FAILURE;
 }

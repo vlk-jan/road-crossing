@@ -15,9 +15,11 @@ def main():
     with open("new.log", "r") as fp:
         lines = fp.readlines()
     for line in lines:
-        line = line[67:75] + "," + line[84:92]
+        line = line[67:-5]
         line = line.strip()
-        dist = np.sqrt(np.sum(np.square(np.array([float(x) for x in line.split(",")]))))
+        num = line.split(",")
+        num[1] = num[1][8:]
+        dist = np.sqrt(np.sum(np.square(np.array([float(x) for x in num]))))
         if dist > max_dist:
             max_dist = dist
         if dist < min_dist:

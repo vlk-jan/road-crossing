@@ -10,17 +10,30 @@ def injector():
 
     pos1 = (50.0930128, 14.1248906)
     pos1_utm = utm.from_latlon(pos1[0], pos1[1])
+    pos2 = (50.0929653, 14.1248958)
+    pos2_utm = utm.from_latlon(pos2[0], pos2[1])
 
-    msg = injector_msgs()
-    msg.veh_id = 1
-    msg.easting = pos1_utm[0]
-    msg.northing = pos1_utm[1]
-    msg.x_dot = 0.0
-    msg.y_dot = -1.0
-    msg.x_ddot = 0.0
-    msg.y_ddot = 0.0
-    msg.length = 2.0
-    msg.width = 1.0
+    msg1 = injector_msgs()
+    msg1.veh_id = 1
+    msg1.easting = pos1_utm[0]
+    msg1.northing = pos1_utm[1]
+    msg1.x_dot = 0.0
+    msg1.y_dot = -1.5
+    msg1.x_ddot = 0.0
+    msg1.y_ddot = 0.0
+    msg1.length = 2.0
+    msg1.width = 1.0
+
+    msg2 = injector_msgs()
+    msg2.veh_id = 2
+    msg2.easting = pos1_utm[0]
+    msg2.northing = pos1_utm[1]
+    msg2.x_dot = 0.0
+    msg2.y_dot = -0.5
+    msg2.x_ddot = 0.0
+    msg2.y_ddot = 0.0
+    msg2.length = 2.0
+    msg2.width = 1.0
 
     time_prev = time.time()
     while not rospy.is_shutdown():
@@ -30,16 +43,21 @@ def injector():
         time_prev = time_now
 
         # Update velocity
-        msg.x_dot += time_consumed*msg.x_ddot
-        msg.y_dot += time_consumed*msg.y_ddot
+        msg1.x_dot += time_consumed*msg1.x_ddot
+        msg1.y_dot += time_consumed*msg1.y_ddot
+        msg2.x_dot += time_consumed*msg2.x_ddot
+        msg2.y_dot += time_consumed*msg2.y_ddot
 
         # Update position
-        msg.easting += time_consumed*msg.y_dot
-        msg.northing += time_consumed*msg.x_dot
+        msg1.easting += time_consumed*msg1.y_dot
+        msg1.northing += time_consumed*msg1.x_dot
+        msg2.easting += time_consumed*msg2.y_dot
+        msg2.northing += time_consumed*msg2.x_dot
 
         # ROS cycle
         #rospy.loginfo("{}, {}".format(msg.easting, msg.northing))
-        pub.publish(msg)
+        pub.publish(msg1)
+        pub.publish(msg2)
         rate.sleep()
 
 if __name__ == '__main__':
