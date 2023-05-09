@@ -26,16 +26,28 @@ def injector():
 
     msg2 = injector_msgs()
     msg2.veh_id = 2
-    msg2.easting = pos1_utm[0]
-    msg2.northing = pos1_utm[1]
+    msg2.easting = pos2_utm[0] - 13
+    msg2.northing = pos2_utm[1]
     msg2.x_dot = 0.0
-    msg2.y_dot = -0.5
+    msg2.y_dot = 0.5
     msg2.x_ddot = 0.0
     msg2.y_ddot = 0.0
     msg2.length = 2.0
     msg2.width = 1.0
 
+    msg3 = injector_msgs()
+    msg3.veh_id = 3
+    msg3.easting = pos1_utm[0] - 6
+    msg3.northing = pos1_utm[1]
+    msg3.x_dot = 0.0
+    msg3.y_dot = 1.5
+    msg3.x_ddot = 0.0
+    msg3.y_ddot = 0.0
+    msg3.length = 2.0
+    msg3.width = 1.0
+
     time_prev = time.time()
+    time_start = time_prev
     while not rospy.is_shutdown():
         # Update time
         time_now = time.time()
@@ -53,11 +65,23 @@ def injector():
         msg1.northing += time_consumed*msg1.x_dot
         msg2.easting += time_consumed*msg2.y_dot
         msg2.northing += time_consumed*msg2.x_dot
+        msg3.easting += time_consumed*msg2.y_dot
+        msg3.northing += time_consumed*msg2.x_dot
 
+        # Detection errors
+        if (time_now - time_start > 1.3 and time_now - time_start < 1.35):
+            msg1.easting += 10
+            msg2.northing -= 6
+            pub.publish(msg1)
+            pub.publish(msg2)
+            pub.publish(msg3)
+            msg1.easting -= 10
+            msg2.northing += 6
+        else:
         # ROS cycle
         #rospy.loginfo("{}, {}".format(msg.easting, msg.northing))
-        pub.publish(msg1)
-        pub.publish(msg2)
+            pub.publish(msg1)
+            pub.publish(msg2)
         rate.sleep()
 
 if __name__ == '__main__':

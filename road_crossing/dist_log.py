@@ -15,7 +15,7 @@ def main():
     with open("new.log", "r") as fp:
         lines = fp.readlines()
     for line in lines:
-        line = line[67:-5]
+        line = line[72:-5]
         line = line.strip()
         num = line.split(",")
         num[1] = num[1][8:]

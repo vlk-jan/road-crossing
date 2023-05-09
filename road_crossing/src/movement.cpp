@@ -3,7 +3,7 @@
 * Author: Jan Vlk
 * Date: 25.11.2022
 * Description: This file contains functions for moving the robot.
-* Last modified: 1.5.2023
+* Last modified: 9.5.2023
 */
 
 #include <cmath>
@@ -174,19 +174,14 @@ BT::NodeStatus MOV_nodes::move_fwd::tick()
     if (!min_vel_fwd)
         throw BT::RuntimeError("missing required input min_vel_fwd: ", min_vel_fwd.error());
 
-    if (max_vel_fwd.value() + 0.1 <= MAX_LIN_SPEED){
+    if (max_vel_fwd.value() + VEL_MARGIN <= MAX_LIN_SPEED){
         MOV_nodes::lin_speed = MAX_LIN_SPEED;
-    } else if (min_vel_fwd.value() - 0.1 >= MIN_LIN_SPEED) {
-        MOV_nodes::lin_speed = min_vel_fwd.value() - 0.1;
+    } else if (min_vel_fwd.value() - VEL_MARGIN >= MIN_LIN_SPEED) {
+        MOV_nodes::lin_speed = min_vel_fwd.value() - VEL_MARGIN;
     } else {  // Should not happen
         MOV_nodes::lin_speed = 0;
         ROS_WARN("Movement forward requested, but no speed is possible.");
     }
-
-    if (MOV_nodes::lin_speed > MAX_LIN_SPEED)
-        MOV_nodes::lin_speed = MAX_LIN_SPEED;
-    if (MOV_nodes::lin_speed < MIN_LIN_SPEED)
-        MOV_nodes::lin_speed = MIN_LIN_SPEED;
 
     geometry_msgs::Twist msg = geometry_msgs::Twist();
     msg.linear.x = MOV_nodes::lin_speed;
@@ -213,10 +208,10 @@ BT::NodeStatus MOV_nodes::move_bwd::tick()
     if (!min_vel_bwd)
         throw BT::RuntimeError("missing required input min_vel_bwd: ", min_vel_bwd.error());
 
-    if (max_vel_bwd.value() - 0.1 >= -MAX_LIN_SPEED){
+    if (max_vel_bwd.value() - VEL_MARGIN >= -MAX_LIN_SPEED){
         MOV_nodes::lin_speed = -MAX_LIN_SPEED;
-    } else if (min_vel_bwd.value() + 0.1 <= -MIN_LIN_SPEED) {
-        MOV_nodes::lin_speed = min_vel_bwd.value() + 0.1;
+    } else if (min_vel_bwd.value() + VEL_MARGIN <= -MIN_LIN_SPEED) {
+        MOV_nodes::lin_speed = min_vel_bwd.value() + VEL_MARGIN;
     } else {  // Should not happen
         MOV_nodes::lin_speed = 0;
         ROS_WARN("Movement backward requested, but no speed is possible.");
