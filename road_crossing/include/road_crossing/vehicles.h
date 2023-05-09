@@ -7,6 +7,7 @@
 #include "ros/ros.h"
 
 #include "road_crossing_msgs/injector_msgs.h"
+#include "road_crossing/movement.h"
 
 
 struct collision_info
@@ -77,6 +78,8 @@ class VEH_nodes
          */
         static void callback_vehicle_injector(const road_crossing_msgs::injector_msgs::ConstPtr& msg);
 
+        static void clear_vehicles_data();
+
         class get_cars : public BT::SyncActionNode
         {
             public:
@@ -133,20 +136,6 @@ class VEH_nodes
                 static BT::PortsList providedPorts();
         };
 
-        class collision_imminent : public BT::ConditionNode
-        {
-            public:
-                collision_imminent(const std::string& name, const BT::NodeConfiguration& config)
-                    : BT::ConditionNode(name, config)
-                {}
-
-                virtual ~collision_imminent(){}
-
-                BT::NodeStatus tick() override;
-
-                static BT::PortsList providedPorts();
-        };
-
         class collision_fwd_move : public BT::ConditionNode
         {
             public:
@@ -195,7 +184,7 @@ class VEH_nodes
         static collisions_data collisions;
 };
 
-vehicle_info VEH_nodes::robot = {0, 0, 0, 1.2, 0, 0, 0, 1.1, 0.5};
+vehicle_info VEH_nodes::robot = {0, 0, 0, MAX_LIN_SPEED, 0, 0, 0, 1.1, 0.5};
 vehicles_data VEH_nodes::vehicles;
 collisions_data VEH_nodes::collisions;
 

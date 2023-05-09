@@ -15,7 +15,7 @@
 #define MIN_ROT_SPEED 0.15  // rad/s
 #define MAX_LIN_SPEED 1.2  // m/s
 #define MIN_LIN_SPEED 0.1  // m/s
-#define VEL_MARGIN 0.2 // m/s
+#define VEL_MARGIN 0.2  // m/s
 
 
 class MOV_nodes

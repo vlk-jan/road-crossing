@@ -80,18 +80,18 @@
     <!-- ////////// -->
     <BehaviorTree ID="road_crossing">
         <Sequence>
-            <Action ID="get_cars"/>
+            <Action ID="get_cars" vehicles="{vehicles}"/>
             <Fallback>
                 <Sequence>
                     <Inverter>
-                        <Condition ID="cars_in_trajectory"/>
+                        <Condition ID="cars_in_trajectory" vehicles="{vehicles}"/>
                     </Inverter>
                     <SubTree ID="start_crossing" __shared_blackboard="true"/>
                     <Action ID="move_fwd_full"/>
                 </Sequence>
                 <Sequence>
                     <SubTree ID="start_crossing" __shared_blackboard="true"/>
-                    <Action ID="calculate_collision" max_vel_bwd="{max_vel_bwd}" max_vel_fwd="{max_vel_fwd}" min_vel_bwd="{max_vel_bwd}" min_vel_fwd="{min_vel_fwd}"/>
+                    <Action ID="calculate_collision" max_vel_bwd="{max_vel_bwd}" max_vel_fwd="{max_vel_fwd}" min_vel_bwd="{max_vel_bwd}" min_vel_fwd="{min_vel_fwd}" vehicles="{vehicles}"/>
                     <Fallback>
                         <Sequence>
                             <Condition ID="collision_fwd_move" max_vel_fwd="{max_vel_fwd}" min_vel_fwd="{min_vel_fwd}"/>
@@ -130,8 +130,11 @@
             <output_port default="{max_vel_fwd}" name="max_vel_fwd"/>
             <output_port default="{max_vel_bwd}" name="min_vel_bwd"/>
             <output_port default="{min_vel_fwd}" name="min_vel_fwd"/>
+            <input_port default="{vehicles}" name="vehicles"/>
         </Action>
-        <Condition ID="cars_in_trajectory"/>
+        <Condition ID="cars_in_trajectory">
+            <input_port default="{vehicles}" name="vehicles"/>
+        </Condition>
         <Condition ID="collision_bwd_move">
             <input_port default="{max_vel_bwd}" name="max_vel_bwd"/>
             <input_port default="{min_vel_bwd}" name="min_vel_bwd"/>
@@ -140,7 +143,6 @@
             <input_port default="{max_vel_fwd}" name="max_vel_fwd"/>
             <input_port default="{min_vel_fwd}" name="min_vel_fwd"/>
         </Condition>
-        <Condition ID="collision_imminent"/>
         <Condition ID="collision_on_stop"/>
         <Action ID="compute_heading">
             <output_port default="{heading}" name="req_azimuth">what azimuth should we achieve with robot to be perpendicular to the road we need to cross</output_port>
@@ -159,7 +161,9 @@
             <output_port default="{better_easting}" name="better_easting"/>
             <output_port default="{better_northing}" name="better_northing"/>
         </Action>
-        <Action ID="get_cars"/>
+        <Action ID="get_cars">
+            <output_port default="{vehicles}" name="vehicles"/>
+        </Action>
         <SubTree ID="get_heading">
             <input_port default="true" name="__shared_blackboard">If false (default), the Subtree has an isolated blackboard and needs port remapping</input_port>
         </SubTree>

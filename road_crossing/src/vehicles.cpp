@@ -113,8 +113,6 @@ void VEH_nodes::vehicle_collision(vehicle_info vehicle, vehicle_info robot, coll
         bool collide = (time1 != 0 && vel1 == 0) || (time2 != 0 && vel2 == 0);
         collision.collide_stop = collide;
     }
-
-    ROS_INFO("Calculation, v_front: %f, v_back: %f", collision.v_front, collision.v_back);
 }
 
 void VEH_nodes::callback_vehicle_injector(const road_crossing_msgs::injector_msgs::ConstPtr& msg)
@@ -156,6 +154,12 @@ void VEH_nodes::callback_vehicle_injector(const road_crossing_msgs::injector_msg
     ROS_INFO("vehicle: %ld, pos_x: %f, pos_y: %f", msg->veh_id, VEH_nodes::vehicles.data[i].pos_x, VEH_nodes::vehicles.data[i].pos_y);
 }
 
+void VEH_nodes::clear_vehicles_data()
+{
+    VEH_nodes::vehicles.data.clear();
+    VEH_nodes::vehicles.num_vehicles = 0;
+}
+
 BT::NodeStatus VEH_nodes::get_cars_injector::tick()
 {
     setOutput("vehicles", VEH_nodes::vehicles);
@@ -165,24 +169,32 @@ BT::NodeStatus VEH_nodes::get_cars_injector::tick()
 
 BT::PortsList VEH_nodes::get_cars_injector::providedPorts()
 {
-    return {BT::OutputPort<vehicle_info>("vehicles")};
+    return {BT::OutputPort<vehicles_data>("vehicles")};
 }
 
 BT::NodeStatus VEH_nodes::cars_in_trajectory::tick()
 {
-    if (VEH_nodes::vehicles.num_vehicles == 0)  // No vehicles detected
+    BT::Optional<vehicles_data> veh_data = getInput<vehicles_data>("vehicles");
+    if (!veh_data)
+        throw BT::RuntimeError("missing required input vehicles: ", veh_data.error());
+    
+    if (veh_data.value().num_vehicles == 0)  // No vehicles detected
         return BT::NodeStatus::FAILURE;
     return BT::NodeStatus::SUCCESS;
 }
 
 BT::PortsList VEH_nodes::cars_in_trajectory::providedPorts()
 {
-    return {};
+    return {BT::InputPort<vehicles_data>("vehicles")};
 }
 
 BT::NodeStatus VEH_nodes::calculate_collision::tick()
 {
-    VEH_nodes::collisions.num_collisions = VEH_nodes::vehicles.num_vehicles;
+    BT::Optional<vehicles_data> veh_data = getInput<vehicles_data>("vehicles");
+    if (!veh_data)
+        throw BT::RuntimeError("missing required input vehicles: ", veh_data.error());
+
+    VEH_nodes::collisions.num_collisions = veh_data.value().num_vehicles;
     VEH_nodes::collisions.data.clear();
 
     double max_vel_fwd = 0;
@@ -192,9 +204,9 @@ BT::NodeStatus VEH_nodes::calculate_collision::tick()
 
     VEH_nodes::robot.x_dot = MOV_nodes::get_lin_vel();
 
-    for (int i=0; i<VEH_nodes::vehicles.num_vehicles; ++i){  //TODO: Optimal velocity choice
+    for (int i=0; i<veh_data.value().num_vehicles; ++i){  //TODO: Optimal velocity choice
         collision_info collision;
-        VEH_nodes::vehicle_collision(VEH_nodes::vehicles.data[i], VEH_nodes::robot, collision);
+        VEH_nodes::vehicle_collision(veh_data.value().data[i], VEH_nodes::robot, collision);
         VEH_nodes::collisions.data.push_back(collision);
         ROS_INFO("veh_id: %d, v_front: %f, v_back: %f", collision.car_id, collision.v_front, collision.v_back);
 
@@ -231,8 +243,7 @@ BT::NodeStatus VEH_nodes::calculate_collision::tick()
     setOutput<double>("max_vel_bwd", max_vel_bwd);
     setOutput<double>("min_vel_bwd", min_vel_bwd);
 
-    VEH_nodes::vehicles.data.clear();
-    VEH_nodes::vehicles.num_vehicles = 0;
+    VEH_nodes::clear_vehicles_data();
 
     ROS_INFO("max_vel_fwd: %f", max_vel_fwd);
     ROS_INFO("min_vel_fwd: %f", min_vel_fwd);
@@ -242,22 +253,9 @@ BT::NodeStatus VEH_nodes::calculate_collision::tick()
 
 BT::PortsList VEH_nodes::calculate_collision::providedPorts()
 {
-    return {BT::OutputPort<double>("max_vel_fwd"), BT::OutputPort<double>("min_vel_fwd"),
+    return {BT::InputPort<vehicles_data>("vehicles"),
+            BT::OutputPort<double>("max_vel_fwd"), BT::OutputPort<double>("min_vel_fwd"),
             BT::OutputPort<double>("max_vel_bwd"), BT::OutputPort<double>("min_vel_bwd")};
-}
-
-BT::NodeStatus VEH_nodes::collision_imminent::tick()
-{
-    for (int i=0; i<VEH_nodes::collisions.num_collisions; ++i){
-        if (VEH_nodes::collisions.data[i].collide)
-            return BT::NodeStatus::SUCCESS;
-    }
-    return BT::NodeStatus::FAILURE;
-}
-
-BT::PortsList VEH_nodes::collision_imminent::providedPorts()
-{
-    return {};
 }
 
 BT::NodeStatus VEH_nodes::collision_fwd_move::tick()
