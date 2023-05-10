@@ -44,6 +44,12 @@ struct collisions_data
     std::vector<collision_info> data;
 };
 
+struct d_interval
+{
+    double min;
+    double max;
+};
+
 class VEH_nodes
 {
     public:
@@ -56,8 +62,6 @@ class VEH_nodes
          * @param vehicle Struct with data about the vehicle.
          * @param robot Struct with data about the robot.
          * @param collision Struct in which the output collision data will be stored.
-         * 
-         * TODO: add acceleration and vehicle width to the calculation
          */
         static void vehicle_collision(vehicle_info vehicle, vehicle_info robot, collision_info &collision);
 
@@ -78,7 +82,28 @@ class VEH_nodes
          */
         static void callback_vehicle_injector(const road_crossing_msgs::injector_msgs::ConstPtr& msg);
 
+        /**
+         * @brief Clear the data about the vehicles. 
+         */
         static void clear_vehicles_data();
+
+        /**
+         * @brief Update the intervals in which the robot can move without collision.
+         */
+        static void update_intervals(collision_info collision, std::vector<d_interval>& interval_move);
+
+        /**
+         * @brief Chose correct max and min velocities based on the calculated intervals with regard to the velocity margin.
+         * 
+         * @param interval_fwd Vector of intervals for the forward movement.
+         * @param interval_bwd Vector of intervals for the backward movement.
+         * @param max_vel_fwd Max velocity for the forward movement.
+         * @param min_vel_fwd Min velocity for the forward movement.
+         * @param max_vel_bwd Max velocity for the backward movement.
+         * @param min_vel_bwd Min velocity for the backward movement.
+         */
+        static void set_intervals(std::vector<d_interval> interval_fwd, std::vector<d_interval> interval_bwd,
+                                  double& max_vel_fwd, double& min_vel_fwd, double& max_vel_bwd, double& min_vel_bwd);
 
         class get_cars : public BT::SyncActionNode
         {
@@ -184,7 +209,7 @@ class VEH_nodes
         static collisions_data collisions;
 };
 
-vehicle_info VEH_nodes::robot = {0, 0, 0, MAX_LIN_SPEED, 0, 0, 0, 1.1, 0.5};
+vehicle_info VEH_nodes::robot = {0, 0, 0, MAX_LIN_VEL, 0, 0, 0, 1.1, 0.5};
 vehicles_data VEH_nodes::vehicles;
 collisions_data VEH_nodes::collisions;
 

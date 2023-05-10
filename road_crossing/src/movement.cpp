@@ -3,7 +3,7 @@
 * Author: Jan Vlk
 * Date: 25.11.2022
 * Description: This file contains functions for moving the robot.
-* Last modified: 9.5.2023
+* Last modified: 10.5.2023
 */
 
 #include <cmath>
@@ -47,7 +47,7 @@ BT::NodeStatus MOV_nodes::rotate_robot::tick()
     if (!cur_azimuth)
         throw BT::RuntimeError("missing required input cur_azimuth: ", cur_azimuth.error());
 
-    const double speed_const = MAX_ROT_SPEED/M_PI;
+    const double speed_const = MAX_ROT_VEL/M_PI;
     double speed;
 
     // ensure that robot rotates maximum of half a circle
@@ -110,7 +110,7 @@ BT::NodeStatus MOV_nodes::step_from_road::tick()
     }
 
     geometry_msgs::Twist msg = geometry_msgs::Twist();
-    msg.angular.x = -MAX_LIN_SPEED/2;
+    msg.angular.x = -MAX_LIN_VEL/2;
 
     MOV_nodes::pub_cmd.publish(msg);
     ros::spinOnce();    
@@ -138,7 +138,7 @@ BT::PortsList MOV_nodes::not_started::providedPorts()
 BT::NodeStatus MOV_nodes::start_movement::tick()
 {
     MOV_nodes::is_moving = true;
-    MOV_nodes::lin_speed = MAX_LIN_SPEED;
+    MOV_nodes::lin_speed = MAX_LIN_VEL;
     ROS_INFO("Movement started.");
     return BT::NodeStatus::SUCCESS;
 }
@@ -151,7 +151,7 @@ BT::PortsList MOV_nodes::start_movement::providedPorts()
 BT::NodeStatus MOV_nodes::move_fwd_full::tick()
 {
     geometry_msgs::Twist msg = geometry_msgs::Twist();
-    msg.linear.x = MAX_LIN_SPEED;
+    msg.linear.x = MAX_LIN_VEL;
 
     MOV_nodes::pub_cmd.publish(msg);
     ros::spinOnce();
@@ -174,10 +174,8 @@ BT::NodeStatus MOV_nodes::move_fwd::tick()
     if (!min_vel_fwd)
         throw BT::RuntimeError("missing required input min_vel_fwd: ", min_vel_fwd.error());
 
-    if (max_vel_fwd.value() + VEL_MARGIN <= MAX_LIN_SPEED){
-        MOV_nodes::lin_speed = MAX_LIN_SPEED;
-    } else if (min_vel_fwd.value() - VEL_MARGIN >= MIN_LIN_SPEED) {
-        MOV_nodes::lin_speed = min_vel_fwd.value() - VEL_MARGIN;
+    if (max_vel_fwd.value() - min_vel_fwd.value() > 2*VEL_MARGIN){
+        MOV_nodes::lin_speed = max_vel_fwd.value() - VEL_MARGIN;
     } else {  // Should not happen
         MOV_nodes::lin_speed = 0;
         ROS_WARN("Movement forward requested, but no speed is possible.");
@@ -190,6 +188,8 @@ BT::NodeStatus MOV_nodes::move_fwd::tick()
     MOV_nodes::pub_cmd.publish(msg);
     ros::spinOnce();
 
+    if (MOV_nodes::lin_speed == 0)
+        return BT::NodeStatus::FAILURE;
     return BT::NodeStatus::SUCCESS;
 }
 
@@ -208,10 +208,8 @@ BT::NodeStatus MOV_nodes::move_bwd::tick()
     if (!min_vel_bwd)
         throw BT::RuntimeError("missing required input min_vel_bwd: ", min_vel_bwd.error());
 
-    if (max_vel_bwd.value() - VEL_MARGIN >= -MAX_LIN_SPEED){
-        MOV_nodes::lin_speed = -MAX_LIN_SPEED;
-    } else if (min_vel_bwd.value() + VEL_MARGIN <= -MIN_LIN_SPEED) {
-        MOV_nodes::lin_speed = min_vel_bwd.value() + VEL_MARGIN;
+    if (max_vel_bwd.value() - min_vel_bwd.value() > 2*VEL_MARGIN){
+        MOV_nodes::lin_speed = max_vel_bwd.value() - VEL_MARGIN;
     } else {  // Should not happen
         MOV_nodes::lin_speed = 0;
         ROS_WARN("Movement backward requested, but no speed is possible.");
@@ -224,6 +222,8 @@ BT::NodeStatus MOV_nodes::move_bwd::tick()
     MOV_nodes::pub_cmd.publish(msg);
     ros::spinOnce();
 
+    if (MOV_nodes::lin_speed == 0)
+        return BT::NodeStatus::FAILURE;
     return BT::NodeStatus::SUCCESS;
 }
 
@@ -236,6 +236,12 @@ BT::NodeStatus MOV_nodes::stop_movement::tick()
 {
     MOV_nodes::lin_speed = 0;
     ROS_INFO("Movement stopped.");
+
+    geometry_msgs::Twist msg = geometry_msgs::Twist();
+    msg.linear.x = MOV_nodes::lin_speed;
+    MOV_nodes::pub_cmd.publish(msg);
+    ros::spinOnce();
+
     return BT::NodeStatus::SUCCESS;
 }
 

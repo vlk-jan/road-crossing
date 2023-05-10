@@ -15,7 +15,7 @@ def main():
     with open("new.log", "r") as fp:
         lines = fp.readlines()
     for line in lines:
-        line = line[72:-5]
+        line = line[71:-5]
         line = line.strip()
         num = line.split(",")
         num[1] = num[1][8:]
@@ -24,9 +24,11 @@ def main():
             max_dist = dist
         if dist < min_dist:
             min_dist = dist
+            min_dist_coords = line
 
     print("max_dist: {}".format(max_dist))
     print("min_dist: {}".format(min_dist))
+    print("min_dist_coords: pos_x: {}".format(min_dist_coords))
 
 
 if __name__ == "__main__":

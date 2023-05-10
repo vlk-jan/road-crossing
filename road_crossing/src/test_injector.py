@@ -6,7 +6,7 @@ from road_crossing_msgs.msg import injector_msgs
 def injector():
     pub = rospy.Publisher('/road_crossing/injector', injector_msgs, queue_size=10)
     rospy.init_node('injector', anonymous=True)
-    rate = rospy.Rate(50)
+    rate = rospy.Rate(5)
 
     pos1 = (50.0930128, 14.1248906)
     pos1_utm = utm.from_latlon(pos1[0], pos1[1])
@@ -21,19 +21,19 @@ def injector():
     msg1.y_dot = -1.5
     msg1.x_ddot = 0.0
     msg1.y_ddot = 0.0
-    msg1.length = 2.0
-    msg1.width = 1.0
+    msg1.length = 4.7
+    msg1.width = 2.0
 
     msg2 = injector_msgs()
     msg2.veh_id = 2
     msg2.easting = pos2_utm[0] - 13
     msg2.northing = pos2_utm[1]
     msg2.x_dot = 0.0
-    msg2.y_dot = 0.5
+    msg2.y_dot = 1.0
     msg2.x_ddot = 0.0
     msg2.y_ddot = 0.0
-    msg2.length = 2.0
-    msg2.width = 1.0
+    msg2.length = 4.7
+    msg2.width = 2.0
 
     msg3 = injector_msgs()
     msg3.veh_id = 3
@@ -43,8 +43,8 @@ def injector():
     msg3.y_dot = 1.5
     msg3.x_ddot = 0.0
     msg3.y_ddot = 0.0
-    msg3.length = 2.0
-    msg3.width = 1.0
+    msg3.length = 4.7
+    msg3.width = 2.0
 
     time_prev = time.time()
     time_start = time_prev

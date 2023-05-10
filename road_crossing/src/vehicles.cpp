@@ -3,7 +3,7 @@
 * Author: Jan Vlk
 * Date: 2.3.2022
 * Description: This file contains functions for operations dealing with vehicle detection and collisions.
-* Last modified: 9.5.2023
+* Last modified: 10.5.2023
 */
 
 #include <cmath>
@@ -106,6 +106,7 @@ void VEH_nodes::vehicle_collision(vehicle_info vehicle, vehicle_info robot, coll
         collision.v_back = vel2;
         bool collide = (robot.x_dot <= vel1) && (robot.x_dot >= vel2);
         collision.collide = collide;
+        collision.collide_stop = false;
     } else {
         collision.v_front = (vel1) ? vel1 : 0;
         collision.v_back = (vel2) ? vel2 : 0;
@@ -160,6 +161,72 @@ void VEH_nodes::clear_vehicles_data()
     VEH_nodes::vehicles.num_vehicles = 0;
 }
 
+void VEH_nodes::update_intervals(collision_info collision, std::vector<d_interval>& interval_move)
+{
+    d_interval interval;
+    interval.min = collision.v_back < collision.v_front ? collision.v_back : collision.v_front;
+    interval.max = collision.v_front > collision.v_back ? collision.v_front : collision.v_back;
+    for (int i=0; i<interval_move.size(); ++i){
+        if (interval.max < interval_move[i].min || interval.min > interval_move[i].max)
+            continue;
+        else if (interval.min <= interval_move[i].min && interval.max >= interval_move[i].max){
+            interval_move.erase(interval_move.begin()+i);
+            --i;
+            if (interval_move.size() == 0)
+                break;
+        } else if (interval.min <= interval_move[i].min && interval.max < interval_move[i].max){
+            interval_move[i].min = interval.max;
+        } else if (interval.min > interval_move[i].min && interval.max >= interval_move[i].max){
+            interval_move[i].max = interval.min;
+        } else if (interval.min > interval_move[i].min && interval.max < interval_move[i].max){
+            d_interval new_interval;
+            new_interval.min = interval_move[i].min;
+            new_interval.max = interval.min;
+            interval_move[i].min = interval.max;
+            interval_move.push_back(new_interval);
+        }
+    }
+}
+
+void VEH_nodes::set_intervals(std::vector<d_interval> interval_fwd, std::vector<d_interval> interval_bwd,
+                              double& max_vel_fwd, double& min_vel_fwd, double& max_vel_bwd, double& min_vel_bwd)
+{
+    for (int i = 0; i < interval_fwd.size(); ++i){
+        if (interval_fwd[i].max - interval_fwd[i].min > 2*VEL_MARGIN)
+            continue;
+        interval_fwd.erase(interval_fwd.begin()+i);
+        --i;
+    }
+    for (int i = 0; i < interval_bwd.size(); ++i){
+        if (interval_bwd[i].max - interval_bwd[i].min > 2*VEL_MARGIN)
+            continue;
+        interval_bwd.erase(interval_bwd.begin()+i);
+        --i;
+    }
+    if (interval_fwd.size() > 0){
+        for (int i = 0; i < interval_fwd.size(); ++i){
+            if (interval_fwd[i].max > max_vel_fwd){
+                max_vel_fwd = interval_fwd[i].max;
+                min_vel_fwd = interval_fwd[i].min;
+            }
+        }
+    } else {
+        max_vel_fwd = 0;
+        min_vel_fwd = 0;
+    }
+    if (interval_bwd.size() > 0){
+        for (int i = 0; i < interval_bwd.size(); ++i){
+            if (interval_bwd[i].min < max_vel_bwd){
+                max_vel_bwd = interval_bwd[i].min;
+                min_vel_bwd = interval_bwd[i].max;
+            }
+        }
+    } else {
+        max_vel_bwd = 0;
+        min_vel_bwd = 0;
+    }
+}
+
 BT::NodeStatus VEH_nodes::get_cars_injector::tick()
 {
     setOutput("vehicles", VEH_nodes::vehicles);
@@ -197,56 +264,95 @@ BT::NodeStatus VEH_nodes::calculate_collision::tick()
     VEH_nodes::collisions.num_collisions = veh_data.value().num_vehicles;
     VEH_nodes::collisions.data.clear();
 
-    double max_vel_fwd = 0;
-    double max_vel_bwd = 0;
-    double min_vel_fwd = std::numeric_limits<double>::max();
-    double min_vel_bwd = -std::numeric_limits<double>::max();
+    std::vector<d_interval> interval_fwd, interval_bwd;
+    d_interval base;
+
+    base.min = MIN_LIN_VEL;
+    base.max = MAX_LIN_VEL+VEL_MARGIN;
+    interval_fwd.push_back(base);
+
+    base.min = -MAX_LIN_VEL;
+    base.max = -MIN_LIN_VEL;
+    interval_bwd.push_back(base);
 
     VEH_nodes::robot.x_dot = MOV_nodes::get_lin_vel();
 
-    for (int i=0; i<veh_data.value().num_vehicles; ++i){  //TODO: Optimal velocity choice
+    for (int i=0; i<veh_data.value().num_vehicles; ++i){
         collision_info collision;
         VEH_nodes::vehicle_collision(veh_data.value().data[i], VEH_nodes::robot, collision);
         VEH_nodes::collisions.data.push_back(collision);
         ROS_INFO("veh_id: %d, v_front: %f, v_back: %f", collision.car_id, collision.v_front, collision.v_back);
 
         // Determine the maximum and minimum velocities with regard to the direction of travel
-        if (collision.v_front >= 0 && collision.v_back >= 0){  // Both velocities forward
-            bool fwd_v_front = true; //collision.v_front < MAX_LIN_SPEED;
-            bool fwd_v_back = true; //collision.v_back < MAX_LIN_SPEED;
-
-            max_vel_fwd = fwd_v_front && collision.v_front > max_vel_fwd ? collision.v_front : max_vel_fwd;
-            min_vel_fwd = fwd_v_front && collision.v_front < min_vel_fwd ? collision.v_front : min_vel_fwd;
-            max_vel_fwd = fwd_v_back && collision.v_back > max_vel_fwd ? collision.v_back : max_vel_fwd;
-            min_vel_fwd = fwd_v_back && collision.v_back < min_vel_fwd ? collision.v_back : min_vel_fwd;
-        } else if (collision.v_front <= 0 && collision.v_back <= 0){  // Both velocities backward
-            bool bwd_v_front = true; //collision.v_front > -MAX_LIN_SPEED;
-            bool bwd_v_back = true; //collision.v_back > -MAX_LIN_SPEED;
-
-            max_vel_bwd = bwd_v_front && collision.v_front < max_vel_fwd ? collision.v_front : max_vel_bwd;
-            min_vel_bwd = bwd_v_front && collision.v_front > min_vel_fwd ? collision.v_front : min_vel_bwd;
-            max_vel_bwd = bwd_v_back && collision.v_back < max_vel_fwd ? collision.v_back : max_vel_bwd;
-            min_vel_bwd = bwd_v_back && collision.v_back > min_vel_fwd ? collision.v_back : min_vel_bwd;
-        } else {  // One velocity forward one backward, the backward one should allways be the front one
-            bool bwd_v_front = true; //collision.v_front > -MAX_LIN_SPEED;
-            bool fwd_v_back = true; //collision.v_back < MAX_LIN_SPEED;
-
-            max_vel_bwd = bwd_v_front && collision.v_front < max_vel_fwd ? collision.v_front : max_vel_bwd;
-            min_vel_bwd = bwd_v_front && collision.v_front > min_vel_fwd ? collision.v_front : min_vel_bwd;
-            max_vel_fwd = fwd_v_back && collision.v_back > max_vel_fwd ? collision.v_back : max_vel_fwd;
-            min_vel_fwd = fwd_v_back && collision.v_back < min_vel_fwd ? collision.v_back : min_vel_fwd;
+        if (collision.v_front >= 0 && collision.v_back >= 0){  // Forward movement, both velocities
+            if (collision.v_front >= MAX_LIN_VEL+VEL_MARGIN && collision.v_back >= MAX_LIN_VEL+VEL_MARGIN)
+                continue;
+            else if (collision.v_front <= MIN_LIN_VEL && collision.v_back <= MIN_LIN_VEL)
+                continue;
+            else if (collision.v_front >= MAX_LIN_VEL+VEL_MARGIN && collision.v_back <= MIN_LIN_VEL){
+                d_interval interval;
+                interval.min = 0;
+                interval.max = 0;
+                interval_fwd.clear();
+                interval_fwd.push_back(interval);
+            }
+            VEH_nodes::update_intervals(collision, interval_fwd);
+        } else if (collision.v_front <= 0 && collision.v_back <= 0){  // Backward movement, both velocities
+            if (collision.v_front <= -MAX_LIN_VEL && collision.v_back <= -MAX_LIN_VEL)
+                continue;
+            else if (collision.v_front >= -MIN_LIN_VEL && collision.v_back >= -MIN_LIN_VEL)
+                continue;
+            else if (collision.v_front <= -MAX_LIN_VEL && collision.v_back >= -MIN_LIN_VEL){
+                d_interval interval;
+                interval.min = 0;
+                interval.max = 0;
+                interval_bwd.clear();
+                interval_bwd.push_back(interval);
+            }
+            VEH_nodes::update_intervals(collision, interval_bwd);
+        } else if (collision.v_front <= 0 && collision.v_back >= 0){  // Velocity front backward, velocity back forward
+            if (collision.v_back <= MIN_LIN_VEL){
+                d_interval interval;
+                interval.min = 0;
+                interval.max = 0;
+                interval_fwd.clear();
+                interval_fwd.push_back(interval);
+            } else if (collision.v_back <= MAX_LIN_VEL){
+                d_interval interval;
+                interval.min = MIN_LIN_VEL;
+                interval.max = collision.v_back;
+                interval_fwd.clear();
+                interval_fwd.push_back(interval);
+            } else
+                continue;
+        } else {
+            ROS_WARN("calculate_collision: Error in velocity calculation");
         }
+        ROS_INFO("interval set");
     }
+
+    for (int i = 0; i < interval_fwd.size(); ++i){
+        ROS_INFO("Interval fwd: %f - %f", interval_fwd[i].min, interval_fwd[i].max);
+    }
+    for (int i = 0; i < interval_bwd.size(); ++i){
+        ROS_INFO("Interval bwd: %f - %f", interval_bwd[i].min, interval_bwd[i].max);
+    }
+
+    // Set highest intervals with enough margin
+    double max_vel_fwd = MIN_LIN_VEL, min_vel_fwd = 0, max_vel_bwd = -MIN_LIN_VEL, min_vel_bwd = 0;
+    VEH_nodes::set_intervals(interval_fwd, interval_bwd, max_vel_fwd, min_vel_fwd, max_vel_bwd, min_vel_bwd);
 
     setOutput<double>("max_vel_fwd", max_vel_fwd);
     setOutput<double>("min_vel_fwd", min_vel_fwd);
     setOutput<double>("max_vel_bwd", max_vel_bwd);
     setOutput<double>("min_vel_bwd", min_vel_bwd);
 
-    VEH_nodes::clear_vehicles_data();
+    //VEH_nodes::clear_vehicles_data();
 
     ROS_INFO("max_vel_fwd: %f", max_vel_fwd);
     ROS_INFO("min_vel_fwd: %f", min_vel_fwd);
+    ROS_INFO("max_vel_bwd: %f", max_vel_bwd);
+    ROS_INFO("min_vel_bwd: %f", min_vel_bwd);
 
     return BT::NodeStatus::SUCCESS;
 }
@@ -268,7 +374,7 @@ BT::NodeStatus VEH_nodes::collision_fwd_move::tick()
     if (!min_vel_fwd)
         throw BT::RuntimeError("missing required input min_vel_fwd: ", min_vel_fwd.error());
     
-    if (max_vel_fwd.value() + VEL_MARGIN >= MAX_LIN_SPEED && min_vel_fwd.value() - VEL_MARGIN <= MIN_LIN_SPEED){
+    if (max_vel_fwd.value() - min_vel_fwd.value() <=  2*VEL_MARGIN){
         ROS_INFO("Collision fwd move");
         return BT::NodeStatus::SUCCESS;
     }
@@ -291,7 +397,7 @@ BT::NodeStatus VEH_nodes::collision_bwd_move::tick()
     if (!min_vel_bwd)
         throw BT::RuntimeError("missing required input min_vel_bwd: ", min_vel_bwd.error());
     
-    if (max_vel_bwd.value() - VEL_MARGIN <= -MAX_LIN_SPEED && min_vel_bwd.value() + VEL_MARGIN >= -MIN_LIN_SPEED){
+    if (max_vel_bwd.value() - min_vel_bwd.value() <= 2*VEL_MARGIN){
         ROS_INFO("Collision bwd move");
         return BT::NodeStatus::SUCCESS;
     }
@@ -307,8 +413,10 @@ BT::PortsList VEH_nodes::collision_bwd_move::providedPorts()
 BT::NodeStatus VEH_nodes::collision_on_stop::tick()
 {
     for (int i=0; i<VEH_nodes::collisions.num_collisions; ++i){
-        if (VEH_nodes::collisions.data[i].collide_stop)
+        if (VEH_nodes::collisions.data[i].collide_stop){
+            ROS_INFO("Collision on stop, veh_id: %d", VEH_nodes::collisions.data[i].car_id);
             return BT::NodeStatus::SUCCESS;
+        }
     }
     return BT::NodeStatus::FAILURE;
 }

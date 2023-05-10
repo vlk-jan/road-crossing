@@ -91,7 +91,7 @@
                 </Sequence>
                 <Sequence>
                     <SubTree ID="start_crossing" __shared_blackboard="true"/>
-                    <Action ID="calculate_collision" max_vel_bwd="{max_vel_bwd}" max_vel_fwd="{max_vel_fwd}" min_vel_bwd="{max_vel_bwd}" min_vel_fwd="{min_vel_fwd}" vehicles="{vehicles}"/>
+                    <Action ID="calculate_collision" max_vel_bwd="{max_vel_bwd}" max_vel_fwd="{max_vel_fwd}" min_vel_bwd="{min_vel_bwd}" min_vel_fwd="{min_vel_fwd}" vehicles="{vehicles}"/>
                     <Fallback>
                         <Sequence>
                             <Condition ID="collision_fwd_move" max_vel_fwd="{max_vel_fwd}" min_vel_fwd="{min_vel_fwd}"/>
@@ -107,6 +107,7 @@
                             </Fallback>
                         </Sequence>
                         <Action ID="move_fwd" max_vel_fwd="{max_vel_fwd}" min_vel_fwd="{min_vel_fwd}"/>
+                        <Action ID="stop_movement"/>
                     </Fallback>
                 </Sequence>
             </Fallback>
