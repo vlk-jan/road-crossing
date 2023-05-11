@@ -74,15 +74,15 @@ add_library(gps_lib ${catkin_LIBRARIES} ${SOURCES})
 target_link_libraries(gps_lib ${catkin_LIBRARIES})
 add_dependencies(gps_lib ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
-set(SOURCES src/movement.cpp include/road_crossing/movement.h)
-add_library(movement_lib ${catkin_LIBRARIES} ${SOURCES})
-target_link_libraries(movement_lib ${catkin_LIBRARIES} misc_lib gps_lib)
-add_dependencies(movement_lib ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
-
 set(SOURCES src/vehicles.cpp include/road_crossing/vehicles.h)
 add_library(vehicles_lib ${catkin_LIBRARIES} ${SOURCES})
-target_link_libraries(vehicles_lib ${catkin_LIBRARIES} misc_lib movement_lib gps_lib)
+target_link_libraries(vehicles_lib ${catkin_LIBRARIES} misc_lib gps_lib)
 add_dependencies(vehicles_lib ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+
+set(SOURCES src/movement.cpp include/road_crossing/movement.h)
+add_library(movement_lib ${catkin_LIBRARIES} ${SOURCES})
+target_link_libraries(movement_lib ${catkin_LIBRARIES} misc_lib gps_lib vehicles_lib)
+add_dependencies(movement_lib ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 set(SOURCES src/start_srv.cpp include/road_crossing/start_srv.h)
 add_library(start_lib ${catkin_LIBRARIES} ${SOURCES})

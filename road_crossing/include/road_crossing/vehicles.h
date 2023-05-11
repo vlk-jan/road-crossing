@@ -7,7 +7,6 @@
 #include "ros/ros.h"
 
 #include "road_crossing_msgs/injector_msgs.h"
-#include "road_crossing/movement.h"
 
 
 struct collision_info
@@ -48,6 +47,26 @@ struct d_interval
 {
     double min;
     double max;
+};
+
+class VEL_info
+{
+    public:
+        VEL_info();
+        virtual ~VEL_info(){}
+
+        static double get_max_rot_vel(){return max_rot_vel;}
+        static double get_min_rot_vel(){return min_rot_vel;}
+        static double get_max_lin_vel(){return max_lin_vel;}
+        static double get_min_lin_vel(){return min_lin_vel;}
+        static double get_vel_margin(){return vel_margin;}
+
+    private:
+        static double max_rot_vel;
+        static double min_rot_vel;
+        static double max_lin_vel;
+        static double min_lin_vel;
+        static double vel_margin;
 };
 
 class VEH_nodes
@@ -104,6 +123,14 @@ class VEH_nodes
          */
         static void set_intervals(std::vector<d_interval> interval_fwd, std::vector<d_interval> interval_bwd,
                                   double& max_vel_fwd, double& min_vel_fwd, double& max_vel_bwd, double& min_vel_bwd);
+
+        /**
+         * @brief Set the robot velocity based on the calculated intervals.
+         * 
+         * @param x_dot Forward velocity.
+         * @param y_dot Sideway velocity (positive left).
+         */
+        static void set_robot_vel(double x_dot, double y_dot);
 
         class get_cars : public BT::SyncActionNode
         {
@@ -209,7 +236,9 @@ class VEH_nodes
         static collisions_data collisions;
 };
 
-vehicle_info VEH_nodes::robot = {0, 0, 0, MAX_LIN_VEL, 0, 0, 0, 1.1, 0.5};
+double VEL_info::max_rot_vel, VEL_info::min_rot_vel, VEL_info::max_lin_vel, VEL_info::min_lin_vel, VEL_info::vel_margin;
+
+vehicle_info VEH_nodes::robot = {0, 0, 0, 0, 0, 0, 0, 1.1, 0.5};
 vehicles_data VEH_nodes::vehicles;
 collisions_data VEH_nodes::collisions;
 

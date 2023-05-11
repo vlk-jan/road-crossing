@@ -1,10 +1,25 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <launch>
+    <arg name="robot" doc="Robot name from {husky-robot, spot-3}"/>
+    <arg name="max_rot_vel" default="1.0"/>
+    <arg name="min_rot_vel" default="0.2"/>
+    <arg name="max_lin_vel" default="1.0"/>
+    <arg name="min_lin_vel" default="0.2"/>
+    <arg name="vel_margin" default="0.15"/>
     <arg name="tree_file" default="$(dirname)/../src/main_tree.xml"/>
 
     <param name="/road_crossing/tree_file" type="str" value="$(arg tree_file)"/>
     <param name="/road_crossing/testing" type="bool" value="false"/>
 
     <node name="run_tree" pkg="road_crossing" type="run_tree"
-          respawn="true" respawn_delay="1.0" output="screen"/>
+          respawn="true" respawn_delay="1.0" output="screen">
+
+        <rosparam subst_value="true">
+            max_rot_vel: $(arg max_rot_vel)
+            min_rot_vel: $(arg min_rot_vel)
+            max_lin_vel: $(arg max_lin_vel)
+            min_lin_vel: $(arg min_lin_vel)
+            vel_margin: $(arg vel_margin)
+        </rosparam>
+    </node>
 </launch>

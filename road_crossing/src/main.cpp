@@ -3,7 +3,7 @@
 * Author: Jan Vlk
 * Date: 16.11.2022
 * Description: Main file of our algorithm, creates ROS subscribers, BT tree and provides.
-* Last modified: 26.4.2023
+* Last modified: 11.5.2023
 */
 
 #include "behaviortree_cpp_v3/behavior_tree.h"
@@ -48,6 +48,7 @@ int main(int argc, char **argv)
     GPS_nodes gps_nodes;
     VEH_nodes veh_nodes;
     MOV_nodes mov_nodes;
+    VEL_info vel_info;
     Start_service start_serv;
 
     compass = azi_nodes.get_topic();

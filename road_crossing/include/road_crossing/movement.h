@@ -8,15 +8,6 @@
 #include "behaviortree_cpp_v3/behavior_tree.h"
 #include "behaviortree_cpp_v3/bt_factory.h"
 
-#include "road_crossing/movement.h"
-
-
-#define MAX_ROT_VEL 1  // rad/s
-#define MIN_ROT_VEL 0.15  // rad/s
-#define MAX_LIN_VEL 1.2  // m/s
-#define MIN_LIN_VEL 0.1  // m/s
-#define VEL_MARGIN 0.15  // m/s
-
 
 class MOV_nodes
 {
@@ -30,11 +21,6 @@ class MOV_nodes
          * @param nh ROS NodeHandle.
          */
         void init_publishers(ros::NodeHandle& nh);
-
-        /**
-         * @brief Return current linear velocity.
-         */
-        static double get_lin_vel();
 
         /**
          * @brief Node to rotate the robot. Main usage is to get robot perpendicular to the road.

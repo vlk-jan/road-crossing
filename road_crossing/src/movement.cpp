@@ -3,7 +3,7 @@
 * Author: Jan Vlk
 * Date: 25.11.2022
 * Description: This file contains functions for moving the robot.
-* Last modified: 10.5.2023
+* Last modified: 11.5.2023
 */
 
 #include <cmath>
@@ -20,6 +20,7 @@
 #include "road_crossing/get_gps.h"
 #include "road_crossing/get_finish.h"
 #include "road_crossing_msgs/start_msgs.h"
+#include "road_crossing/vehicles.h"
 
 
 void MOV_nodes::init_publishers(ros::NodeHandle& nh)
@@ -32,11 +33,6 @@ void MOV_nodes::init_publishers(ros::NodeHandle& nh)
     MOV_nodes::get_finish_client = nh.serviceClient<road_crossing::get_finish>(service_name);
 }
 
-double MOV_nodes::get_lin_vel()
-{
-    return MOV_nodes::lin_speed;
-}
-
 BT::NodeStatus MOV_nodes::rotate_robot::tick()
 {
     BT::Optional<double> cur_azimuth = getInput<double>("azimuth");
@@ -47,7 +43,7 @@ BT::NodeStatus MOV_nodes::rotate_robot::tick()
     if (!cur_azimuth)
         throw BT::RuntimeError("missing required input cur_azimuth: ", cur_azimuth.error());
 
-    const double speed_const = MAX_ROT_VEL/M_PI;
+    const double speed_const = VEL_info::get_max_rot_vel()/M_PI;
     double speed;
 
     // ensure that robot rotates maximum of half a circle
@@ -110,7 +106,7 @@ BT::NodeStatus MOV_nodes::step_from_road::tick()
     }
 
     geometry_msgs::Twist msg = geometry_msgs::Twist();
-    msg.angular.x = -MAX_LIN_VEL/2;
+    msg.linear.x = VEL_info::get_max_lin_vel()/2;
 
     MOV_nodes::pub_cmd.publish(msg);
     ros::spinOnce();    
@@ -138,7 +134,7 @@ BT::PortsList MOV_nodes::not_started::providedPorts()
 BT::NodeStatus MOV_nodes::start_movement::tick()
 {
     MOV_nodes::is_moving = true;
-    MOV_nodes::lin_speed = MAX_LIN_VEL;
+    MOV_nodes::lin_speed = VEL_info::get_max_lin_vel();
     ROS_INFO("Movement started.");
     return BT::NodeStatus::SUCCESS;
 }
@@ -151,7 +147,9 @@ BT::PortsList MOV_nodes::start_movement::providedPorts()
 BT::NodeStatus MOV_nodes::move_fwd_full::tick()
 {
     geometry_msgs::Twist msg = geometry_msgs::Twist();
-    msg.linear.x = MAX_LIN_VEL;
+    msg.linear.x = VEL_info::get_max_lin_vel();
+    VEH_nodes::set_robot_vel(msg.linear.x, msg.linear.y);
+    MOV_nodes::lin_speed = msg.linear.x;
 
     MOV_nodes::pub_cmd.publish(msg);
     ros::spinOnce();
@@ -174,8 +172,8 @@ BT::NodeStatus MOV_nodes::move_fwd::tick()
     if (!min_vel_fwd)
         throw BT::RuntimeError("missing required input min_vel_fwd: ", min_vel_fwd.error());
 
-    if (max_vel_fwd.value() - min_vel_fwd.value() > 2*VEL_MARGIN){
-        MOV_nodes::lin_speed = max_vel_fwd.value() - VEL_MARGIN;
+    if (max_vel_fwd.value() - min_vel_fwd.value() > 2*VEL_info::get_vel_margin()){
+        MOV_nodes::lin_speed = max_vel_fwd.value() - VEL_info::get_vel_margin();
     } else {  // Should not happen
         MOV_nodes::lin_speed = 0;
         ROS_WARN("Movement forward requested, but no speed is possible.");
@@ -184,6 +182,7 @@ BT::NodeStatus MOV_nodes::move_fwd::tick()
     geometry_msgs::Twist msg = geometry_msgs::Twist();
     msg.linear.x = MOV_nodes::lin_speed;
     ROS_INFO("Moving forward with speed %f.", MOV_nodes::lin_speed);
+    VEH_nodes::set_robot_vel(msg.linear.x, msg.linear.y);
 
     MOV_nodes::pub_cmd.publish(msg);
     ros::spinOnce();
@@ -208,8 +207,8 @@ BT::NodeStatus MOV_nodes::move_bwd::tick()
     if (!min_vel_bwd)
         throw BT::RuntimeError("missing required input min_vel_bwd: ", min_vel_bwd.error());
 
-    if (max_vel_bwd.value() - min_vel_bwd.value() > 2*VEL_MARGIN){
-        MOV_nodes::lin_speed = max_vel_bwd.value() - VEL_MARGIN;
+    if (max_vel_bwd.value() - min_vel_bwd.value() > 2*VEL_info::get_vel_margin()){
+        MOV_nodes::lin_speed = max_vel_bwd.value() + VEL_info::get_vel_margin();
     } else {  // Should not happen
         MOV_nodes::lin_speed = 0;
         ROS_WARN("Movement backward requested, but no speed is possible.");
@@ -218,6 +217,7 @@ BT::NodeStatus MOV_nodes::move_bwd::tick()
     geometry_msgs::Twist msg = geometry_msgs::Twist();
     msg.linear.x = MOV_nodes::lin_speed;
     ROS_INFO("Moving backward with speed %f", MOV_nodes::lin_speed);
+    VEH_nodes::set_robot_vel(msg.linear.x, msg.linear.y);
 
     MOV_nodes::pub_cmd.publish(msg);
     ros::spinOnce();
@@ -241,6 +241,7 @@ BT::NodeStatus MOV_nodes::stop_movement::tick()
     msg.linear.x = MOV_nodes::lin_speed;
     MOV_nodes::pub_cmd.publish(msg);
     ros::spinOnce();
+    VEH_nodes::set_robot_vel(msg.linear.x, msg.linear.y);
 
     return BT::NodeStatus::SUCCESS;
 }
