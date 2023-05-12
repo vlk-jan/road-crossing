@@ -3,7 +3,7 @@
 * Author: Jan Vlk
 * Date: 2.3.2022
 * Description: This file contains functions for operations dealing with vehicle detection and collisions.
-* Last modified: 11.5.2023
+* Last modified: 12.5.2023
 */
 
 #include <cmath>
@@ -126,6 +126,10 @@ void VEH_nodes::vehicle_collision(vehicle_info vehicle, vehicle_info robot, coll
 
 void VEH_nodes::callback_vehicle_injector(const road_crossing_msgs::injector_msgs::ConstPtr& msg)
 {
+    if (msg->clear){
+        VEH_nodes::clear_vehicles_data();
+        return;
+    }
     double easting, northing;
     GPS_nodes::req_position(easting, northing);
     for (int i = 0; i < VEH_nodes::vehicles.data.size(); ++i){
@@ -213,7 +217,7 @@ void VEH_nodes::set_intervals(std::vector<d_interval> interval_fwd, std::vector<
     }
     if (interval_fwd.size() > 0){
         for (int i = 0; i < interval_fwd.size(); ++i){
-            if (interval_fwd[i].max > max_vel_fwd){
+            if (interval_fwd[i].max > max_vel_fwd && interval_fwd[i].max - VEL_info::get_vel_margin() > VEL_info::get_min_lin_vel()){
                 max_vel_fwd = interval_fwd[i].max;
                 min_vel_fwd = interval_fwd[i].min;
             }
@@ -224,7 +228,7 @@ void VEH_nodes::set_intervals(std::vector<d_interval> interval_fwd, std::vector<
     }
     if (interval_bwd.size() > 0){
         for (int i = 0; i < interval_bwd.size(); ++i){
-            if (interval_bwd[i].min < max_vel_bwd){
+            if (interval_bwd[i].min < max_vel_bwd && interval_bwd[i].min + VEL_info::get_vel_margin() < VEL_info::get_min_lin_vel()){
                 max_vel_bwd = interval_bwd[i].min;
                 min_vel_bwd = interval_bwd[i].max;
             }
@@ -281,11 +285,11 @@ BT::NodeStatus VEH_nodes::calculate_collision::tick()
     std::vector<d_interval> interval_fwd, interval_bwd;
     d_interval base_fwd, base_bwd;
 
-    base_fwd.min = VEL_info::get_min_lin_vel()+VEL_info::get_vel_margin();
+    base_fwd.min = VEL_info::get_min_lin_vel()-VEL_info::get_vel_margin();
     base_fwd.max = VEL_info::get_max_lin_vel()+VEL_info::get_vel_margin();
     interval_fwd.push_back(base_fwd);
 
-    base_bwd.min = -VEL_info::get_max_lin_vel()-VEL_info::get_vel_margin();
+    base_bwd.min = -VEL_info::get_max_lin_vel()+VEL_info::get_vel_margin();
     base_bwd.max = -VEL_info::get_min_lin_vel()-VEL_info::get_vel_margin();
     interval_bwd.push_back(base_bwd);
 
@@ -358,8 +362,6 @@ BT::NodeStatus VEH_nodes::calculate_collision::tick()
     setOutput<double>("min_vel_fwd", min_vel_fwd);
     setOutput<double>("max_vel_bwd", max_vel_bwd);
     setOutput<double>("min_vel_bwd", min_vel_bwd);
-
-    //VEH_nodes::clear_vehicles_data();
 
     return BT::NodeStatus::SUCCESS;
 }

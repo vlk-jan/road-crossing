@@ -1,5 +1,8 @@
 Header header
 
+# Clear data
+bool clear
+
 # Vehicle identifier
 int64 veh_id
 
@@ -18,12 +21,3 @@ float64 y_ddot
 # Vehicle dimensions
 float64 length
 float64 width
-
-
-## Identifier for the road to cross
-
-# Heading of road to cross
-float64 road_heading
-
-# Car vectors
-

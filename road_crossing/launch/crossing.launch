@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <launch>
-    <arg name="robot" doc="Robot name from {husky-robot, spot-3}"/>
-    <arg name="max_rot_vel" default="1.0"/>
-    <arg name="min_rot_vel" default="0.2"/>
-    <arg name="max_lin_vel" default="1.0"/>
-    <arg name="min_lin_vel" default="0.2"/>
+    <arg name="robot" doc="Robot name from {ctu-robot, husky-robot, spot-3}" default="husky-robot"/>
+    <arg name="max_rot_vel" default="$(eval 1.6 if robot == 'spot-3' else 0.5 if robot == 'ctu-robot' else 1.0)"/>
+    <arg name="min_rot_vel" default="$(eval 0.35 if robot == 'spot-3' else 0.2)"/>
+    <arg name="max_lin_vel" default="$(eval 1.6 if robot == 'spot-3' else 0.5 if robot == 'ctu-robot' else 1.0)"/>
+    <arg name="min_lin_vel" default="$(eval 0.35 if robot == 'spot-3' else 0.2)"/>
     <arg name="vel_margin" default="0.15"/>
     <arg name="tree_file" default="$(dirname)/../src/main_tree.xml"/>
 
