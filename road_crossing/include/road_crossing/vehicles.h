@@ -29,6 +29,7 @@ struct vehicle_info
     double y_ddot;
     double length;
     double width;
+    double phi;
 };
 
 struct vehicles_data

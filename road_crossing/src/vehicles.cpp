@@ -41,7 +41,11 @@ void VEH_nodes::vehicle_collision(vehicle_info vehicle, vehicle_info robot, coll
     double robot_back_y = 0;
 
     // Calculate the vehicle start position with respect to its length and robots width
-    double vehicle_phi = atan2(vehicle.y_dot, vehicle.x_dot);
+    double vehicle_phi;
+    if (vehicle.y_dot == 0 && vehicle.x_dot)
+        vehicle_phi = atan2(vehicle.y_dot, vehicle.x_dot);
+    else
+        vehicle_phi = vehicle.phi;
     double vehicle_len_x = (vehicle.length + robot.width)*cos(vehicle_phi)/2;
     double vehicle_len_y = (vehicle.length + robot.width)*sin(vehicle_phi)/2;
     double vehicle_front_x = vehicle.pos_x + vehicle_len_x;
@@ -51,19 +55,19 @@ void VEH_nodes::vehicle_collision(vehicle_info vehicle, vehicle_info robot, coll
 
     // Calculate the time till intersection point
     double time1 = 0, time2 = 0;
-    if (vehicle.y_ddot == 0){
+    if (vehicle.y_ddot == 0 && vehicle.y_dot != 0){  // If the vehicle is moving with constant velocity
         time1 = -(vehicle_front_y)/(vehicle.y_dot);
         time2 = -(vehicle_back_y)/(vehicle.y_dot);
-    } else {
+    } else if (vehicle.y_ddot != 0){  // If the vehicle is accelerating/decelerating
         double a = (vehicle.y_ddot)/2;
         double b = vehicle.y_dot;
         double c1 = vehicle_front_y;
         double d1 = pow(b, 2) - 4*a*c1;
-        //ROS_INFO("d1: %f", d1);
+        ROS_INFO("d1: %f", d1);
         if (d1 >= 0){
             double t1 = (-b + sqrt(d1))/(2*a);
             double t2 = (-b - sqrt(d1))/(2*a);
-            //ROS_INFO("d1, t1: %f, t2: %f", t1, t2);
+            ROS_INFO("d1, t1: %f, t2: %f", t1, t2);
             if (t1 >= 0 && t2 >= 0)
                 time1 = (t1 <= t2) ? t1 : t2;
             else if (t1 < 0 && t2 < 0)
@@ -73,11 +77,11 @@ void VEH_nodes::vehicle_collision(vehicle_info vehicle, vehicle_info robot, coll
         }
         double c2 = vehicle_back_y;
         double d2 = pow(b, 2) - 4*a*c2;
-        //ROS_INFO("d2: %f", d2);
+        ROS_INFO("d2: %f", d2);
         if (d2 >= 0){
             double t1 = (-b + sqrt(d2))/(2*a);
             double t2 = (-b - sqrt(d2))/(2*a);
-            //ROS_INFO("d2, t1: %f, t2: %f", t1, t2);
+            ROS_INFO("d2, t1: %f, t2: %f", t1, t2);
             if (t1 >= 0 && t2 >= 0)
                 time2 = (t1 <= t2) ? t1 : t2;
             else if (t1 < 0 && t2 < 0)
@@ -85,12 +89,22 @@ void VEH_nodes::vehicle_collision(vehicle_info vehicle, vehicle_info robot, coll
             else
                 time2 = (t1 >= 0) ? t1 : t2;
         }
+    } else {  // If the vehicle is stationary
+        // Check if the vehicle is in front of the robot
+        ROS_INFO("Veh y position: %f, %f", vehicle_front_y, vehicle_back_y);
+        if ((vehicle_front_y <= 0 && vehicle_back_y >= 0) || (vehicle_front_y >= 0 && vehicle_back_y <= 0)){
+            collision.v_front = VEL_info::get_max_lin_vel();
+            collision.v_back = VEL_info::get_min_lin_vel();
+            collision.collide = true;
+            collision.collide_stop = false;
+            return;
+        }
     }
 
     // Calculate the velocity for the robot to collide with the vehicle
     double vel1 = 0, vel2 = 0;
     if (time1){
-        //ROS_INFO("Time till intersection point front: %f", time1);
+        ROS_INFO("Time till intersection point front: %f", time1);
         double x1 = vehicle_front_x + vehicle.x_dot*time1 + vehicle.x_ddot*pow(time1, 2)/2;
         if (x1 <= robot_front_x && x1 >= robot_back_x)
             vel1 = 0;
@@ -99,7 +113,7 @@ void VEH_nodes::vehicle_collision(vehicle_info vehicle, vehicle_info robot, coll
         vel1 = (time1 < 0 && vel1 > 0) ? -vel1 : vel1;
     }
     if (time2){
-        //ROS_INFO("Time till intersection point back: %f", time2);
+        ROS_INFO("Time till intersection point back: %f", time2);
         double x2 = vehicle_back_x + vehicle.x_dot*time2 + vehicle.x_ddot*pow(time2, 2)/2;
         if (x2 <= robot_front_x && x2 >= robot_back_x)
             vel2 = 0;
@@ -142,6 +156,7 @@ void VEH_nodes::callback_vehicle_injector(const road_crossing_msgs::injector_msg
             VEH_nodes::vehicles.data[i].y_ddot = msg->y_ddot;
             VEH_nodes::vehicles.data[i].length = msg->length;
             VEH_nodes::vehicles.data[i].width = msg->width;
+            VEH_nodes::vehicles.data[i].phi = msg->phi;
 
             ROS_INFO("vehicle: %ld, pos_x: %f, pos_y: %f", msg->veh_id, VEH_nodes::vehicles.data[i].pos_x, VEH_nodes::vehicles.data[i].pos_y);
 
@@ -159,6 +174,7 @@ void VEH_nodes::callback_vehicle_injector(const road_crossing_msgs::injector_msg
     vehicle.y_ddot = msg->y_ddot;
     vehicle.length = msg->length;
     vehicle.width = msg->width;
+    vehicle.phi = msg->phi;
 
     VEH_nodes::vehicles.data.push_back(vehicle);
     ++VEH_nodes::vehicles.num_vehicles;
@@ -210,7 +226,7 @@ void VEH_nodes::set_intervals(std::vector<d_interval> interval_fwd, std::vector<
         --i;
     }
     for (int i = 0; i < interval_bwd.size(); ++i){
-        if (interval_fwd[i].max - interval_fwd[i].min > 2*VEL_info::get_vel_margin())
+        if (interval_bwd[i].max - interval_bwd[i].min > 2*VEL_info::get_vel_margin())
             continue;
         interval_bwd.erase(interval_bwd.begin()+i);
         --i;
@@ -228,7 +244,7 @@ void VEH_nodes::set_intervals(std::vector<d_interval> interval_fwd, std::vector<
     }
     if (interval_bwd.size() > 0){
         for (int i = 0; i < interval_bwd.size(); ++i){
-            if (interval_bwd[i].min < max_vel_bwd && interval_bwd[i].min + VEL_info::get_vel_margin() < VEL_info::get_min_lin_vel()){
+            if (interval_bwd[i].min < max_vel_bwd && interval_bwd[i].min + VEL_info::get_vel_margin() < -VEL_info::get_min_lin_vel()){
                 max_vel_bwd = interval_bwd[i].min;
                 min_vel_bwd = interval_bwd[i].max;
             }

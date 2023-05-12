@@ -21,3 +21,6 @@ float64 y_ddot
 # Vehicle dimensions
 float64 length
 float64 width
+
+#Vehicle orientation
+float64 phi

@@ -1,8 +1,10 @@
 # Testing purposes only
 
 import rospy
+import sys
 
 from road_crossing.srv import start_algorithm
+
 
 def start_client(start=True, stop=False):
     rospy.wait_for_service('start_algorithm')
@@ -15,5 +17,17 @@ def start_client(start=True, stop=False):
 
 
 if __name__ == "__main__":
+    if (len(sys.argv) != 2):
+        print("Usage: start.py <start/stop>")
+        exit()
+    if (sys.argv[1] == "start"):
+        start = True
+        stop = False
+    elif (sys.argv[1] == "stop"):
+        start = False
+        stop = True
+    else:
+        print("Invalid argument")
+        exit()
     print("Requesting start")
-    print("Start successful: %s"%start_client())
+    print("Start successful: %s"%start_client(start, stop))
