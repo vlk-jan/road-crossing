@@ -22,11 +22,11 @@
 
 VEL_info::VEL_info()
 {
-    ros::param::param<double>("~max_rot_vel", VEL_info::max_rot_vel, 1.0);
-    ros::param::param<double>("~min_rot_vel", VEL_info::min_rot_vel, 0.2);
-    ros::param::param<double>("~max_lin_vel", VEL_info::max_lin_vel, 1.0);
-    ros::param::param<double>("~min_lin_vel", VEL_info::min_lin_vel, 0.2);
-    ros::param::param<double>("~vel_margin", VEL_info::vel_margin, 0.15);
+    ros::param::param<double>("/run_tree/max_rot_vel", VEL_info::max_rot_vel, 1.0);
+    ros::param::param<double>("/run_tree/min_rot_vel", VEL_info::min_rot_vel, 0.2);
+    ros::param::param<double>("/run_tree/max_lin_vel", VEL_info::max_lin_vel, 1.0);
+    ros::param::param<double>("/run_tree/min_lin_vel", VEL_info::min_lin_vel, 0.2);
+    ros::param::param<double>("/run_tree/vel_margin", VEL_info::vel_margin, 0.15);
 }
 
 void VEH_nodes::vehicle_collision(vehicle_info vehicle, vehicle_info robot, collision_info &collision)

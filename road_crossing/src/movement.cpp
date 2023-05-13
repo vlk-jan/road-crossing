@@ -150,6 +150,7 @@ BT::NodeStatus MOV_nodes::move_fwd_full::tick()
     msg.linear.x = VEL_info::get_max_lin_vel();
     VEH_nodes::set_robot_vel(msg.linear.x, msg.linear.y);
     MOV_nodes::lin_speed = msg.linear.x;
+    ROS_INFO("moving forward with velocity %f", MOV_nodes::lin_speed);
 
     MOV_nodes::pub_cmd.publish(msg);
     ros::spinOnce();

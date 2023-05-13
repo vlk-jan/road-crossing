@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 import rospy
 from road_crossing.srv import get_road_segment, get_road_segmentResponse, get_suitability,\
                               get_suitabilityResponse, get_finish, get_finishResponse, get_road_info,\

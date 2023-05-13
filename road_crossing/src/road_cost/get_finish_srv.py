@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 import road_cost
 
 if __name__ == '__main__':

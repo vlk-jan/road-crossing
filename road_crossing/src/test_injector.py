@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 import rospy
 import time
 import sys
@@ -80,7 +82,7 @@ def injector(data):
                 msg.northing -= easting_error
                 msg.northing -= northing_error
             else:
-                if (i == data.err_veh):
+                if (data.err_veh is not None and i == data.err_veh):
                     continue
                 pub.publish(msg)
         rate.sleep()
@@ -149,7 +151,7 @@ def get_scene2():
     msg1.x_dot = 0.0
     msg1.y_dot = -kph_to_mps(20)
     msg1.x_ddot = 0.0
-    msg1.y_ddot = 1.7
+    msg1.y_ddot = 1.7  # 1 -> 1.7, 2 -> 1.2, 3 -> 2.3
     msg1.length = 4.7
     msg1.width = 2.0
     msg1.phi = math.atan2(msg1.y_dot, msg1.x_dot)
@@ -175,6 +177,44 @@ def get_scene2():
     data.max = kph_to_mps(30)
     return data
 
+def get_scene3():
+    data = Data()
+    pos = (50.0929653, 14.1248958)
+    pos_utm = utm.from_latlon(pos[0], pos[1])
+
+    msg1 = injector_msgs()
+    msg1.veh_id = 1
+    msg1.easting = pos_utm[0] + 30
+    msg1.northing = pos_utm[1]
+    msg1.x_dot = 0.0
+    msg1.y_dot = -kph_to_mps(20)
+    msg1.x_ddot = 0.0
+    msg1.y_ddot = 0.0
+    msg1.length = 4.7
+    msg1.width = 2.0
+    msg1.phi = math.atan2(msg1.y_dot, msg1.x_dot)
+
+    msg2 = injector_msgs()
+    msg2.veh_id = 2
+    msg2.easting = pos_utm[0] + 36
+    msg2.northing = pos_utm[1]
+    msg2.x_dot = 0.0
+    msg2.y_dot = -kph_to_mps(20)
+    msg2.x_ddot = 0.0
+    msg2.y_ddot = 0.1
+    msg2.length = 4.7
+    msg2.width = 2.0
+    msg2.phi = math.atan2(msg2.y_dot, msg2.x_dot)
+
+    data.msgs = [msg1, msg2]
+    data.err_veh = None
+    data.to_zero = [True, True]
+    data.to_max = [True, True]
+    data.x_dot_positive = [True, True]
+    data.y_dot_positive = [False, False]
+    data.max = kph_to_mps(30)
+    return data
+
 def main(scene):
     rospy.init_node('injector', anonymous=True)
 
@@ -182,6 +222,8 @@ def main(scene):
         data = get_scene1()
     elif (scene == '2'):
         data = get_scene2()
+    elif (scene == '3'):
+        data = get_scene3()
     else:
         print("Invalid scene")
         exit()
