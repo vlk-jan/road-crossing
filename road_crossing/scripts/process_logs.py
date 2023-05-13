@@ -1,7 +1,11 @@
 import matplotlib.pyplot as plt
+import matplotlib.animation as animation
 import numpy as np
 import sys
 import shapely.geometry as geom
+
+from random import randint
+import time
 
 
 colors = ["blue", "red", "green", "magenta", "olive", "orange", "cyan"]
@@ -204,16 +208,116 @@ def dist_graph(file_name):
 
     plot_graph(data, labels, legend=legend)
 
+def get_positions(file_name):
+    veh_pos = []
+    rob_pos = []
+    veh_ids = []
+
+    max_x = 0
+    max_y = 0
+    min_x = float("inf")
+    min_y = float("inf")
+
+    try:
+        with open(file_name, "r") as fp:
+            lines = fp.readlines()
+    except FileNotFoundError:
+        print("File not found")
+        exit()
+    
+    for line in lines:
+        if "Movement started" in line:
+            time_prev = float(line[13:33])
+            continue
+        elif "Crossing finished" in line:
+            break
+        elif "coords" not in line:
+            continue
+        else:
+            time = float(line[13:33])
+            line = line[61:-5]
+            line = line.strip()
+            num = line.split(",")
+            veh_id = int(num[0])
+            if (veh_id == 0 and time - time_prev < 0.15 and not len(rob_pos) == 0):
+                continue
+            elif (veh_id == 0):
+                time_prev = time
+            if (len(rob_pos) == 0 and veh_id != 0):
+                continue
+            num.remove(num[0])
+            if (veh_id == 0):
+                rob_pos.append((float(num[0]), float(num[1])))
+            elif (veh_id in veh_ids):
+                veh_pos[veh_ids.index(veh_id)].append((float(num[0]), float(num[1])))
+            else:
+                veh_ids.append(veh_id)
+                veh_pos.append([(float(num[0]), float(num[1]))])
+            max_x = max(max_x, float(num[0]))
+            max_y = max(max_y, float(num[1]))
+            min_x = min(min_x, float(num[0]))
+            min_y = min(min_y, float(num[1]))
+
+    veh_pos[0] = veh_pos[0][1:]
+    return [[veh_pos, rob_pos], [min_x, max_x, min_y, max_y], veh_ids]
+
+def animation_graph(file_name):
+    data = get_positions(file_name)
+
+    fig = plt.figure()
+    plt.xlim(data[1][0], data[1][1])
+    plt.xlabel("Easting [m]")
+    plt.ylim(data[1][2], data[1][3])
+    plt.ylabel("Northing [m]")
+    veh_id = data[2]
+    data = data[0]
+    plt.gca().set_prop_cycle(color=colors[:len(data[0])+1])
+
+    i = 0
+    while i < len(data[0]):
+        if (len(data[0][i]) != len(data[1])):
+            data[0] = data[0][:i] + data[0][i+1:]
+            veh_id = veh_id[:i] + veh_id[i+1:]
+            i -= 1
+        i += 1
+
+    legend = ["robot"]
+    for id in veh_id:
+        legend.append("vehicle " + str(id)) 
+
+    x = []
+    y = []
+
+    def animate(i):
+        while True:
+            app_x = [data[1][i][0]]
+            app_y = [data[1][i][1]]
+            for j in range(len(data[0])):
+                app_x.append(data[0][j][i][0])
+                app_y.append(data[0][j][i][1])
+
+            x.append(app_x)
+            y.append(app_y)
+        
+            plt.legend(legend)
+            return plt.plot(x, y)
+    
+    anim = animation.FuncAnimation(fig, animate, len(data[1]), repeat=True, repeat_delay=500, blit=True)
+    #plt.show()
+    anim.save('trajectory.gif', writer='imagemagick')
+
 def time_to_contact_graph(file_name):
     pass
 
 def main(args):
     file_name = args[1]
-    velocity_graph(file_name)
-    dist_center_graph(file_name)
-    dist_graph(file_name)
+    #velocity_graph(file_name)
+    #dist_center_graph(file_name)
+    #dist_graph(file_name)
+    animation_graph(file_name)
 
 if __name__ == '__main__':
+    
     if (len(sys.argv) != 2):
         print("Usage process_logs.py <log_file>")
         exit()

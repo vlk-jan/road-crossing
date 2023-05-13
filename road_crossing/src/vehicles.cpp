@@ -160,7 +160,9 @@ void VEH_nodes::callback_vehicle_injector(const road_crossing_msgs::injector_msg
             VEH_nodes::vehicles.data[i].width = msg->width;
             VEH_nodes::vehicles.data[i].phi = msg->phi;
 
-            ROS_INFO("vehicle: %3ld, pos_x: %f, pos_y: %f", msg->veh_id, VEH_nodes::vehicles.data[i].pos_x, VEH_nodes::vehicles.data[i].pos_y);
+            //ROS_INFO("vehicle: %3ld, pos_x: %f, pos_y: %f", msg->veh_id, VEH_nodes::vehicles.data[i].pos_x, VEH_nodes::vehicles.data[i].pos_y);
+            //ROS_INFO("coords: %3ld, %f, %f", msg->veh_id, msg->easting, msg->northing);
+            //ROS_INFO("coords:   0, %f, %f", easting, northing);
 
             return;
         }
@@ -183,6 +185,8 @@ void VEH_nodes::callback_vehicle_injector(const road_crossing_msgs::injector_msg
 
     int i = VEH_nodes::vehicles.num_vehicles-1;
     ROS_INFO("vehicle: %3ld, pos_x: %f, pos_y: %f", msg->veh_id, VEH_nodes::vehicles.data[i].pos_x, VEH_nodes::vehicles.data[i].pos_y);
+    ROS_INFO("coords: %3ld, %f, %f", msg->veh_id, msg->easting, msg->northing);
+    ROS_INFO("coords:   0, %f, %f", easting, northing);
 }
 
 void VEH_nodes::clear_vehicles_data()

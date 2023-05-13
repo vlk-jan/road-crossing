@@ -32,7 +32,7 @@ def injector(data):
     msg_clear.clear = True
 
     msgs = data.msgs
-    cmd_str = "rosrun road_crossing start.py start"
+    cmd_str = "rosrun road_crossing start start"
 
     input("To start press enter")
 

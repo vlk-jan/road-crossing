@@ -12,21 +12,21 @@
     <node name="start_srv" pkg="road_crossing" type="start_srv"
           respawn="true" respawn_delay="1.0" output="screen"/>
 
-    <node name="get_finish" pkg="road_crossing" type="get_finish_srv.py"
+    <node name="get_finish" pkg="road_crossing" type="get_finish_srv"
           respawn="true" respawn_delay="1.0" output="screen"/>
 
     <param name="road_crossing/road_file_name" type="str" value="$(dirname)/../../../../road_segments.pyc"/>
 
-    <node name="get_segment" pkg="road_crossing" type="get_segment_srv.py"
+    <node name="get_segment" pkg="road_crossing" type="get_segment_srv"
           respawn="true" respawn_delay="1.0" output="screen">
     </node>
     
-    <node name="get_suitability" pkg="road_crossing" type="get_suitability_srv.py"
+    <node name="get_suitability" pkg="road_crossing" type="get_suitability_srv"
           respawn="true" respawn_delay="1.0" output="screen"/>
 
     <param name="road_crossing/road_info_file" type="str" value="$(dirname)/../../../../road_info.pyc"/>
 
-    <node name="get_road_info" pkg="road_crossing" type="get_road_info_srv.py"
+    <node name="get_road_info" pkg="road_crossing" type="get_road_info_srv"
           respawn="true" respawn_delay="1.0" output="screen">
     </node>
 </launch>
