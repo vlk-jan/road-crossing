@@ -4,7 +4,7 @@ import sys
 import shapely.geometry as geom
 
 
-colors = ["blue", "red", "green", "cyan", "magenta", "olive", "orange"]
+colors = ["blue", "red", "green", "magenta", "olive", "orange", "cyan"]
 
 def plot_graph(data, labels, step = False, legend = None, title = None):
     if step:
@@ -203,6 +203,9 @@ def dist_graph(file_name):
         legend = None
 
     plot_graph(data, labels, legend=legend)
+
+def time_to_contact_graph(file_name):
+    pass
 
 def main(args):
     file_name = args[1]
