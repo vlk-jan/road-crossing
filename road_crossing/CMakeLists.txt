@@ -43,14 +43,14 @@ include_directories(
 
 catkin_install_python(
   PROGRAMS
-  src/test_injector.py
-  src/road_cost/road_cost_run.py
-  src/road_cost/get_segment_srv.py
-  src/road_cost/get_suitability_srv.py
-  src/road_cost/get_finish_srv.py
-  src/road_cost/get_road_info_srv.py
-  src/start.py
-  src/road_cost/save_test_road.py
+  nodes/test_injector.py
+  nodes/road_cost_run.py
+  nodes/get_segment_srv.py
+  nodes/get_suitability_srv.py
+  nodes/get_finish_srv.py
+  nodes/get_road_info_srv.py
+  nodes/start.py
+  nodes/save_test_road.py
 
   DESTINATION
   ${CATKIN_PACKAGE_BIN_DESTINATION}
