@@ -3,7 +3,7 @@
 * Author: Jan Vlk
 * Date: 25.11.2022
 * Description: This file contains functions for moving the robot.
-* Last modified: 11.5.2023
+* Last modified: 13.5.2023
 */
 
 #include <cmath>
@@ -181,7 +181,7 @@ BT::NodeStatus MOV_nodes::move_fwd::tick()
 
     geometry_msgs::Twist msg = geometry_msgs::Twist();
     msg.linear.x = MOV_nodes::lin_speed;
-    ROS_INFO("Moving forward with speed %f.", MOV_nodes::lin_speed);
+    ROS_INFO("moving forward with velocity %f", MOV_nodes::lin_speed);
     VEH_nodes::set_robot_vel(msg.linear.x, msg.linear.y);
 
     MOV_nodes::pub_cmd.publish(msg);
@@ -216,7 +216,7 @@ BT::NodeStatus MOV_nodes::move_bwd::tick()
 
     geometry_msgs::Twist msg = geometry_msgs::Twist();
     msg.linear.x = MOV_nodes::lin_speed;
-    ROS_INFO("Moving backward with speed %f", MOV_nodes::lin_speed);
+    ROS_INFO("moving backward with velocity %f", MOV_nodes::lin_speed);
     VEH_nodes::set_robot_vel(msg.linear.x, msg.linear.y);
 
     MOV_nodes::pub_cmd.publish(msg);
@@ -235,7 +235,7 @@ BT::PortsList MOV_nodes::move_bwd::providedPorts()
 BT::NodeStatus MOV_nodes::stop_movement::tick()
 {
     MOV_nodes::lin_speed = 0;
-    ROS_INFO("Movement stopped.");
+    ROS_INFO("movement stopped -> velocity %f", MOV_nodes::lin_speed);
 
     geometry_msgs::Twist msg = geometry_msgs::Twist();
     msg.linear.x = MOV_nodes::lin_speed;

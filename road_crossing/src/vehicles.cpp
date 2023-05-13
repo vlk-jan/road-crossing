@@ -3,7 +3,7 @@
 * Author: Jan Vlk
 * Date: 2.3.2022
 * Description: This file contains functions for operations dealing with vehicle detection and collisions.
-* Last modified: 12.5.2023
+* Last modified: 13.5.2023
 */
 
 #include <cmath>
@@ -52,6 +52,8 @@ void VEH_nodes::vehicle_collision(vehicle_info vehicle, vehicle_info robot, coll
     double vehicle_front_y = vehicle.pos_y + vehicle_len_y;
     double vehicle_back_x = vehicle.pos_x - vehicle_len_x;
     double vehicle_back_y = vehicle.pos_y - vehicle_len_y;
+    ROS_INFO("veh_pos: id: %3ld, f_x: %f, b_x: %f, f_y: %f, b_y: %f", vehicle.id, vehicle_front_x, vehicle_back_x,
+             vehicle_front_y, vehicle_back_y);
 
     // Calculate the time till intersection point
     double time1 = 0, time2 = 0;
@@ -63,11 +65,11 @@ void VEH_nodes::vehicle_collision(vehicle_info vehicle, vehicle_info robot, coll
         double b = vehicle.y_dot;
         double c1 = vehicle_front_y;
         double d1 = pow(b, 2) - 4*a*c1;
-        ROS_INFO("d1: %f", d1);
+        //ROS_INFO("d1: %f", d1);
         if (d1 >= 0){
             double t1 = (-b + sqrt(d1))/(2*a);
             double t2 = (-b - sqrt(d1))/(2*a);
-            ROS_INFO("d1, t1: %f, t2: %f", t1, t2);
+            //ROS_INFO("d1, t1: %f, t2: %f", t1, t2);
             if (t1 >= 0 && t2 >= 0)
                 time1 = (t1 <= t2) ? t1 : t2;
             else if (t1 < 0 && t2 < 0)
@@ -77,11 +79,11 @@ void VEH_nodes::vehicle_collision(vehicle_info vehicle, vehicle_info robot, coll
         }
         double c2 = vehicle_back_y;
         double d2 = pow(b, 2) - 4*a*c2;
-        ROS_INFO("d2: %f", d2);
+        //ROS_INFO("d2: %f", d2);
         if (d2 >= 0){
             double t1 = (-b + sqrt(d2))/(2*a);
             double t2 = (-b - sqrt(d2))/(2*a);
-            ROS_INFO("d2, t1: %f, t2: %f", t1, t2);
+            //ROS_INFO("d2, t1: %f, t2: %f", t1, t2);
             if (t1 >= 0 && t2 >= 0)
                 time2 = (t1 <= t2) ? t1 : t2;
             else if (t1 < 0 && t2 < 0)
@@ -91,7 +93,7 @@ void VEH_nodes::vehicle_collision(vehicle_info vehicle, vehicle_info robot, coll
         }
     } else {  // If the vehicle is stationary
         // Check if the vehicle is in front of the robot
-        ROS_INFO("Veh y position: %f, %f", vehicle_front_y, vehicle_back_y);
+        //ROS_INFO("Veh y position: %f, %f", vehicle_front_y, vehicle_back_y);
         if ((vehicle_front_y <= 0 && vehicle_back_y >= 0) || (vehicle_front_y >= 0 && vehicle_back_y <= 0)){
             collision.v_front = VEL_info::get_max_lin_vel();
             collision.v_back = VEL_info::get_min_lin_vel();
@@ -104,7 +106,7 @@ void VEH_nodes::vehicle_collision(vehicle_info vehicle, vehicle_info robot, coll
     // Calculate the velocity for the robot to collide with the vehicle
     double vel1 = 0, vel2 = 0;
     if (time1){
-        ROS_INFO("Time till intersection point front: %f", time1);
+        //ROS_INFO("Time till intersection point front: %f", time1);
         double x1 = vehicle_front_x + vehicle.x_dot*time1 + vehicle.x_ddot*pow(time1, 2)/2;
         if (x1 <= robot_front_x && x1 >= robot_back_x)
             vel1 = 0;
@@ -113,7 +115,7 @@ void VEH_nodes::vehicle_collision(vehicle_info vehicle, vehicle_info robot, coll
         vel1 = (time1 < 0 && vel1 > 0) ? -vel1 : vel1;
     }
     if (time2){
-        ROS_INFO("Time till intersection point back: %f", time2);
+        //ROS_INFO("Time till intersection point back: %f", time2);
         double x2 = vehicle_back_x + vehicle.x_dot*time2 + vehicle.x_ddot*pow(time2, 2)/2;
         if (x2 <= robot_front_x && x2 >= robot_back_x)
             vel2 = 0;
@@ -158,7 +160,7 @@ void VEH_nodes::callback_vehicle_injector(const road_crossing_msgs::injector_msg
             VEH_nodes::vehicles.data[i].width = msg->width;
             VEH_nodes::vehicles.data[i].phi = msg->phi;
 
-            ROS_INFO("vehicle: %ld, pos_x: %f, pos_y: %f", msg->veh_id, VEH_nodes::vehicles.data[i].pos_x, VEH_nodes::vehicles.data[i].pos_y);
+            ROS_INFO("vehicle: %3ld, pos_x: %f, pos_y: %f", msg->veh_id, VEH_nodes::vehicles.data[i].pos_x, VEH_nodes::vehicles.data[i].pos_y);
 
             return;
         }
@@ -180,7 +182,7 @@ void VEH_nodes::callback_vehicle_injector(const road_crossing_msgs::injector_msg
     ++VEH_nodes::vehicles.num_vehicles;
 
     int i = VEH_nodes::vehicles.num_vehicles-1;
-    ROS_INFO("vehicle: %ld, pos_x: %f, pos_y: %f", msg->veh_id, VEH_nodes::vehicles.data[i].pos_x, VEH_nodes::vehicles.data[i].pos_y);
+    ROS_INFO("vehicle: %3ld, pos_x: %f, pos_y: %f", msg->veh_id, VEH_nodes::vehicles.data[i].pos_x, VEH_nodes::vehicles.data[i].pos_y);
 }
 
 void VEH_nodes::clear_vehicles_data()
@@ -313,7 +315,7 @@ BT::NodeStatus VEH_nodes::calculate_collision::tick()
         collision_info collision;
         VEH_nodes::vehicle_collision(veh_data.value().data[i], VEH_nodes::robot, collision);
         VEH_nodes::collisions.data.push_back(collision);
-        ROS_INFO("veh_id: %d, v_front: %f, v_back: %f", collision.car_id, collision.v_front, collision.v_back);
+        ROS_INFO("veh_id: %ld, v_front: %f, v_back: %f", collision.car_id, collision.v_front, collision.v_back);
 
         // Determine the maximum and minimum velocities with regard to the direction of travel
         if (collision.v_front >= 0 && collision.v_back >= 0){  // Forward movement, both velocities
@@ -439,7 +441,7 @@ BT::NodeStatus VEH_nodes::collision_on_stop::tick()
 {
     for (int i=0; i<VEH_nodes::collisions.num_collisions; ++i){
         if (VEH_nodes::collisions.data[i].collide_stop){
-            ROS_INFO("Collision on stop, veh_id: %d", VEH_nodes::collisions.data[i].car_id);
+            ROS_INFO("Collision on stop, veh_id: %ld", VEH_nodes::collisions.data[i].car_id);
             return BT::NodeStatus::SUCCESS;
         }
     }

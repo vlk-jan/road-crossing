@@ -11,7 +11,7 @@
 
 struct collision_info
 {
-    int car_id;
+    long int car_id;
     double v_front;
     double v_back;
     bool collide;
@@ -20,7 +20,7 @@ struct collision_info
 
 struct vehicle_info
 {
-    int id;
+    long int id;
     double pos_x;
     double pos_y;
     double x_dot;
