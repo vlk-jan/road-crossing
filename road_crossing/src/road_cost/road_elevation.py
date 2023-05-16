@@ -7,7 +7,7 @@ from threading import Thread
 from road_crossing_consts import *
 
 
-def generate_waypoints(road: geom.LineString, waypoints_density: float, circular: bool = False) -> list:
+def generate_waypoints(road, waypoints_density, circular = False):
     '''
     Generates points for road so that the maximal distnace between two adjacent
     points is waypoint_density.
@@ -44,7 +44,7 @@ def generate_waypoints(road: geom.LineString, waypoints_density: float, circular
     return waypoints
 
 
-def get_road_network_elevation(road_network: geom.MultiLineString, elev_data_files: list) -> list:
+def get_road_network_elevation(road_network, elev_data_files):
     '''
     Returns list with assigned heights for roads. Maximal distance between two adjacent data points is 1 m.
 
@@ -105,7 +105,7 @@ def get_road_network_elevation(road_network: geom.MultiLineString, elev_data_fil
     return network_elev
 
 
-def classify_TPI(elev_data: list) -> list:
+def classify_TPI(elev_data):
     '''
     Classify individual segments according to TPI classes, with changed threshold values.
 
@@ -155,7 +155,7 @@ def classify_TPI(elev_data: list) -> list:
     return network_classification
 
 
-def road_cost_for_height(network_classification: list, exploration_limit: float = 100) -> list:
+def road_cost_for_height(network_classification, exploration_limit = 100):
     '''
     Returns segments with their assigned costs.
 

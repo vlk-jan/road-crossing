@@ -11,7 +11,7 @@ highway_tags = ["primary", "secondary", "tertiary", "unclassified", "residential
                 "tertiary_link", "service", "busway", "road", "living_street"]
 
 
-def get_roads(data) -> list:
+def get_roads(data):
     '''
     Returns list of all crossable road in given map.
     Return value is list of list of tuples, where each list of tuples represents one road.
@@ -32,7 +32,7 @@ def get_roads(data) -> list:
     return highway_nodes
 
 
-def get_crossings(data) -> list:
+def get_crossings(data):
     '''
     Returns list of all crossings in given map.
     Return value is list of tuples, where each tuples represents one crossing.
@@ -50,7 +50,7 @@ def get_crossings(data) -> list:
     return crossings
 
 
-def gps_to_utm(data: list, withID: bool = True) -> np.ndarray:
+def gps_to_utm(data, withID = True):
     '''
     Transforms GPS degrees coordinates into UTM coordinate system.
 
@@ -65,7 +65,7 @@ def gps_to_utm(data: list, withID: bool = True) -> np.ndarray:
     return np.array([[node[0], node[1]] for node in data])
 
 
-def create_line_for_road(road: list, withId: bool = True) -> geom.LineString:
+def create_line_for_road(road, withId = True):
     '''
     Creates shapely.geometry.LineString representation for given road coordinates.
 
@@ -83,7 +83,7 @@ def create_line_for_road(road: list, withId: bool = True) -> geom.LineString:
     return line
 
 
-def create_road_network(roads: list, inUTM: bool = True, withID: bool = True) -> geom.MultiLineString:
+def create_road_network(roads, inUTM = True, withID = True):
     '''
     Constructs road network for given list of individual roads.
 
@@ -102,7 +102,7 @@ def create_road_network(roads: list, inUTM: bool = True, withID: bool = True) ->
     return geom.MultiLineString(road_network)
 
 
-def find_intersections(road_network: geom.MultiLineString) -> list:
+def find_intersections(road_network):
     '''
     Returns list of shapely.geometry.Point of intersecting points in road_network
 
@@ -130,7 +130,7 @@ def find_intersections(road_network: geom.MultiLineString) -> list:
     return intersections
 
 
-def find_junctions(intersections: list, road_network: geom.MultiLineString) -> list:
+def find_junctions(intersections, road_network):
     '''
     Returns list of shapely.geometry.Point of junctions found from intersecting points in road_network
 
@@ -167,7 +167,7 @@ def find_junctions(intersections: list, road_network: geom.MultiLineString) -> l
     return junctions
 
 
-def combine_road(junctions: list, intersections: list, road_network: geom.MultiLineString) -> geom.MultiLineString:
+def combine_road(junctions, intersections, road_network):
     '''
     Connect roads that can be connected, road will therefore be from junction/map edge to junction/map edge.
 
@@ -223,7 +223,7 @@ def combine_road(junctions: list, intersections: list, road_network: geom.MultiL
     return geom.MultiLineString(new_road_network)
 
 
-def road_class_price(roads: list) -> list:
+def road_class_price(roads):
     '''
     Returns roads with their cost based on road classification.
 
@@ -242,7 +242,7 @@ def road_class_price(roads: list) -> list:
     return prices
 
 
-def visualize_curves(segments: list, crossings: list, grid: bool = True) -> None:
+def visualize_curves(segments, crossings, grid = True):
     '''
     Show map of processed area, e.g. its road network and crossings. Roads are show in color depending on their curve
     and crossings are green.
@@ -269,7 +269,7 @@ def visualize_curves(segments: list, crossings: list, grid: bool = True) -> None
     plt.show()
 
 
-def visualize_curvature_rank(ranked_segments: list, crossings: list, grid: bool = True) -> None:
+def visualize_curvature_rank(ranked_segments, crossings, grid = True):
     '''
     Show map of processed area, e.g. its road network and crossings. Roads are show in color depending on their traversability
     level and crossings are green.

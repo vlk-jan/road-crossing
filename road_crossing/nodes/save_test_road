@@ -5,7 +5,7 @@ import road_cost
 
 
 def main():
-    road_data = road_cost.road_data()
+    road_data = road_cost.RoadData()
     road = road_data.add_test_road()
     road_data.add_road(road)
     road_data.save()

@@ -1,16 +1,14 @@
+#!/usr/bn/env python
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
 import numpy as np
 import sys
 import shapely.geometry as geom
 
-from random import randint
-import time
-
 
 colors = ["blue", "red", "green", "magenta", "olive", "orange", "cyan"]
 
-def plot_graph(data, labels, step = False, legend = None, title = None):
+def plot_graph(data, labels, step = False, legend = None, title = None, save_name = None):
     if step:
         plt.step(data[0], data[1], where="post", linewidth=2)
         plt.xlim(0, np.ceil(data[0][-1]))
@@ -34,6 +32,7 @@ def plot_graph(data, labels, step = False, legend = None, title = None):
         plt.legend(legend)
     if title is not None:
         plt.title(title)
+    plt.savefig(fname=save_name, format='png')
     plt.show()
 
 def velocity_graph(file_name):
@@ -68,9 +67,10 @@ def velocity_graph(file_name):
     times = np.array(times)
     times -= times[0]
     data = [times, velocities]
+    save_name = file_name[:-4] + "_vel.pdf"
     labels = ["Time [s]", "Velocity [m/s]"]
 
-    plot_graph(data, labels, True)
+    plot_graph(data, labels, True, save_name=save_name)
 
 def dist_center_graph(file_name):
     times = []
@@ -130,8 +130,9 @@ def dist_center_graph(file_name):
     legend.append("Min distance")
     if (len(legend) <= 1):
         legend = None
+    save_name = file_name[:-4] + "_center.pdf"
 
-    plot_graph(data, labels, legend=legend)
+    plot_graph(data, labels, legend=legend, save_name=save_name)
 
 def dist_graph(file_name):
     times = []
@@ -205,8 +206,9 @@ def dist_graph(file_name):
     legend.append("Min distance")
     if (len(legend) <= 1):
         legend = None
+    save_name = file_name[:-4] + "_dist.pdf"
 
-    plot_graph(data, labels, legend=legend)
+    plot_graph(data, labels, legend=legend, save_name=save_name)
 
 def get_positions(file_name):
     veh_pos = []
@@ -304,16 +306,16 @@ def animation_graph(file_name):
     
     anim = animation.FuncAnimation(fig, animate, len(data[1]), repeat=True, repeat_delay=500, blit=True)
     #plt.show()
-    anim.save('trajectory.gif', writer='imagemagick')
+    anim.save((file_name[:-4] + '_traj.gif'), writer='imagemagick')
 
 def time_to_contact_graph(file_name):
     pass
 
 def main(args):
     file_name = args[1]
-    #velocity_graph(file_name)
-    #dist_center_graph(file_name)
-    #dist_graph(file_name)
+    velocity_graph(file_name)
+    dist_center_graph(file_name)
+    dist_graph(file_name)
     animation_graph(file_name)
 
 if __name__ == '__main__':

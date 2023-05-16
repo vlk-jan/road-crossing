@@ -146,7 +146,7 @@ class RoadCost:
         rospy.spin()
 
     def get_road_info_client(self, easting, northing):
-        #rospy.wait_for_service("get_road_info")
+        rospy.wait_for_service("get_road_info")
         try:
             road_info = rospy.ServiceProxy("get_road_info", get_road_info)
             resp = road_info(easting, northing)
@@ -167,9 +167,6 @@ class RoadCost:
             ret = ret1 and ret2
         
         ret = ret if road_info is not None else False
-        #if (ret):
-        #    rospy.loginfo("Finish point: {}, {}".format(req.easting, req.northing))
-        #    rospy.loginfo("Traveled distance: {}".format(dist2))
 
         return get_finishResponse(ret)
 
@@ -180,7 +177,7 @@ class RoadCost:
         self.load_road_segments()
         rospy.spin()
 
-class road_info:
+class RoadInfo:
     def __init__(self):
         self.cross_segment = None
         self.start_point = None
@@ -192,15 +189,15 @@ class road_info:
         self.peddestrian_crossing = None
         self.peddestrian_crossing_coords = None
 
-class road_data:
+class RoadData:
     def __init__(self):
         self.data = []
 
-    def add_road(self, road : road_info):
+    def add_road(self, road):
         self.data.append(road)
 
     def add_test_road(self):
-        road = road_info()
+        road = RoadInfo()
         road_cost = RoadCost()
         road_cost.load_road_segments()
         point = utm.from_latlon(50.092925, 14.124759)
@@ -229,7 +226,7 @@ class road_data:
     def save(self):
         file_name = rospy.get_param("road_crossing/road_info_file", "road_info.pyc")
         with open(file_name, "wb") as fp:
-            pickle.dump(self.data, fp)
+            pickle.dump(self.data, fp, protocol=2)
         rospy.loginfo("Road info saved")
 
     def load(self):

@@ -8,7 +8,6 @@ import random
 import math
 
 from road_crossing_msgs.msg import injector_msgs
-from road_crossing.srv import start_algorithm
 
 
 class Data:
