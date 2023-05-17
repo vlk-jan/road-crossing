@@ -56,6 +56,7 @@ void VEH_nodes::vehicle_collision(vehicle_info vehicle, vehicle_info robot, coll
              vehicle_front_y, vehicle_back_y);
 
     // Calculate the time till intersection point
+    ROS_INFO("y_ddot: %f, y_dot: %f", vehicle.y_ddot, vehicle.y_dot);
     double time1 = 0, time2 = 0;
     if (vehicle.y_ddot == 0 && vehicle.y_dot != 0){  // If the vehicle is moving with constant velocity
         time1 = -(vehicle_front_y)/(vehicle.y_dot);

@@ -50,7 +50,8 @@ catkin_install_python(
   nodes/get_finish_srv
   nodes/get_road_info_srv
   nodes/start
-  nodes/save_test_road
+  scripts/save_test_road.py
+  scripts/process_logs.py
 
   DESTINATION
   ${CATKIN_PACKAGE_BIN_DESTINATION}

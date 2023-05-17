@@ -10,7 +10,7 @@ colors = ["blue", "red", "green", "magenta", "olive", "orange", "cyan"]
 
 def plot_graph(data, labels, step = False, legend = None, title = None, save_name = None):
     if step:
-        plt.step(data[0], data[1], where="post", linewidth=2)
+        plt.step(data[0], data[1], color=colors[0], where="post", linewidth=2)
         plt.xlim(0, np.ceil(data[0][-1]))
     else:
         max_time = 0
@@ -32,8 +32,9 @@ def plot_graph(data, labels, step = False, legend = None, title = None, save_nam
         plt.legend(legend)
     if title is not None:
         plt.title(title)
-    plt.savefig(fname=save_name, format='png')
-    plt.show()
+    plt.savefig(fname=save_name, format='pdf')
+    plt.close()
+    #plt.show()
 
 def velocity_graph(file_name):
     times = []
@@ -260,7 +261,8 @@ def get_positions(file_name):
             min_x = min(min_x, float(num[0]))
             min_y = min(min_y, float(num[1]))
 
-    veh_pos[0] = veh_pos[0][1:]
+    if (len(veh_pos) > 1 and len(veh_pos[0]) > len(rob_pos)):
+        veh_pos[0] = veh_pos[0][1:]
     return [[veh_pos, rob_pos], [min_x, max_x, min_y, max_y], veh_ids]
 
 def animation_graph(file_name):
@@ -273,7 +275,6 @@ def animation_graph(file_name):
     plt.ylabel("Northing [m]")
     veh_id = data[2]
     data = data[0]
-    plt.gca().set_prop_cycle(color=colors[:len(data[0])+1])
 
     i = 0
     while i < len(data[0]):
@@ -282,6 +283,8 @@ def animation_graph(file_name):
             veh_id = veh_id[:i] + veh_id[i+1:]
             i -= 1
         i += 1
+
+    plt.gca().set_prop_cycle(color=colors[:len(data[0]) + 1])
 
     legend = ["robot"]
     for id in veh_id:
@@ -302,7 +305,7 @@ def animation_graph(file_name):
             y.append(app_y)
         
             plt.legend(legend)
-            return plt.plot(x, y)
+            return plt.plot(x, y, marker='x')
     
     anim = animation.FuncAnimation(fig, animate, len(data[1]), repeat=True, repeat_delay=500, blit=True)
     #plt.show()
