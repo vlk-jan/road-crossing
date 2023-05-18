@@ -19,6 +19,7 @@ class Data:
         self.x_dot_positive = []
         self.y_dot_positive = []
         self.max = 0
+        self.test_robustness = False
 
 def kph_to_mps(kph):
     return kph/3.6
@@ -70,7 +71,17 @@ def injector(data):
             msgs[i].northing += time_consumed*msgs[i].x_dot
 
             # Detection errors
-            if (time_now - time_start > 1.3 and time_now - time_start < 1.45):
+            if (data.test_robustness):
+                easting_error = random.uniform(-0.7, 0.6)
+                northing_error = random.uniform(-0.8, 0.4)
+                msgs[i].easting += easting_error
+                msgs[i].northing += northing_error
+                if (data.err_veh is not None and i == data.err_veh and random.uniform(0, 1) < 0.7):
+                    continue
+                pub.publish(msgs[i])
+                msgs[i].easting -= easting_error
+                msgs[i].northing -= northing_error
+            elif (time_now - time_start > 1.3 and time_now - time_start < 1.45):
                 easting_error = random.uniform(-0.5, 0.5)
                 northing_error = random.uniform(-0.5, 0.5)
                 msgs[i].easting += easting_error
@@ -272,6 +283,71 @@ def get_scene4():
     data.max = kph_to_mps(50)
     return data
 
+def get_scene5():
+    data = Data()
+    pos1 = (50.0930128, 14.1248906)
+    pos1_utm = utm.from_latlon(pos1[0], pos1[1])
+    pos2 = (50.0929653, 14.1248958)
+    pos2_utm = utm.from_latlon(pos2[0], pos2[1])
+    
+    msg1 = injector_msgs()
+    msg1.veh_id = 1
+    msg1.easting = pos1_utm[0] + 40
+    msg1.northing = pos1_utm[1] - 2
+    msg1.x_dot = 0.0
+    msg1.y_dot = -kph_to_mps(30)
+    msg1.x_ddot = 0.0
+    msg1.y_ddot = 0.2
+    msg1.length = 4.7
+    msg1.width = 2.0
+    msg1.phi = math.atan2(msg1.y_dot, msg1.x_dot)
+
+    msg2 = injector_msgs()
+    msg2.veh_id = 2
+    msg2.easting = pos2_utm[0] - 48
+    msg2.northing = pos2_utm[1] - 2
+    msg2.x_dot = 0.0
+    msg2.y_dot = kph_to_mps(35)
+    msg2.x_ddot = 0.0
+    msg2.y_ddot = 0.3
+    msg2.length = 4.7
+    msg2.width = 2.0
+    msg2.phi = math.atan2(msg2.y_dot, msg2.x_dot)
+
+    msg3 = injector_msgs()
+    msg3.veh_id = 3
+    msg3.easting = pos1_utm[0] - 6
+    msg3.northing = pos1_utm[1] - 4
+    msg3.x_dot = 0.0
+    msg3.y_dot = 1.5
+    msg3.x_ddot = 0.0
+    msg3.y_ddot = 0.0
+    msg3.length = 4.7
+    msg3.width = 2.0
+    msg3.phi = math.atan2(msg3.y_dot, msg3.x_dot)
+
+    msg4 = injector_msgs()
+    msg4.veh_id = 4
+    msg4.easting = pos1_utm[0] + 48
+    msg4.northing = pos1_utm[1] - 2
+    msg4.x_dot = 0.0
+    msg4.y_dot = -kph_to_mps(30)
+    msg4.x_ddot = 0.0
+    msg4.y_ddot = 0.3
+    msg4.length = 4.7
+    msg4.width = 2.0
+    msg4.phi = math.atan2(msg4.y_dot, msg4.x_dot)
+
+    data.msgs = [msg1, msg2, msg3, msg4]
+    data.err_veh = 2
+    data.to_zero = [True, True, True, True]
+    data.to_max = [True, True, True, True]
+    data.x_dot_positive = [True, True, True, True]
+    data.y_dot_positive = [False, True, True, False]
+    data.max = kph_to_mps(50)
+    data.test_robustness = True
+    return data
+
 def main(scene):
     rospy.init_node('injector', anonymous=True)
 
@@ -283,6 +359,8 @@ def main(scene):
         data = get_scene3()
     elif (scene == '4'):
         data = get_scene4()
+    elif (scene == '5'):
+        data = get_scene5()
     else:
         print("Invalid scene")
         exit()

@@ -14,8 +14,9 @@ def plot_graph(data, labels, step = False, legend = None, title = None, save_nam
         plt.xlim(0, np.ceil(data[0][-1]))
     else:
         max_time = 0
+        max_len = max(len(x) for x in data[0])
         for i in range(len(data[0])):
-            if (len(data[0][i]) == 1):
+            if (len(data[0][i]) < max_len-1):
                 if (legend[i] != "Min distance"):
                     plt.scatter(data[0][i], data[1][i], color=colors[i])
                 else:
