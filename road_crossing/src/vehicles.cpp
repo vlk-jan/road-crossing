@@ -3,7 +3,7 @@
 * Author: Jan Vlk
 * Date: 2.3.2022
 * Description: This file contains functions for operations dealing with vehicle detection and collisions.
-* Last modified: 13.5.2023
+* Last modified: 18.5.2023
 */
 
 #include <cmath>
@@ -76,7 +76,7 @@ void VEH_nodes::vehicle_collision(vehicle_info vehicle, vehicle_info robot, coll
             else if (t1 < 0 && t2 < 0)
                 time1 = (t1 >= t2) ? t1 : t2;
             else
-                time1 = (t1 >= 0) ? t1 : t2;
+                time1 = (abs(t1) <= abs(t2)) ? t1 : t2;
         }
         double c2 = vehicle_back_y;
         double d2 = pow(b, 2) - 4*a*c2;
@@ -90,7 +90,7 @@ void VEH_nodes::vehicle_collision(vehicle_info vehicle, vehicle_info robot, coll
             else if (t1 < 0 && t2 < 0)
                 time2 = (t1 >= t2) ? t1 : t2;
             else
-                time2 = (t1 >= 0) ? t1 : t2;
+                time2 = (abs(t1) <= abs(t2)) ? t1 : t2;
         }
     } else {  // If the vehicle is stationary
         // Check if the vehicle is in front of the robot
@@ -131,6 +131,11 @@ void VEH_nodes::vehicle_collision(vehicle_info vehicle, vehicle_info robot, coll
         collision.v_back = vel2;
         bool collide = (robot.x_dot <= vel1) && (robot.x_dot >= vel2);
         collision.collide = collide;
+        collision.collide_stop = false;
+    } else if (vel1 < 0 && time2 == 0 || vel2 < 0 && time1 == 0){  // the vehicle will stop in front of the robot
+        collision.v_front = VEL_info::get_max_lin_vel();
+        collision.v_back = VEL_info::get_min_lin_vel();
+        collision.collide = false;
         collision.collide_stop = false;
     } else {
         collision.v_front = (vel1) ? vel1 : 0;
