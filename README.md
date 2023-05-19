@@ -39,6 +39,10 @@ Installing python libraries
 pip install -r requirements.txt
 ```
 
+## Simulation
+
+This package can be simulated using the Gazebo simulator. The necessary information about the simulation environment, needed packages and more is available at the [road_crossing_gazebo](https://github.com/vlk-jan/road_crossing_gazebo).
+
 ## Documentation
 
 This package does not currently have any documentation. However, the text of my bachelor thesis is [here](https://github.com/vlk-jan/bachelor_thesis), where I try to explain the code a bit.
@@ -50,12 +54,8 @@ This package does not currently have any documentation. However, the text of my 
 ## TODO
 
 - Short-term
-  - Test cars via injector in simulation
-  - Test errors in vehicle detection - test robustness
   - Create unit tests?
-  - Simulation testing
 - Long-term
-  - Robot steering during the crossing, currently moving only forward and backward in a straight line
   - Service for obtaining better place - possible need to rewrite road cost
   - move_to_place weight map (point-cloud) creation & implementation
   - Vehicle obtaining (from ROS node) message type & implementation
