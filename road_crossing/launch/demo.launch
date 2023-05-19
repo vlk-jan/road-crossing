@@ -1,10 +1,31 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <launch>
+    <arg name="robot" doc="Robot name from {ctu-robot, husky-robot, spot-3}" default="husky-robot"/>
+    <arg name="max_rot_vel" default="$(eval 1.3 if robot == 'spot-3' else 0.5 if robot == 'ctu-robot' else 1.0)"/>
+    <arg name="min_rot_vel" default="$(eval 0.35 if robot == 'spot-3' else 0.2)"/>
+    <arg name="max_lin_vel" default="$(eval 1.3 if robot == 'spot-3' else 0.5 if robot == 'ctu-robot' else 1.0)"/>
+    <arg name="min_lin_vel" default="$(eval 0.35 if robot == 'spot-3' else 0.2)"/>
+    <arg name="vel_margin" default="0.15"/>
+    <arg name="rob_width" default="$(eval 0.5 if robot == 'spot-3' else 0.67)"/>
+    <arg name="rob_length" default="$(eval 1.1 if robot == 'spot-3' else 0.99)"/>
     <arg name="tree_file" default="$(dirname)/../src/main_tree.xml"/>
+    <arg name="segment_file" default="road_segments.pyc"/>
+    <arg name="road_info_file" default="road_info_twoway.pyc"/>
 
-    <include file="$(dirname)/services.launch"/>
+    <include file="$(dirname)/services.launch">
+        <arg name="segment_file" value="$(arg segment_file)"/>
+        <arg name="road_info_file" value="$(arg road_info_file)"/>
+    </include>
 
     <include file="$(dirname)/crossing.launch">
+        <arg name="robot" value="$(arg robot)"/>
+        <arg name="max_rot_vel" value="$(arg max_rot_vel)"/>
+        <arg name="min_rot_vel" value="$(arg min_rot_vel)"/>
+        <arg name="max_lin_vel" value="$(arg max_lin_vel)"/>
+        <arg name="min_lin_vel" value="$(arg min_lin_vel)"/>
+        <arg name="vel_margin" value="$(arg vel_margin)"/>
+        <arg name="rob_width" value="$(arg rob_width)"/>
+        <arg name="rob_length" value="$(arg rob_length)"/>
         <arg name="tree_file" value="$(arg tree_file)"/>
     </include>
 </launch>

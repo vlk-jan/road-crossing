@@ -38,5 +38,4 @@
   <exec_depend condition="$ROS_DISTRO == noetic">python3-overpy</exec_depend>
   <exec_depend condition="$ROS_DISTRO == noetic">python3-utm-pip</exec_depend>
   <exec_depend condition="$ROS_DISTRO == noetic">python3-numpy</exec_depend>
-
 </package>
