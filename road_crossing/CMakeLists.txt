@@ -96,9 +96,3 @@ target_link_libraries(run_tree ${catkin_LIBRARIES} road_cross_tree_lib azimuth_l
 add_executable(start_srv src/start_srv.cpp include/road_crossing/start_srv.h)
 target_link_libraries(start_srv ${catkin_LIBRARIES})
 add_dependencies(start_srv ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
-
-#add_executable(vehicles src/vehicles.cpp)
-#target_link_libraries(vehicles ${catkin_LIBRARIES})
-
-#add_executable(test_file src/test.cpp)
-#target_link_libraries(test_file ${catkin_LIBRARIES} misc_lib gps_lib azimuth_lib)

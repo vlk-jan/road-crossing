@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
-<package format="2">
+<package format="3">
   <name>road_crossing</name>
-  <version>1.0.0</version>
+  <version>1.0.1</version>
   <description>Control algorithm for safe traversation of roads with a robot.</description>
 
   <author email="vlkjan6@fel.cvut.cz">Vlk Jan</author>
@@ -28,5 +28,15 @@
   <exec_depend>message_runtime</exec_depend>
   <exec_depend>compass_msgs</exec_depend>
   <exec_depend>geographiclib</exec_depend>
+
+  <exec_depend condition="$ROS_DISTRO != noetic">python-shapely</exec_depend>
+  <exec_depend condition="$ROS_DISTRO != noetic">python-overpy</exec_depend>
+  <exec_depend condition="$ROS_DISTRO != noetic">python-utm-pip</exec_depend>
+  <exec_depend condition="$ROS_DISTRO != noetic">python-numpy</exec_depend>
+
+  <exec_depend condition="$ROS_DISTRO == noetic">python3-shapely</exec_depend>
+  <exec_depend condition="$ROS_DISTRO == noetic">python3-overpy</exec_depend>
+  <exec_depend condition="$ROS_DISTRO == noetic">python3-utm-pip</exec_depend>
+  <exec_depend condition="$ROS_DISTRO == noetic">python3-numpy</exec_depend>
 
 </package>
