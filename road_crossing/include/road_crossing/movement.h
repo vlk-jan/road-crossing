@@ -1,12 +1,10 @@
 #ifndef MOVEMENT
 #define MOVEMENT
 
-#include <cmath>
-
-#include "ros/ros.h"
-
 #include "behaviortree_cpp_v3/behavior_tree.h"
 #include "behaviortree_cpp_v3/bt_factory.h"
+
+#include "ros/ros.h"
 
 
 class MOV_nodes
@@ -40,7 +38,7 @@ class MOV_nodes
         };
 
         /**
-         * @brief Node to move the robot to a better place where it can cross the road.
+         * @brief Action node to move the robot to a better place where it can cross the road.
          * The place is determined with other nodes.
          * 
          * TODO: implement weight map (as point-cloud) creation & publishing
@@ -60,7 +58,7 @@ class MOV_nodes
         };
 
         /**
-         * @brief Node to move the robot way from the road. It is used when the robot is unable
+         * @brief Action node to move the robot way from the road. It is used when the robot is unable
          * to rotate. We probably need to move the robot away from the road and then rotate it.
          */
         class step_from_road : public BT::SyncActionNode
@@ -78,7 +76,7 @@ class MOV_nodes
         };
 
         /**
-         * @brief Node to indicate that the robot is moving.
+         * @brief Condition node that indicates if the robot is not moving.
          */
         class not_started : public BT::ConditionNode
         {
@@ -95,7 +93,7 @@ class MOV_nodes
         };
 
         /**
-         * @brief Initialize the movement of the robot.
+         * @brief Action node initializing the movement of the robot.
          */
         class start_movement : public BT::SyncActionNode
         {
@@ -112,7 +110,7 @@ class MOV_nodes
         };
 
         /**
-         * @brief Move forward with full speed.
+         * @brief Action node that moves the robot forward with full velocity.
          */
         class move_fwd_full : public BT::SyncActionNode
         {
@@ -129,7 +127,7 @@ class MOV_nodes
         };
 
         /**
-         * @brief Movement forward. Possible change of speed or direction.
+         * @brief Movement forward. Possible change of velocity.
          */
         class move_fwd : public BT::SyncActionNode
         {
@@ -146,7 +144,7 @@ class MOV_nodes
         };
 
         /**
-         * @brief Movement backward. Possible change of speed or direction.
+         * @brief Movement backward. Possible change of velocity.
          */
         class move_bwd : public BT::SyncActionNode
         {
@@ -180,7 +178,7 @@ class MOV_nodes
         };
 
         /**
-         * @brief Check if the robot has crossed the road.
+         * @brief Condition node checking if the robot has crossed the road.
          */
         class crossing_finished_gps : public BT::ConditionNode
         {

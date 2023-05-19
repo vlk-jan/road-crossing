@@ -14,6 +14,7 @@
 #define EQUAL_AZI_LIMIT 0.1745 // 10 degrees
 
 
+/// @brief Indices describing compass data type.
 struct compass_indices{
     int reference_i;
     int orientation_i;
@@ -40,12 +41,32 @@ class AZI_nodes
          */
         void init_service(ros::NodeHandle& nh);
 
+        /**
+         * @brief Callback function for compass topic subscriber. This is the prefered format.
+         * 
+         * @param msg Compass data in Azimuth format.
+         */
         static void callback_compass(const compass_msgs::Azimuth::ConstPtr& msg);
 
+        /**
+         * @brief Callback function for compass topic subscriber.
+         * 
+         * @param msg Compass data in Quaternion format.
+         */
         static void callback_quat(const geometry_msgs::QuaternionStamped::ConstPtr& msg);
 
+        /**
+         * @brief Callback function for compass topic subscriber.
+         * 
+         * @param msg Compass data in Imu format.
+         */
         static void callback_imu(const sensor_msgs::Imu::ConstPtr& msg);
 
+        /**
+         * @brief Callback function for compass topic subscriber.
+         * 
+         * @param msg Compass data in Pose format.
+         */
         static void callback_pose(const geometry_msgs::PoseStamped::ConstPtr& msg);
 
         /// @brief Testing only, not used in the final version
@@ -63,6 +84,9 @@ class AZI_nodes
                 static BT::PortsList providedPorts();
         };
 
+        /**
+         * @brief Action node that saves the current robot's azimuth to the blackboard.
+         */
         class get_azimuth : public BT::SyncActionNode
         {
             public:
@@ -77,6 +101,9 @@ class AZI_nodes
                 static BT::PortsList providedPorts();
         };
 
+        /**
+         * @brief Condition node checking if the robot is perpendicular to the road. It compares current azimuth with azimuth calculated from the road heading. 
+         */
         class robot_perpendicular : public BT::ConditionNode
         {
             public:
@@ -91,7 +118,9 @@ class AZI_nodes
                 static BT::PortsList providedPorts();
         };
 
-
+        /**
+         * @brief Action node that calculates the heading of the road closest to the robot.
+         */
         class road_heading : public BT::SyncActionNode
         {
             public:
@@ -106,6 +135,9 @@ class AZI_nodes
                 static BT::PortsList providedPorts();
         };
 
+        /**
+         * @brief Action node that calculates the azimuth for robot to be perpendicular to the road.
+         */
         class compute_heading : public BT::SyncActionNode
         {
             public:

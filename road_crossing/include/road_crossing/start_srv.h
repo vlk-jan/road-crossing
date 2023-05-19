@@ -16,6 +16,11 @@ class Start_service
         Start_service() {}
         virtual ~Start_service() {}
 
+        /**
+         * @brief Initialize the publishers.
+         * 
+         * @param nh Node handle.
+         */
         static void init_publishers(ros::NodeHandle &nh);
         
         /**
@@ -27,8 +32,16 @@ class Start_service
          */
         static bool start_algorithm_service(road_crossing::start_algorithm::Request& req, road_crossing::start_algorithm::Response& res);
 
+        /**
+         * @brief Callback for the start topic subscriber.
+         * 
+         * @param msg Message from the topic.
+         */
         static void start_callback(const road_crossing_msgs::start_msgs::ConstPtr& msg);
 
+        /**
+         * @brief Condition node returning if the algorithm should be run.
+         */
         class start_algorithm : public BT::ConditionNode
         {
             public:
@@ -44,7 +57,7 @@ class Start_service
         };
 
     private:
-        static bool is_running;
+        static bool is_running;  // True if the algorithm should be run.
         static ros::Publisher start_pub;
 };
 

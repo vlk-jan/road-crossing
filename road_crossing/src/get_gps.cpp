@@ -1,9 +1,9 @@
 /*
-* Name: misc.cpp
+* Name: get_gps.cpp
 * Author: Jan Vlk
 * Date: 13.2.2023
-* Description: This file contains miscellaneous functions and classes, or functions and classes that do not have a specific place yet.
-* Last modified: 26.4.2023
+* Description: This file contains functions dealing with GPS and positioning of the robot.
+* Last modified: 19.5.2023
 */
 
 #include "behaviortree_cpp_v3/behavior_tree.h"

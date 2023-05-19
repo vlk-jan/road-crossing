@@ -65,7 +65,7 @@ void gps_to_utm(double lat, double lon, double &x, double &y);
 int calculate_context_score(float easting, float northing);
 
 /**
- * @brief Initialize service clients for functions in this class.
+ * @brief Initialize service clients for miscellaneous functions.
  * 
  * @param nh ROS NodeHandle.
  */

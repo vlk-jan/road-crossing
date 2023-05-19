@@ -22,9 +22,8 @@ class GPS_nodes
         static void init_service(ros::NodeHandle& nh);
 
         /**
-         * @brief Subscriber for the gps data of the robot.
+         * @brief Callback for the gps topic subscriber.
          * 
-         * @param node GPS_nodes object, necessary for static variables.
          * @param msg Read message from the gps topic.
          */
         static void callback_gps(const sensor_msgs::NavSatFix::ConstPtr& msg);
@@ -39,6 +38,9 @@ class GPS_nodes
          */
         static void req_position(double& easting, double& northing);
 
+        /**
+         * @brief Condition node that check if the robot is close enough to the road to start crossing. 
+         */
         class cross_road : public BT::ConditionNode
         {
             public:
@@ -53,6 +55,9 @@ class GPS_nodes
                 static BT::PortsList providedPorts();
         };
 
+        /**
+         * @brief Condition node returning if the current robot's position is suitable for crossing.
+        */
         class place_suitable : public BT::ConditionNode
         {
             public:
@@ -67,6 +72,9 @@ class GPS_nodes
                 static BT::PortsList providedPorts();
         };
 
+        /**
+         * @brief Condition node returning if a better place for crossing was found.
+         */
         class better_place : public BT::ConditionNode
         {
             public:
@@ -81,6 +89,9 @@ class GPS_nodes
                 static BT::PortsList providedPorts();
         };
 
+        /**
+         * @brief Action node that saves the coordinates of the latest recorded robot's position to the blackboard.
+         */
         class get_position : public BT::SyncActionNode
         {
             public:
@@ -95,6 +106,9 @@ class GPS_nodes
                 static BT::PortsList providedPorts();
         };
 
+        /**
+         * @brief Actio node that tries to find a better place for crossing.
+        */
         class get_better_place : public BT::SyncActionNode
         {
             public:
@@ -123,7 +137,7 @@ double GPS_nodes::northing = 0;
 double GPS_nodes::better_easting = 0;
 double GPS_nodes::better_northing = 0;
 bool GPS_nodes::is_valid = false;
-bool GPS_nodes::suitable;
+bool GPS_nodes::suitable = false;
 bool GPS_nodes::new_place = false;
 
 #endif

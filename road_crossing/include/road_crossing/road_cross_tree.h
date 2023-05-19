@@ -13,6 +13,9 @@ class Road_cross_tree
 
         BT::Tree tree;
 
+        /**
+         * @brief Tick the tree once.
+         */
         int run_tree();
 
     private:

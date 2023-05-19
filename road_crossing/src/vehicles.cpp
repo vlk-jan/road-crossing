@@ -3,21 +3,21 @@
 * Author: Jan Vlk
 * Date: 2.3.2022
 * Description: This file contains functions for operations dealing with vehicle detection and collisions.
-* Last modified: 18.5.2023
+* Last modified: 19.5.2023
 */
 
 #include <cmath>
 #include <limits>
 
-#include "ros/ros.h"
-
 #include "behaviortree_cpp_v3/behavior_tree.h"
 #include "behaviortree_cpp_v3/bt_factory.h"
 
+#include "ros/ros.h"
+
 #include "road_crossing/vehicles.h"
 #include "road_crossing/misc.h"
-#include "road_crossing_msgs/injector_msgs.h"
 #include "road_crossing/get_gps.h"
+#include "road_crossing_msgs/injector_msgs.h"
 
 
 VEL_info::VEL_info()

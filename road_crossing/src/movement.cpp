@@ -3,24 +3,24 @@
 * Author: Jan Vlk
 * Date: 25.11.2022
 * Description: This file contains functions for moving the robot.
-* Last modified: 13.5.2023
+* Last modified: 19.5.2023
 */
 
 #include <cmath>
 
-#include "ros/ros.h"
-#include "geometry_msgs/Twist.h"
-
 #include "behaviortree_cpp_v3/behavior_tree.h"
 #include "behaviortree_cpp_v3/bt_factory.h"
+
+#include "ros/ros.h"
+#include "geometry_msgs/Twist.h"
 
 #include "road_crossing/movement.h"
 #include "road_crossing/get_azimuth.h"
 #include "road_crossing/misc.h"
 #include "road_crossing/get_gps.h"
 #include "road_crossing/get_finish.h"
-#include "road_crossing_msgs/start_msgs.h"
 #include "road_crossing/vehicles.h"
+#include "road_crossing_msgs/start_msgs.h"
 
 
 void MOV_nodes::init_publishers(ros::NodeHandle& nh)

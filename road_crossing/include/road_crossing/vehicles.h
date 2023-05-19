@@ -86,7 +86,7 @@ class VEH_nodes
         static void vehicle_collision(vehicle_info vehicle, vehicle_info robot, collision_info &collision);
 
         /**
-         * @brief Callback function for the vehicle subscriber.
+         * @brief Callback function for the vehicle topic subscriber.
          *
          * @param msg Message with the vehicle data.
          * 
@@ -95,9 +95,8 @@ class VEH_nodes
         static void callback_vehicle(); 
 
         /**
-         * @brief Callback function for the vehicle injector subscriber.
+         * @brief Callback function for the vehicle injector topic subscriber.
          * 
-         * @param node VEH_nodes object, necessary for static variables.
          * @param msg Message with the vehicle data from the injector.
          */
         static void callback_vehicle_injector(const road_crossing_msgs::injector_msgs::ConstPtr& msg);
@@ -133,6 +132,11 @@ class VEH_nodes
          */
         static void set_robot_vel(double x_dot, double y_dot);
 
+        /**
+         * @brief Action node that saves currently detected vehicles to the blackboard. NOT IMPLEMENTED.
+         * 
+         * @TODO not implemented - we do not have the vehicle detection
+         */
         class get_cars : public BT::SyncActionNode
         {
             public:
@@ -147,6 +151,9 @@ class VEH_nodes
                 static BT::PortsList providedPorts();
         };
 
+        /**
+         * @brief Action node that saves currently detected vehicles to the blackboard. Uses the vehicle data injector.
+         */
         class get_cars_injector : public BT::SyncActionNode
         {
             public:
@@ -161,6 +168,9 @@ class VEH_nodes
                 static BT::PortsList providedPorts();
         };
 
+        /**
+         * @brief Condition node that checks if there are any detected vehicles.
+         */
         class cars_in_trajectory : public BT::ConditionNode
         {
             public:
@@ -175,6 +185,9 @@ class VEH_nodes
                 static BT::PortsList providedPorts();
         };
 
+        /**
+         * @brief Action node that calculates the collision data for all detected vehicles.
+         */
         class calculate_collision : public BT::SyncActionNode
         {
             public:
@@ -189,6 +202,9 @@ class VEH_nodes
                 static BT::PortsList providedPorts();
         };
 
+        /**
+         * @brief Condition node that checks if the robot would collide with any vehicle if it moved forward.
+         */
         class collision_fwd_move : public BT::ConditionNode
         {
             public:
@@ -203,6 +219,9 @@ class VEH_nodes
                 static BT::PortsList providedPorts();
         };
 
+        /**
+         * @brief Condition node that checks if the robot would collide with any vehicle if it moved backward.
+         */
         class collision_bwd_move : public BT::ConditionNode
         {
             public:
@@ -217,6 +236,9 @@ class VEH_nodes
                 static BT::PortsList providedPorts();
         };
 
+        /**
+         * @brief Condition node that checks if the robot would collide with any vehicle if it stopped.
+         */
         class collision_on_stop : public BT::ConditionNode
         {
             public:
@@ -239,7 +261,7 @@ class VEH_nodes
 
 double VEL_info::max_rot_vel, VEL_info::min_rot_vel, VEL_info::max_lin_vel, VEL_info::min_lin_vel, VEL_info::vel_margin;
 
-vehicle_info VEH_nodes::robot = {0, 0, 0, 0, 0, 0, 0, 1.1, 0.5};
+vehicle_info VEH_nodes::robot = {0, 0, 0, 0, 0, 0, 0, 1.1, 0.5};  // set default width and length of the robot
 vehicles_data VEH_nodes::vehicles;
 collisions_data VEH_nodes::collisions;
 

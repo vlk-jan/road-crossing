@@ -3,7 +3,7 @@
 * Author: Jan Vlk
 * Date: 13.2.2023
 * Description: This file contains miscellaneous functions and classes, or functions and classes that do not have a specific place yet.
-* Last modified: 23.4.2023
+* Last modified: 19.5.2023
 */
 
 #include "road_crossing/misc.h"
@@ -19,6 +19,7 @@
 
 double gps_points_heading(double lat1, double lon1, double lat2, double lon2)
 {
+    // https://stackoverflow.com/a/18738281
     double dLon = lon2 - lon1;
     double y = sin(dLon) * cos(lat2);
     double x = cos(lat1) * sin(lat2) - sin(lat1) * cos(lat2) * cos(dLon);
@@ -29,6 +30,7 @@ double gps_points_heading(double lat1, double lon1, double lat2, double lon2)
 
 double angle_diff(double angle1, double angle2)
 {
+    // https://stackoverflow.com/a/28037434
     double diff = std::fmod(angle2 - angle1 + M_PI, 2*M_PI) - M_PI;
     return diff < -M_PI ? diff + 2*M_PI : diff;
 }

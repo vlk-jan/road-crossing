@@ -3,7 +3,7 @@
 * Author: Jan Vlk
 * Date: 27.3.2023
 * Description: This file contains functions for starting the BT algorithm
-* Last modified: 26.4.2023
+* Last modified: 19.5.2023
 */
 
 #include "behaviortree_cpp_v3/behavior_tree.h"
@@ -43,7 +43,7 @@ bool Start_service::start_algorithm_service(road_crossing::start_algorithm::Requ
     bool valid = false;
     bool running = false;
     if (req.start && req.stop){
-        ROS_WARN("Start and stop algorithm service called");
+        ROS_WARN("Start and stop of algorithm requested simultaneously");
     } else if (req.start){
         ROS_INFO("Start algorithm service called");
         running = true;
