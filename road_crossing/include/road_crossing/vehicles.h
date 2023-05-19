@@ -77,6 +77,11 @@ class VEH_nodes
         ~VEH_nodes(){}
 
         /**
+         * @brief Set the robot parameters based on ROS param. Default set to Spot robot.
+         */
+        static void set_robot_param();
+
+        /**
          * @brief Calculate the collision data and determine if with the current speeds the collision will occur.
          *
          * @param vehicle Struct with data about the vehicle.
@@ -261,7 +266,7 @@ class VEH_nodes
 
 double VEL_info::max_rot_vel, VEL_info::min_rot_vel, VEL_info::max_lin_vel, VEL_info::min_lin_vel, VEL_info::vel_margin;
 
-vehicle_info VEH_nodes::robot = {0, 0, 0, 0, 0, 0, 0, 1.1, 0.5};  // set default width and length of the robot
+vehicle_info VEH_nodes::robot = {0, 0, 0, 0, 0, 0, 0, 1.1, 0.5};  // set default width and length of the robot (Spot)
 vehicles_data VEH_nodes::vehicles;
 collisions_data VEH_nodes::collisions;
 

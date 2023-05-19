@@ -29,6 +29,12 @@ VEL_info::VEL_info()
     ros::param::param<double>("/run_tree/vel_margin", VEL_info::vel_margin, 0.15);
 }
 
+void VEH_nodes::set_robot_param()
+{
+    ros::param::param<double>("/run_tree/robot_width", VEH_nodes::robot.width, 0.5);
+    ros::param::param<double>("/run_tree/robot_length", VEH_nodes::robot.length, 1.1);
+}
+
 void VEH_nodes::vehicle_collision(vehicle_info vehicle, vehicle_info robot, collision_info &collision)
 {
     collision.car_id = vehicle.id;
