@@ -9,11 +9,13 @@ import shapely.geometry as geom
 colors = ["blue", "red", "green", "magenta", "olive", "orange", "cyan"]
 
 def plot_graph(data, labels, step = False, legend = None, title = None, save_name = None):
+    max_time = 0
     if step:
-        plt.step(data[0], data[1], color=colors[0], where="post", linewidth=2)
-        plt.xlim(0, np.ceil(data[0][-1]))
+        for i in range(len(data[0])):
+            plt.step(data[0][i], data[1][i], color=colors[i], where="post", linewidth=2)
+            max_time = max_time if max_time > max(data[0][i]) else max(data[0][i])
+        plt.xlim(0, np.ceil(max_time))
     else:
-        max_time = 0
         max_len = max(len(x) for x in data[0])
         for i in range(len(data[0])):
             if (len(data[0][i]) < max_len-1):
@@ -29,6 +31,7 @@ def plot_graph(data, labels, step = False, legend = None, title = None, save_nam
     plt.xlabel(labels[0])
     plt.ylabel(labels[1])
     plt.grid(True)
+    #plt.ylim(0, 40)
     if legend is not None:
         plt.legend(legend)
     if title is not None:
@@ -40,6 +43,9 @@ def plot_graph(data, labels, step = False, legend = None, title = None, save_nam
 def velocity_graph(file_name):
     times = []
     velocities = []
+    times_veh = []
+    velocities_veh = []
+    veh_ids = []
     try:
         with open(file_name, "r") as fp:
             lines = fp.readlines()
@@ -49,8 +55,8 @@ def velocity_graph(file_name):
 
     for line in lines:
         if "Movement started" in line:
-            time = float(line[13:33])
-            times.append(time)
+            time_start = float(line[13:33])
+            times.append(time_start)
             velocities.append(0.0)
             continue
         elif "Crossing finished" in line:
@@ -58,21 +64,40 @@ def velocity_graph(file_name):
             times.append(time)
             velocities.append(0.0)
             break
-        elif "velocity" not in line:
+        elif "velocity" not in line and "y_dot" not in line:
             continue
         else:
             time = float(line[13:33])
-            velocity = float(line[-13:-5])
-            times.append(time)
-            velocities.append(velocity)
+            velocity = float(line[-14:-5])
+            if "y_dot" in line:
+                veh_id = int(line[60:63])
+                if (veh_id in veh_ids):
+                    velocities_veh[veh_ids.index(veh_id)].append(velocity)
+                    times_veh[veh_ids.index(veh_id)].append(time)
+                else:
+                    veh_ids.append(veh_id)
+                    velocities_veh.append([velocity])
+                    times_veh.append([time])
+            else:
+                times.append(time)
+                velocities.append(velocity)
 
-    times = np.array(times)
-    times -= times[0]
-    data = [times, velocities]
+    ret_times = []
+    times_veh.append(times)
+    for t in times_veh:
+        t = np.array(t)
+        t -= time_start
+        ret_times.append(t)
+    velocities_veh.append(velocities)
+    data = [ret_times, velocities_veh]
     save_name = file_name[:-4] + "_vel.pdf"
     labels = ["Time [s]", "Velocity [m/s]"]
+    legend = []
+    for veh_id in veh_ids:
+        legend.append("vehicle " + str(veh_id))
+    legend.append("robot")
 
-    plot_graph(data, labels, True, save_name=save_name)
+    plot_graph(data, labels, True, save_name=save_name, legend=legend)
 
 def dist_center_graph(file_name):
     times = []
