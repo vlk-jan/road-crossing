@@ -176,7 +176,7 @@ class RoadCost:
         self.load_road_segments()
         rospy.spin()
 
-class RoadInfo:
+class RoadInfo(object):
     def __init__(self):
         self.cross_segment = None
         self.start_point = None
