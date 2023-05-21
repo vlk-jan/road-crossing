@@ -17,6 +17,7 @@ git clone https://github.com/vlk-jan/road_crossing.git
 For this package to work you need to install additional packages:
 
 - [Compass](https://github.com/ctu-vras/compass) - provides the robots azimuth.
+- GPS to path - previously part of [gps-navigation](https://github.com/ctu-vras/gps-navigation) package.
 
 The package also requires additional libraries:
 
