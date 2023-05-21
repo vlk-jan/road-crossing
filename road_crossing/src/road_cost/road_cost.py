@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-
 import rospy
 from road_crossing.srv import get_road_segment, get_road_segmentResponse, get_suitability,\
                               get_suitabilityResponse, get_finish, get_finishResponse, get_road_info,\
@@ -200,7 +199,7 @@ class RoadData:
         road = RoadInfo()
         road_cost = RoadCost()
         road_cost.load_road_segments()
-        point = utm.from_latlon(50.092925, 14.124759)
+        point = utm.from_latlon(50.0764, 14.41803)
         
         min_dist = float('inf')
         for segment_level in range(len(road_cost.road_segments)):
@@ -211,11 +210,11 @@ class RoadData:
                     road.cross_segment = segment
 
         road.start_point = geometry.Point(point)
-        road.expected_velocity = 50
-        road.maximal_velocity = 50
-        road.lane_num = 2
-        road.road_width = 10
-        road.road_type = "tertiary"
+        road.expected_velocity = 30
+        road.maximal_velocity = 30
+        road.lane_num = 1
+        road.road_width = 3
+        road.road_type = "footway"
         road.peddestrian_crossing = False
 
         print("min dist: {}".format(min_dist))

@@ -8,7 +8,7 @@ from math import ceil
 from road_crossing_consts import *
 
 highway_tags = ["primary", "secondary", "tertiary", "unclassified", "residential", "primary_link", "secondary_link", \
-                "tertiary_link", "service", "busway", "road", "living_street"]
+                "tertiary_link", "service", "busway", "road", "living_street", "footway"]
 
 
 def get_roads(data):
@@ -235,14 +235,14 @@ def road_class_price(roads):
     costs = {"primary": PRIMARY_ROAD_COST, "secondary": SECONDARY_ROAD_COST, "tertiary": TERTIARY_ROAD_COST, \
              "unclassified": UNCLASSIFIED_ROAD_COST, "residential": RESIDETNATL_ROAD_COST, "primary_link": PRIMARY_ROAD_COST, \
              "secondary_link": SECONDARY_ROAD_COST, "tertiary_link": TERTIARY_ROAD_COST, "service": SERVICE_ROAD_COST, \
-             "busway": BUSWAY_ROAD_COST, "road": ROAD_ROAD_COST, "living_street": RESIDETNATL_ROAD_COST}
+             "busway": BUSWAY_ROAD_COST, "road": ROAD_ROAD_COST, "living_street": RESIDETNATL_ROAD_COST, "footway": RESIDETNATL_ROAD_COST}
     prices = []
     for road in roads:
         prices.append((geom.LineString(gps_to_utm(road[0], True)), costs[road[1]]))
     return prices
 
 
-def visualize_curves(segments, crossings, grid = True):
+def visualize_curves(segments, crossings = None, grid = True):
     '''
     Show map of processed area, e.g. its road network and crossings. Roads are show in color depending on their curve
     and crossings are green.
@@ -262,14 +262,15 @@ def visualize_curves(segments, crossings, grid = True):
             x = [node[0] for node in segment["coords"]]
             y = [node[1] for node in segment["coords"]]
             plt.plot(x, y, color=colors[segment["curvature_level"]])
-    for crossing in crossings:
-        plt.plot(crossing[0], crossing[1], 'o', color='green')
+    if crossings is not None:
+        for crossing in crossings:
+            plt.plot(crossing[0], crossing[1], 'o', color='green')
     if grid:
         plt.grid()
     plt.show()
 
 
-def visualize_curvature_rank(ranked_segments, crossings, grid = True):
+def visualize_curvature_rank(ranked_segments, crossings = None, grid = True):
     '''
     Show map of processed area, e.g. its road network and crossings. Roads are show in color depending on their traversability
     level and crossings are green.
@@ -313,8 +314,9 @@ def visualize_curvature_rank(ranked_segments, crossings, grid = True):
               magenta_patch, purple_patch]
     ax.legend(handles=handles)
 
-    for crossing in crossings:
-        plt.plot(crossing[0], crossing[1], 'o', color='green')
+    if crossings is not None:
+        for crossing in crossings:
+            plt.plot(crossing[0], crossing[1], 'o', color='green')
     if grid:
         plt.grid()
     plt.show()

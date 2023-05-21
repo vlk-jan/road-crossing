@@ -12,12 +12,11 @@ if __name__ == '__main__':
     #max_lat = rospy.get_param("/max_lat")
     #max_long = rospy.get_param("/max_long")
 
-    min_lat = 50.09
-    min_long = 14.11
-    max_lat = 50.11
-    max_long = 14.13
+    min_lat = 50.0757825
+    min_long = 14.4155836
+    max_lat = 50.0777414
+    max_long = 14.4196872
 
     road_cost_obj = road_cost.RoadCost()
     road_cost_obj.road_cost(min_lat, min_long, max_lat, max_long)
     road_cost_obj.save_road_segments()
-    
