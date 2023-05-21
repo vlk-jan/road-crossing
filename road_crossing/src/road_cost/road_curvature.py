@@ -1,9 +1,12 @@
 import shapely.geometry as geom
 import numpy as np
-from math import floor, dist
+from math import floor, sqrt
 
 from road_crossing_consts import *
 
+
+def dist(x, y):
+    return sqrt((x[0]-y[0])**2 + (x[1]-y[1])**2)
 
 def circum_circle_radius(A, B, C):
     '''
@@ -11,11 +14,11 @@ def circum_circle_radius(A, B, C):
 
     Parameters
     ----------
-    A: shapely.geometry.Point
+    A: tuple
         First point defining the triangle.
-    B: shapely.geometry.Point
+    B: tuple
         Second point defining the triangle.
-    C: shapely.geometry.Point
+    C: tuple
         Third point defining the triangle.
     '''
     # Calculate lengths of individual sides.

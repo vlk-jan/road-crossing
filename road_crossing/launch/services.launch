@@ -13,8 +13,8 @@
     </node>
 
     <node name="start_srv" pkg="road_crossing" type="start_srv"
-
           respawn="true" respawn_delay="1.0" output="screen"/>
+
     <node name="get_finish" pkg="road_crossing" type="get_finish_srv"
           respawn="true" respawn_delay="1.0" output="screen"/>
 

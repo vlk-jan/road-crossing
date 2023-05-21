@@ -1,10 +1,14 @@
 import sjtsk_to_utm
 import numpy as np
-from math import ceil, dist, floor
+from math import ceil, floor, sqrt
 import shapely.geometry as geom
 from threading import Thread
 
 from road_crossing_consts import *
+
+
+def dist(x, y):
+    return sqrt((x[0]-y[0])**2 + (x[1]-y[1])**2)
 
 
 def generate_waypoints(road, waypoints_density, circular = False):
@@ -84,7 +88,7 @@ def get_road_network_elevation(road_network, elev_data_files):
         data_arr.append(sjtsk_to_utm.DataPoints(waypoints, data_file, n_closest=5))
 
     elev_data = [[] for i in range(len(road_nodes))]
-    def run(data: sjtsk_to_utm.DataPoints, elev_data: list, index: int):
+    def run(data, elev_data, index):
         elev_data[index] = data.run()
 
     threads = []

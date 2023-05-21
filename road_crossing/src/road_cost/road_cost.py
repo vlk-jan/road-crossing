@@ -79,7 +79,7 @@ class RoadCost:
     def save_road_segments(self):
         file_name = rospy.get_param("road_crossing/road_file_name", "./road_segments.pyc")
         with open(file_name, "wb") as file:
-            pickle.dump(self.road_segments, file)
+            pickle.dump(self.road_segments, file, protocol=2)
         rospy.loginfo("Road segments saved")
 
     def load_road_segments(self):
