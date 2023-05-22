@@ -55,7 +55,6 @@ This package does not currently have any documentation. However, the text of my 
 ## TODO
 
 - Short-term
-  - Set context information score
   - Create unit tests?
 - Long-term
   - Service for obtaining better place - possible need to rewrite road cost

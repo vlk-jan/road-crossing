@@ -101,9 +101,9 @@ int calculate_context_score(float easting, float northing)
 
     std::string road_type = srv.response.road_type;
     if (road_type == "motorway")
-        score -= 10;
+        score -= 50;
     else if (road_type == "trunk")
-        score -= 4;
+        score -= 50;
     else if (road_type == "primary")
         score += 1;
     else if (road_type == "secondary")
@@ -123,7 +123,7 @@ int calculate_context_score(float easting, float northing)
 
     bool pedestrian_crossing = srv.response.pedestrian_crossing;
     if (pedestrian_crossing)
-        score += 10;
+        score += 100;
 
     return score;
 }
