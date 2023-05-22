@@ -337,8 +337,96 @@ def animation_graph(file_name):
     #plt.show()
     anim.save((file_name[:-4] + '_traj.gif'), writer='imagemagick')
 
-def time_to_contact_graph(file_name):
-    pass
+def time_to_contact(file_name):
+    distances = []
+    velocities = []
+    times = []
+
+    robot_front = 1.1/2
+
+    try:
+        with open(file_name, "r") as fp:
+            lines = fp.readlines()
+    except FileNotFoundError:
+        print("File not found")
+        exit()
+    
+    for i in range(len(lines)):
+        if "Movement started" in lines[i]:
+            time_start = float(lines[i][13:33])
+            continue
+        elif "Crossing finished" in lines[i]:
+            break
+        elif "velocity" in lines[i]:
+            time = float(lines[i][13:33])
+            vel = float(lines[i][-14:-5])
+            velocities.append((time - time_start, vel))
+        elif "veh_pos" not in lines[i]:
+            continue
+        else:
+            time = float(lines[i][13:33])
+            line = lines[i][64:-5]
+            line = line.strip()
+            num = line.split(",")
+            num.remove(num[0])
+            for j in range(len(num)):
+                num[j] = float(num[j][5:])
+            if (num[2] <= 0 and num[3] >= 0 or num[2] >= 0 and num[3] <= 0):
+                dist = num[0] - robot_front
+                if dist < 0:
+                    continue
+                distances.append((time - time_start, dist))
+                
+    for i in range(len(distances)):
+        for j in range(len(velocities)):
+            if (abs(distances[i][0] - velocities[j][0]) > 0.1):
+                continue
+            elif (velocities[j][1] == 0):
+                continue
+            time = distances[i][1]/velocities[j][1]
+            times.append(time)
+            break
+
+    if (len(times) > 0):
+        print("Average time to contact: " + str(sum(times)/len(times)) + " s")
+        print("Minimal time to contact: " + str(min(times)) + " s")
+    else:
+        print("NA")
+
+def time_till_dist(file_name, distance):
+    times = []
+    velocities = []
+    dist = 0
+    try:
+        with open(file_name, "r") as fp:
+            lines = fp.readlines()
+    except FileNotFoundError:
+        print("File not found")
+        exit()
+
+    for line in lines:
+        if "Movement started" in line:
+            time_start = float(line[13:33])
+            times.append(0)
+            velocities.append(0.0)
+            continue
+        elif "Crossing finished" in line:
+            time = float(line[13:33]) - time_start
+            times.append(time)
+            velocities.append(0.0)
+            break
+        elif "velocity" not in line and "y_dot" not in line:
+            continue
+        else:
+            time = float(line[13:33]) - time_start
+            velocity = float(line[-14:-5])
+            times.append(time)
+            velocities.append(velocity)
+
+    for i in range(len(times)-1):
+        dist += velocities[i]*(times[i+1] - times[i])
+        if (dist >= distance):
+            return times[i+1]
 
 def main(args):
     file_name = args[1]
@@ -346,6 +434,8 @@ def main(args):
     dist_center_graph(file_name)
     dist_graph(file_name)
     animation_graph(file_name)
+    time_to_contact(file_name)
+    #print(time_till_dist(file_name, 2.69))
 
 if __name__ == '__main__':
     
