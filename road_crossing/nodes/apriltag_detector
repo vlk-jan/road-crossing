@@ -1,0 +1,81 @@
+#!/usr/bin/env python
+import rospy
+from copy import deepcopy
+
+from apriltag_ros.msg import AprilTagDetectionArray
+from road_crossing_msgs.msg import injector_msgs
+
+
+class ApriltagDetector:
+    def __init__(self):
+        self.pub = rospy.Publisher("/road_crossing/injector", injector_msgs, queue_size=10)
+        self.data = dict()
+        self.data["x"] = 0
+        self.data["y"] = 0
+        self.data["x_dot"] = 0
+        self.data["y_dot"] = 0
+        self.data["x_ddot"] = 0
+        self.data["y_ddot"] = 0
+        self.data["time"] = 0
+        self.prev_data = dict()
+        self.prev_data["x"] = 0
+        self.prev_data["y"] = 0
+        self.prev_data["x_dot"] = 0
+        self.prev_data["y_dot"] = 0
+        self.prev_data["x_ddot"] = 0
+        self.prev_data["y_ddot"] = 0
+        self.prev_data["time"] = 0
+        self.length = 2
+        self.width = 1
+        self.clear_msg = injector_msgs()
+        self.clear_msg.clear = True
+
+    def publish(self):
+        self.pub.publish(self.clear_msg)
+        msg = injector_msgs()
+        msg.clear = False
+        msg.northing = self.data["x"]
+        msg.easting = self.data["y"]
+        msg.x_dot = self.data["x_dot"]
+        msg.y_dot = self.data["y_dot"]
+        msg.x_ddot = self.data["x_ddot"]
+        msg.y_ddot = self.data["y_ddot"]
+        msg.length = self.length
+        msg.width = self.width
+        self.pub.publish(msg)
+
+def main():
+    rospy.init_node("apriltag_detector")
+    detector = ApriltagDetector()
+
+    def callback(data):
+        for tag in data.detections:
+            if tag.id[0] != 7:
+                return
+            if abs(tag.pose.pose.pose.position.x) > 15:
+                return
+            if abs(tag.pose.pose.pose.position.y) > 15:
+                return
+            detector.prev_data = deepcopy(detector.data)
+            detector.data["time"] = data.header.stamp.secs + data.header.stamp.nsecs * 1e-9
+            detector.data["x"] = tag.pose.pose.pose.position.x
+            detector.data["y"] = tag.pose.pose.pose.position.y
+            if detector.data["time"] == detector.prev_data["time"]:
+                return
+            if abs(detector.data["x"] - detector.prev_data["x"]) > 1 or abs(detector.data["y"] - detector.prev_data["y"]) > 1:
+                return
+            detector.data["x_dot"] = (detector.data["x"] - detector.prev_data["x"]) / (detector.data["time"] - detector.prev_data["time"])
+            detector.data["y_dot"] = (detector.data["y"] - detector.prev_data["y"]) / (detector.data["time"] - detector.prev_data["time"])
+            detector.data["x_ddot"] = (detector.data["x_dot"] - detector.prev_data["x_dot"]) / (detector.data["time"] - detector.prev_data["time"])
+            detector.data["y_ddot"] = (detector.data["y_dot"] - detector.prev_data["y_dot"]) / (detector.data["time"] - detector.prev_data["time"])
+            print(detector.data)
+            detector.publish()
+
+    rospy.Subscriber("/apriltag", AprilTagDetectionArray, callback)
+
+    while not rospy.is_shutdown():
+        rospy.spin()
+    
+
+if __name__ == "__main__":
+    main()
