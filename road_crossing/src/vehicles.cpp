@@ -154,6 +154,7 @@ void VEH_nodes::vehicle_collision(vehicle_info vehicle, vehicle_info robot, coll
 
 void VEH_nodes::callback_vehicle_injector(const road_crossing_msgs::injector_msgs::ConstPtr& msg)
 {
+    // AprilTag testing -> x_dot = x_ddot = 0
     if (msg->clear){
         VEH_nodes::clear_vehicles_data();
         return;
@@ -164,9 +165,9 @@ void VEH_nodes::callback_vehicle_injector(const road_crossing_msgs::injector_msg
         if (msg->veh_id == vehicles.data[i].id){
             VEH_nodes::vehicles.data[i].pos_y = msg->easting - easting;
             VEH_nodes::vehicles.data[i].pos_x = msg->northing - northing;
-            VEH_nodes::vehicles.data[i].x_dot = msg->x_dot;
+            VEH_nodes::vehicles.data[i].x_dot = 0; // msg->x_dot;
             VEH_nodes::vehicles.data[i].y_dot = msg->y_dot;
-            VEH_nodes::vehicles.data[i].x_ddot = msg->x_ddot;
+            VEH_nodes::vehicles.data[i].x_ddot = 0; // msg->x_ddot;
             VEH_nodes::vehicles.data[i].y_ddot = msg->y_ddot;
             VEH_nodes::vehicles.data[i].length = msg->length;
             VEH_nodes::vehicles.data[i].width = msg->width;
@@ -184,9 +185,9 @@ void VEH_nodes::callback_vehicle_injector(const road_crossing_msgs::injector_msg
     vehicle.id = msg->veh_id;
     vehicle.pos_y = msg->easting - easting;
     vehicle.pos_x = msg->northing - northing;
-    vehicle.x_dot = msg->x_dot;
+    vehicle.x_dot = 0; // msg->x_dot;
     vehicle.y_dot = msg->y_dot;
-    vehicle.x_ddot = msg->x_ddot;
+    vehicle.x_ddot = 0; // msg->x_ddot;
     vehicle.y_ddot = msg->y_ddot;
     vehicle.length = msg->length;
     vehicle.width = msg->width;
