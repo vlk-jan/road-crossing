@@ -24,11 +24,13 @@ if __name__ == "__main__":
     if (sys.argv[1] == "start"):
         start = True
         stop = False
+        print("Requesting start")
     elif (sys.argv[1] == "stop"):
         start = False
         stop = True
+        print("Requesting stop")
     else:
         print("Invalid argument")
         exit()
-    print("Requesting start")
     print("Start successful: %s"%start_client(start, stop))
+

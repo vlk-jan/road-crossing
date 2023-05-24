@@ -61,7 +61,7 @@ bool Start_service::start_algorithm_service(road_crossing::start_algorithm::Requ
         msg.valid = true;
         msg.start = running;
         Start_service::start_pub.publish(msg);
-        return running;
+        return true;
     } else
         return false;
 }

@@ -25,6 +25,7 @@ double gps_points_heading(double lat1, double lon1, double lat2, double lon2)
     double x = cos(lat1) * sin(lat2) - sin(lat1) * cos(lat2) * cos(dLon);
     double brng = atan2(y, x);
     brng = std::fmod((brng + 2*M_PI), 2*M_PI);
+    brng = ned_to_enu(brng);
     return brng;
 }
 

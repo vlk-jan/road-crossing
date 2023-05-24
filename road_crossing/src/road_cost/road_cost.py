@@ -161,8 +161,8 @@ class RoadCost:
             road_segment = geometry.LineString([(road_info.easting_1, road_info.northing_1), (road_info.easting_2, road_info.northing_2)])
             dist1 = point.distance(road_segment)
             dist2 = point.distance(geometry.Point(road_info.start_easting, road_info.start_northing))
-            ret1 = True if dist1-(road_info.road_width/2) > 0 else False
-            ret2 = True if dist2-road_info.road_width > 0 else False
+            ret1 = True if (dist1-(road_info.road_width/2)) > 0 else False
+            ret2 = True if (dist2-road_info.road_width) > 0 else False
             ret = ret1 and ret2
         
         ret = ret if road_info is not None else False
@@ -199,7 +199,7 @@ class RoadData:
         road = RoadInfo()
         road_cost = RoadCost()
         road_cost.load_road_segments()
-        point = utm.from_latlon(50.0764, 14.41803)
+        point = utm.from_latlon(50.076392445, 14.418041419)
         
         min_dist = float('inf')
         for segment_level in range(len(road_cost.road_segments)):
@@ -213,7 +213,7 @@ class RoadData:
         road.expected_velocity = 30
         road.maximal_velocity = 30
         road.lane_num = 1
-        road.road_width = 3
+        road.road_width = 6
         road.road_type = "footway"
         road.peddestrian_crossing = False
 

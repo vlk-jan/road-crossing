@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<launch>
+    <arg name="camera" default="camera_left" />
+
+    <node name="$(arg camera)_apriltag_detector" pkg="apriltag_ros" type="apriltag_ros_continuous_node">
+        <rosparam command="load" file="$(dirname)/../data/apriltags.yaml"/>
+
+        <param name="camera_frame" type="str" value="pylon_$(arg camera)"/>
+        <param name="publish_tag_detections_image" type="bool" value="true"/>
+
+        <remap from="image_rect" to="$(arg camera)/image_rect"/>
+        <remap from="camera_info" to="$(arg camera)/camera_info"/>
+        <remap from="tag_detections" to="apriltag"/>
+        <remap from="tag_detections_image" to="$(arg camera)/apriltag_image"/>
+    </node>
+
+</launch>
+

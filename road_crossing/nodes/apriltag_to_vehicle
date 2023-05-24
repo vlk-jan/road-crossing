@@ -9,9 +9,14 @@ from apriltag_ros.msg import AprilTagDetectionArray
 from road_crossing_msgs.msg import injector_msgs
 
 
+time_pub = 0
+
 class ApriltagDetector:
     def __init__(self):
+        # Vehicle data publisher
         self.pub = rospy.Publisher("/road_crossing/injector", injector_msgs, queue_size=10)
+
+        # Vehicle data
         self.data = dict()
         self.data["x"] = 0
         self.data["y"] = 0
@@ -20,21 +25,18 @@ class ApriltagDetector:
         self.data["x_ddot"] = 0
         self.data["y_ddot"] = 0
         self.data["time"] = 0
-        self.prev_data = dict()
-        self.prev_data["x"] = 0
-        self.prev_data["y"] = 0
-        self.prev_data["x_dot"] = 0
-        self.prev_data["y_dot"] = 0
-        self.prev_data["x_ddot"] = 0
-        self.prev_data["y_ddot"] = 0
-        self.prev_data["time"] = 0
+        self.prev_data = deepcopy(self.data)
+
         self.length = 2
         self.width = 1
+
+        # Clear message
         self.clear_msg = injector_msgs()
         self.clear_msg.clear = True
 
     def publish(self):
         self.pub.publish(self.clear_msg)
+
         msg = injector_msgs()
         msg.clear = False
         msg.northing = self.data["x"]
@@ -45,11 +47,12 @@ class ApriltagDetector:
         msg.y_ddot = self.data["y_ddot"]
         msg.length = self.length
         msg.width = self.width
+
         self.pub.publish(msg)
 
 def transform_pose(input_pose, from_frame, to_frame):
     tf_buffer = tf2_ros.Buffer()
-    listener = tf2_ros.TransformListener(tf_buffer)
+    tf2_ros.TransformListener(tf_buffer)
 
     pose = tf2_geometry_msgs.PoseStamped()
     pose.pose = input_pose
@@ -60,17 +63,20 @@ def transform_pose(input_pose, from_frame, to_frame):
     return outpose.pose
 
 def main():
+    global time_pub
     rospy.init_node("apriltag_detector")
+    time_pub = rospy.Time.now()
     detector = ApriltagDetector()
 
     def callback(data):
+    global time_pub
+        if (rospy.Time.now() - time_pub) > rospy.Duration(1):
+            detector.pub.publish(detector.clear_msg)
         for tag in data.detections:
             if tag.id[0] != 7:
                 return
             new_pose = transform_pose(tag.pose.pose.pose, "pylon_camera_left", "body")
-            if abs(new_pose.position.x) > 15:
-                return
-            if abs(new_pose.position.y) > 15:
+            if abs(new_pose.position.x) > 15 or abs(new_pose.position.y) > 15:
                 return
             detector.prev_data = deepcopy(detector.data)
             detector.data["time"] = data.header.stamp.secs + data.header.stamp.nsecs * 1e-9
@@ -88,12 +94,12 @@ def main():
             detector.data["y_ddot"] = (detector.data["y_dot"] - detector.prev_data["y_dot"]) / (detector.data["time"] - detector.prev_data["time"])
             print(detector.data)
             detector.publish()
+            time_pub = rospy.Time.now()
 
     rospy.Subscriber("/apriltag", AprilTagDetectionArray, callback)
 
     while not rospy.is_shutdown():
         rospy.spin()
-    
 
 if __name__ == "__main__":
     main()

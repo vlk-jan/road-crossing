@@ -161,6 +161,8 @@ void VEH_nodes::callback_vehicle_injector(const road_crossing_msgs::injector_msg
     }
     double easting, northing;
     GPS_nodes::req_position(easting, northing);
+    easting = 0;
+    northing = 0;
     for (int i = 0; i < VEH_nodes::vehicles.data.size(); ++i){
         if (msg->veh_id == vehicles.data[i].id){
             VEH_nodes::vehicles.data[i].pos_y = msg->easting - easting;

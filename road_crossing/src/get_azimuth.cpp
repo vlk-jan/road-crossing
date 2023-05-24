@@ -58,12 +58,12 @@ void AZI_nodes::init_service(ros::NodeHandle& nh)
 void AZI_nodes::callback_compass(const compass_msgs::Azimuth::ConstPtr& msg)
 {
     if (AZI_nodes::indices.data_type_i == 0){
-        if (AZI_nodes::indices.orientation_i == 0)
+        if (AZI_nodes::indices.orientation_i != 0)
            AZI_nodes::azimuth = ned_to_enu(msg->azimuth);
         else
             AZI_nodes::azimuth = msg->azimuth;
     } else{
-        if (AZI_nodes::indices.orientation_i == 0)
+        if (AZI_nodes::indices.orientation_i != 0)
             AZI_nodes::azimuth = ned_to_enu(deg_to_rad(msg->azimuth));
         else
             AZI_nodes::azimuth = deg_to_rad(msg->azimuth);
@@ -118,15 +118,15 @@ BT::PortsList AZI_nodes::get_azimuth::providedPorts()
 
 BT::NodeStatus AZI_nodes::robot_perpendicular::tick()
 {
-    BT::Optional<double> req_azimuth = getInput<double>("azimuth");
-    BT::Optional<double> cur_azimuth = getInput<double>("heading");
+    BT::Optional<double> cur_azimuth = getInput<double>("azimuth");
+    BT::Optional<double> req_azimuth = getInput<double>("heading");
     
     if (!req_azimuth)
         throw BT::RuntimeError("missing required input azimuth: ", req_azimuth.error());
     if (!cur_azimuth)
         throw BT::RuntimeError("missing required input heading: ", cur_azimuth.error());
     
-    if (abs(req_azimuth.value() - cur_azimuth.value()) < EQUAL_AZI_LIMIT)
+    if (abs(cur_azimuth.value() - req_azimuth.value()) < EQUAL_AZI_LIMIT)
         return BT::NodeStatus::SUCCESS;
     return BT::NodeStatus::FAILURE;
 }
@@ -175,7 +175,7 @@ BT::NodeStatus AZI_nodes::compute_heading::tick()
         throw BT::RuntimeError("missing required input road_heading: ", road_heading.error());
     
     double heading = comp_heading(rob_heading.value(), road_heading.value());
-    setOutput("req_azimuth", rob_heading.value()-0.1); //Simulation purposes
+    setOutput("req_azimuth", 4.12); //Simulation purposes
     return BT::NodeStatus::SUCCESS;
 }
 

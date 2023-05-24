@@ -25,7 +25,7 @@
 
 void MOV_nodes::init_publishers(ros::NodeHandle& nh)
 {
-    MOV_nodes::pub_cmd = nh.advertise<geometry_msgs::Twist>("/cmd_vel", 5);
+    MOV_nodes::pub_cmd = nh.advertise<geometry_msgs::Twist>("/nav/cmd_vel", 5);
     //MOV_nodes::pub_map = nh.advertise<??>("weight_map", 5);
     MOV_nodes::pub_finish = nh.advertise<road_crossing_msgs::start_msgs>("/road_crossing/start", 5);
     std::string service_name = "get_finish";
@@ -50,9 +50,9 @@ BT::NodeStatus MOV_nodes::rotate_robot::tick()
     double diff = angle_diff(cur_azimuth.value(), req_azimuth.value());
 
     if (diff > 0){  // rotation to the right
-        speed = diff*speed_const;
+        speed = speed_const;
     } else {  // rotation to the left
-        speed = -1 * diff*speed_const;
+        speed = -speed_const;
     }
 
     geometry_msgs::Twist msg = geometry_msgs::Twist();

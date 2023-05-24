@@ -40,7 +40,7 @@ int main(int argc, char **argv)
 
     // Initialization of topics
     std::string compass;
-    std::string gps = "/gps/fix";
+    std::string gps = "/fix";
     std::string vehicles = "/road_crossing/injector";
     std::string start = "/road_crossing/start";
 
