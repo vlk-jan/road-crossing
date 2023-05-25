@@ -3,7 +3,7 @@
 * Author: Jan Vlk
 * Date: 2.3.2022
 * Description: This file contains functions for operations dealing with vehicle detection and collisions.
-* Last modified: 19.5.2023
+* Last modified: 23.5.2023
 */
 
 #include <cmath>

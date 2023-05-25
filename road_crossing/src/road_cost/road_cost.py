@@ -65,13 +65,17 @@ class RoadCost:
         point = geometry.Point(easting, northing)
         min_dist = float('inf')
         cost = None
+        info = self.get_road_info_client(easting, northing)
+        if (info.road_width is None):
+            return None
+        limit = 3*info.road_width/4
 
         for segment_level in range(len(self.road_segments)):
             for segment in self.road_segments[segment_level]:
                 dist = segment.distance(point)
                 if (dist < min_dist):
                     min_dist = dist
-                    if (dist < 10):
+                    if (dist < limit):
                         cost = ROAD_CROSSINGS_RANKS - segment_level
 
         return cost

@@ -3,7 +3,7 @@
 * Author: Jan Vlk
 * Date: 13.2.2023
 * Description: This file contains miscellaneous functions and classes, or functions and classes that do not have a specific place yet.
-* Last modified: 19.5.2023
+* Last modified: 23.5.2023
 */
 
 #include "road_crossing/misc.h"

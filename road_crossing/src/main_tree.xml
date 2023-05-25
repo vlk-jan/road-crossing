@@ -68,10 +68,12 @@
                 <Condition ID="place_suitable"/>
                 <Fallback>
                     <Sequence>
-                        <Condition ID="better_place_found"/>
+                        <Fallback>
+                            <Condition ID="better_place_found"/>
+                            <Action ID="get_better_place" better_easting="{better_easting}" better_northing="{better_northing}"/>
+                        </Fallback>
                         <Action ID="move_to_place" better_easting="{better_easting}" better_northing="{better_northing}"/>
                     </Sequence>
-                    <Action ID="get_better_place" better_easting="{better_easting}" better_northing="{better_northing}"/>
                     <AlwaysSuccess/>
                 </Fallback>
             </Fallback>

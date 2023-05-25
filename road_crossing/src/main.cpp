@@ -3,7 +3,7 @@
 * Author: Jan Vlk
 * Date: 16.11.2022
 * Description: Main file of our algorithm, creates ROS subscribers, BT tree and provides.
-* Last modified: 19.5.2023
+* Last modified: 23.5.2023
 */
 
 #include "behaviortree_cpp_v3/behavior_tree.h"

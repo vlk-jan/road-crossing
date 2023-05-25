@@ -3,7 +3,7 @@
 * Author: Jan Vlk
 * Date: 25.11.2022
 * Description: This file contains functions for moving the robot.
-* Last modified: 19.5.2023
+* Last modified: 24.5.2023
 */
 
 #include <cmath>
@@ -134,7 +134,7 @@ BT::PortsList MOV_nodes::not_started::providedPorts()
 BT::NodeStatus MOV_nodes::start_movement::tick()
 {
     MOV_nodes::is_moving = true;
-    MOV_nodes::lin_speed = VEL_info::get_max_lin_vel();
+    MOV_nodes::lin_speed = 0;
     ROS_INFO("Movement started.");
     return BT::NodeStatus::SUCCESS;
 }
@@ -151,6 +151,10 @@ BT::NodeStatus MOV_nodes::move_fwd_full::tick()
     VEH_nodes::set_robot_vel(msg.linear.x, msg.linear.y);
     MOV_nodes::lin_speed = msg.linear.x;
     ROS_INFO("moving forward with velocity %f", MOV_nodes::lin_speed);
+
+    double easting, northing;
+    GPS_nodes::req_position(easting, northing);
+    ROS_INFO("coords:   0, %f, %f", easting, northing);
 
     MOV_nodes::pub_cmd.publish(msg);
     ros::spinOnce();
